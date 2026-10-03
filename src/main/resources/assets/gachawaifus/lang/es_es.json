@@ -1,0 +1,9 @@
+{
+  "itemGroup.gachawaifus": "Gacha Waifus",
+  "entity.gachawaifus.astra_yao": "Astra Yao",
+  "item.gachawaifus.astra_yao_token": "Talismán de Invocación de Astra Yao",
+  "item.gachawaifus.astra_yao_token.desc": "Click derecho para invocar a Astra Yao (Stars of Lyra / Soporte Éter)",
+  "message.gachawaifus.astra_yao_summoned": "¡Astra Yao ha subido al escenario!",
+  "message.gachawaifus.astra_yao_special": "Astra Yao: ¡Escucha mi melodía! (¡Solo Vocal!)",
+  "message.gachawaifus.astra_yao_ultimate": "Astra Yao: ¿Listos para el Gran Concierto Final?!"
+}

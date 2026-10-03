@@ -1,0 +1,49 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Client",
+      "presentation": {
+        "group": "Mod Development - gachawaifus",
+        "order": 0
+      },
+      "projectName": "gachawaifus",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@E:\\super proyecto de moding gachas minecraft\\gachawaifus\\build\\moddev\\clientRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@E:\\super proyecto de moding gachas minecraft\\gachawaifus\\build\\moddev\\clientRunVmArgs.txt",
+        "-Dfml.modFolders\u003dgachawaifus%%E:\\super proyecto de moding gachas minecraft\\gachawaifus\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    },
+    {
+      "type": "java",
+      "request": "launch",
+      "name": "Server",
+      "presentation": {
+        "group": "Mod Development - gachawaifus",
+        "order": 1
+      },
+      "projectName": "gachawaifus",
+      "mainClass": "net.neoforged.devlaunch.Main",
+      "args": [
+        "@E:\\super proyecto de moding gachas minecraft\\gachawaifus\\build\\moddev\\serverRunProgramArgs.txt"
+      ],
+      "vmArgs": [
+        "@E:\\super proyecto de moding gachas minecraft\\gachawaifus\\build\\moddev\\serverRunVmArgs.txt",
+        "-Dfml.modFolders\u003dgachawaifus%%E:\\super proyecto de moding gachas minecraft\\gachawaifus\\bin\\main"
+      ],
+      "cwd": "${workspaceFolder}\\run",
+      "env": {},
+      "console": "internalConsole",
+      "shortenCommandLine": "none"
+    }
+  ]
+}

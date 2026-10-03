@@ -1,0 +1,27 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+
+[[mods]]
+modId="gachawaifus"
+version="${file.jarVersion}"
+displayName="Gacha Waifus"
+authors="Juan"
+description='''
+Mod de waifus de gachas con combate tipo Zenless Zone Zero (ZZZ) en Minecraft.
+Prototipo: Astra Yao con ataque normal de éter, habilidad especial acústica y ultimate concierto estelar.
+'''
+
+[[dependencies.gachawaifus]]
+    modId="neoforge"
+    type="required"
+    versionRange="[21.1,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.gachawaifus]]
+    modId="minecraft"
+    type="required"
+    versionRange="[1.21.1,1.22)"
+    ordering="NONE"
+    side="BOTH"
