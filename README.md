@@ -2,6 +2,10 @@
 
 Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*.
 
+> **Versión:** `2.1.0-beta.1` ⚠️ BETA · **Minecraft:** 1.21.1 · **NeoForge:** 21.1.233
+
+Consulta el [CHANGELOG.md](CHANGELOG.md) para las notas de actualización completas.
+
 ## 🌟 Prototipo: Astra Yao
 - **Rol:** Soporte Éter / Cantante Idol (Stars of Lyra)
 - **Skin:** Modelo slim/alex personalizado
@@ -25,7 +29,7 @@ Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*.
 - **Ultimate (Endless Talisman):** Fase de meditación invulnerable (30 ticks), AoE masivo en 12 bloques con 35 de daño indirecto mágico, buffs al invocador (DAMAGE_BOOST II, SPEED II, ABSORPTION III) y a la propia entidad. Cooldown 750 ticks.
 
 ## 📦 Instalación
-1. Colocar `gachawaifus-1.0.0.jar` en `%appdata%\.minecraft\mods\`.
+1. Colocar `gachawaifus-2.1.0-beta.1.jar` en `%appdata%\.minecraft\mods\`.
 2. Iniciar Minecraft con el perfil de **NeoForge 21.1.x** para **1.21.1**.
 3. Obtener el **Talismán de Invocación de Ye Shunguang** desde la pestaña creativa "Gacha Waifus" o crafteo.
 4. Click derecho en el suelo para invocar a Ye Shunguang en el escenario.
@@ -39,7 +43,7 @@ Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*.
   cd "E:\super proyecto de moding gachas minecraft\gachawaifus"
   .\gradlew.bat build
   ```
-- **Built Jar:** `gachawaifus/build/libs/gachawaifus-1.0.0.jar`
+- **Built Jar:** `gachawaifus/build/libs/gachawaifus-2.1.0-beta.1.jar`
 
 ## 🎵 Sonidos y Animaciones
 - Convierte audio a `.ogg` (44.1kHz).
