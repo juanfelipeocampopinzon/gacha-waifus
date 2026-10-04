@@ -37,6 +37,8 @@ public class PromeiaEntity extends AbstractWaifuEntity {
     public PromeiaEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§bPromeia"));
+        this.setCustomNameVisible(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

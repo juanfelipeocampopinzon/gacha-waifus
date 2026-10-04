@@ -36,7 +36,16 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public class NicoleDemaraEntity extends AbstractWaifuEntity {
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120; // Inicia casi listo (Ether Grenade)
@@ -45,6 +54,27 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity {
     public NicoleDemaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§dNicole Demara"));
+        this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nicole_demara.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nicole_demara.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.nicole_demara.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nicole_demara.special")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     /**
@@ -111,6 +141,8 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity {
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 25; // Cada 1.25 segundos
 
+        this.triggerAnim("attack_controller", "attack");
+
         Vec3 eyePos = this.getEyePosition();
         Vec3 targetPos = target.getEyePosition();
         Vec3 direction = targetPos.subtract(eyePos).normalize();
@@ -131,6 +163,8 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity {
      */
     private void performSpecialSkill() {
         this.specialSkillCooldown = 220; // ~11 segundos
+
+        this.triggerAnim("attack_controller", "special");
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.8F, 1.2F);
@@ -180,6 +214,8 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity {
      */
     private void performUltimate() {
         this.ultimateCooldown = 650; // ~32.7 segundos
+
+        this.triggerAnim("attack_controller", "special");
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 2.0F, 1.1F);

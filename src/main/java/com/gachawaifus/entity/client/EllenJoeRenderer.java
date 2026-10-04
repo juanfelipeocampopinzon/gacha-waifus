@@ -9,4 +9,9 @@ public class EllenJoeRenderer extends GeoEntityRenderer<EllenJoeEntity> {
         super(context, new EllenJoeModel());
         this.shadowRadius = 0.5F;
     }
+
+    @Override
+    public boolean shouldShowName(EllenJoeEntity animatable) {
+        return true;
+    }
 }

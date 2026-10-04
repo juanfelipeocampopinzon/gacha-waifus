@@ -50,6 +50,8 @@ public class EllenJoeEntity extends AbstractWaifuEntity implements GeoEntity {
     public EllenJoeEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§bEllen Joe"));
+        this.setCustomNameVisible(true);
     }
 
     @Override

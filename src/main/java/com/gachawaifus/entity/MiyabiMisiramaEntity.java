@@ -41,7 +41,17 @@ import java.util.List;
  *   - Frostfall Stance     : Cooldown 200tks, Invulnerability dash, 20 dmg, Slowness II + Weakness
  *   - Cherry Blossom Frost : Cooldown 700tks, AoE 10 blocks, 32 dmg, Slowness IV, Regen + Speed for owner
  */
-public class MiyabiMisiramaEntity extends AbstractWaifuEntity {
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int kitsuneSlashCooldown    = 0;
     private int frostfallStanceCooldown = 120; // Inicia casi listo
     private int cherryBlossomCooldown   = 360; // Inicia cargando
@@ -50,6 +60,27 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity {
     public MiyabiMisiramaEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§bHoshimi Miyabi"));
+        this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.miyabi.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.miyabi.special")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -121,6 +152,8 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity {
     private void performKitsuneSlash(LivingEntity target) {
         this.kitsuneSlashCooldown = 20;
 
+        this.triggerAnim("attack_controller", "attack");
+
         this.doHurtTarget(target);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0));
 
@@ -142,6 +175,8 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity {
      */
     private void performFrostfallStance(LivingEntity target) {
         this.frostfallStanceCooldown = 200;
+
+        this.triggerAnim("attack_controller", "special");
 
         // Invulnerabilidad temporal durante el dash
         this.setInvulnerable(true);
@@ -175,6 +210,8 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity {
      */
     private void performCherryBlossomFrost() {
         this.cherryBlossomCooldown = 700;
+
+        this.triggerAnim("attack_controller", "special");
 
         Level level = this.level();
         LivingEntity owner = this.getOwner();

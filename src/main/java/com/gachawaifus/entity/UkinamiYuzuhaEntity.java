@@ -37,6 +37,8 @@ public class UkinamiYuzuhaEntity extends AbstractWaifuEntity {
     public UkinamiYuzuhaEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§aUkinami Yuzuha"));
+        this.setCustomNameVisible(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
