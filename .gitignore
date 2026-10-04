@@ -10,3 +10,7 @@ out/
 .project
 .classpath
 .settings
+.eclipse/
+.vscode/
+COMANDOS_COMPILACION_*.txt
+RESUMEN_COMPILACION_*.txt

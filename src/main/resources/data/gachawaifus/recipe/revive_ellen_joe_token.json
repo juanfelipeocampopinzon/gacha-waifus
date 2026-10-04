@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    " D ",
+    "DCD",
+    " D "
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:diamond"
+    },
+    "C": {
+      "item": "gachawaifus:dormant_waifu_core"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "gachawaifus:ellen_joe_token"
+  }
+}

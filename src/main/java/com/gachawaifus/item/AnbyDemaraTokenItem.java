@@ -1,6 +1,6 @@
 package com.gachawaifus.item;
 
-import com.gachawaifus.entity.AstraYaoEntity;
+import com.gachawaifus.entity.AnbyDemaraEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,9 +20,9 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
-public class AstraYaoTokenItem extends Item {
+public class AnbyDemaraTokenItem extends Item {
 
-    public AstraYaoTokenItem(Properties properties) {
+    public AnbyDemaraTokenItem(Properties properties) {
         super(properties);
     }
 
@@ -35,14 +35,14 @@ public class AstraYaoTokenItem extends Item {
 
         Player player = context.getPlayer();
         if (player != null) {
-            // Verificar si el jugador ya tiene una Astra Yao activa en el mundo
+            // Verificar si el jugador ya tiene una Anby Demara activa en el mundo
             AABB searchArea = player.getBoundingBox().inflate(128.0D);
-            List<AstraYaoEntity> existing = level.getEntitiesOfClass(AstraYaoEntity.class, searchArea,
+            List<AnbyDemaraEntity> existing = level.getEntitiesOfClass(AnbyDemaraEntity.class, searchArea,
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
                 player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Astra Yao activa! Solo puedes tener 1 activa a la vez."
+                        "§c[GachaWaifus] ¡Ya tienes una Anby Demara activa! Solo puedes tener 1 activa a la vez."
                 ), true);
                 return InteractionResult.FAIL;
             }
@@ -52,17 +52,17 @@ public class AstraYaoTokenItem extends Item {
         Direction face = context.getClickedFace();
         BlockPos spawnPos = clickedPos.relative(face);
 
-        AstraYaoEntity astraYao = ModEntities.ASTRA_YAO.get().create(level);
-        if (astraYao != null) {
-            astraYao.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+        AnbyDemaraEntity anbyDemara = ModEntities.ANBY_DEMARA.get().create(level);
+        if (anbyDemara != null) {
+            anbyDemara.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                     player != null ? player.getYRot() : 0.0F, 0.0F);
 
             if (player != null) {
-                astraYao.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Astra Yao ha sido invocada!"), true);
+                anbyDemara.tame(player);
+                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Anby Demara ha sido invocada!"), true);
             }
 
-            level.addFreshEntity(astraYao);
+            level.addFreshEntity(anbyDemara);
 
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
             level.playSound(null, spawnPos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
@@ -88,7 +88,7 @@ public class AstraYaoTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("item.gachawaifus.astra_yao_token.desc"));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.anby_demara_token.desc"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

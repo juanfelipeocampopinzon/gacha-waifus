@@ -1,0 +1,32 @@
+{
+  "entity/burnice/attack": {
+    "subtitle": "Burnice slashes with a blade of fire!",
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/burnice/attack",
+        "volume": 1.5,
+        "pitch": 0.9
+      }
+    ]
+  },
+  "entity/burnice/flamethrower": {
+    "subtitle": "Burnice unleashes a devastating jet of flame!",
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/burnice/flamethrower",
+        "volume": 3.0,
+        "pitch": 1.1
+      }
+    ]
+  },
+  "entity/burnice/supernova": {
+    "subtitle": "SUPERNOVA! Burnice erupts with a blinding fire explosion!",
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/burnice/supernova",
+        "volume": 4.0,
+        "pitch": 1.2
+      }
+    ]
+  }
+}

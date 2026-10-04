@@ -1,6 +1,7 @@
 package com.gachawaifus.registry;
 
 import com.gachawaifus.GachaWaifusMod;
+import com.gachawaifus.registry.ModItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
@@ -12,13 +13,29 @@ public class ModCreativeTabs {
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, GachaWaifusMod.MODID);
 
+    /** Tab creativo principal del mod: ordenado por raridad (★5 → ★3) */
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> GACHA_TAB =
             CREATIVE_MODE_TABS.register("gacha_tab", () ->
                     CreativeModeTab.builder()
                             .title(Component.translatable("itemGroup.gachawaifus"))
                             .icon(() -> new ItemStack(ModItems.ASTRA_YAO_TOKEN.get()))
                             .displayItems((parameters, output) -> {
+                                // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz (Katana / Ice DPS)
+                                output.accept(ModItems.MIYABI_TOKEN.get());
+                                // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
+    // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
+                                output.accept(ModItems.YE_SHUNGUANG_TOKEN.get());
+                            output.accept(ModItems.NICOLE_DEMARA_TOKEN.get());
+                                // ★★★★☆ — Astra Yao: Estrellas de Lyra (Ether Support)
                                 output.accept(ModItems.ASTRA_YAO_TOKEN.get());
+                                // ★★★☆☆ — Ellen Joe: Victoria Housekeeping (Ice DPS)
+                                output.accept(ModItems.ELLEN_JOE_TOKEN.get());
+                                // ★★☆☆☆ — Burnice White: La Llama del Invierno (Fire/Ice Mage)
+                                output.accept(ModItems.BURNICE_WHITE_TOKEN.get());
+                                output.accept(ModItems.ANBY_DEMARA_TOKEN.get());
+                                output.accept(ModItems.UKINAMI_YUZUHA_TOKEN.get());
+                                output.accept(ModItems.PROMEIA_TOKEN.get());
+                                output.accept(ModItems.DORMANT_WAIFU_CORE.get());
                             })
                             .build());
 }

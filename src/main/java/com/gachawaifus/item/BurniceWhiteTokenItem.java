@@ -1,6 +1,6 @@
 package com.gachawaifus.item;
 
-import com.gachawaifus.entity.AstraYaoEntity;
+import com.gachawaifus.entity.BurniceWhiteEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,9 +20,9 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
-public class AstraYaoTokenItem extends Item {
+public class BurniceWhiteTokenItem extends Item {
 
-    public AstraYaoTokenItem(Properties properties) {
+    public BurniceWhiteTokenItem(Properties properties) {
         super(properties);
     }
 
@@ -35,14 +35,13 @@ public class AstraYaoTokenItem extends Item {
 
         Player player = context.getPlayer();
         if (player != null) {
-            // Verificar si el jugador ya tiene una Astra Yao activa en el mundo
             AABB searchArea = player.getBoundingBox().inflate(128.0D);
-            List<AstraYaoEntity> existing = level.getEntitiesOfClass(AstraYaoEntity.class, searchArea,
+            List<BurniceWhiteEntity> existing = level.getEntitiesOfClass(BurniceWhiteEntity.class, searchArea,
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
                 player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Astra Yao activa! Solo puedes tener 1 activa a la vez."
+                        "§c[GachaWaifus] ¡Ya tienes una Burnice White activa! Solo puedes tener 1 activa a la vez."
                 ), true);
                 return InteractionResult.FAIL;
             }
@@ -52,28 +51,28 @@ public class AstraYaoTokenItem extends Item {
         Direction face = context.getClickedFace();
         BlockPos spawnPos = clickedPos.relative(face);
 
-        AstraYaoEntity astraYao = ModEntities.ASTRA_YAO.get().create(level);
-        if (astraYao != null) {
-            astraYao.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+        BurniceWhiteEntity burniceWhite = ModEntities.BURNICE_WHITE.get().create(level);
+        if (burniceWhite != null) {
+            burniceWhite.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                     player != null ? player.getYRot() : 0.0F, 0.0F);
 
             if (player != null) {
-                astraYao.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Astra Yao ha sido invocada!"), true);
+                burniceWhite.tame(player);
+                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Burnice White ha sido invocada!"), true);
             }
 
-            level.addFreshEntity(astraYao);
+            level.addFreshEntity(burniceWhite);
 
+            level.playSound(null, spawnPos, SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 1.2F, 1.0F);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
-            level.playSound(null, spawnPos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
 
             if (level instanceof ServerLevel serverLevel) {
-                serverLevel.sendParticles(ParticleTypes.FLASH,
+                serverLevel.sendParticles(ParticleTypes.FLAME,
                         spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5,
-                        2, 0.2, 0.5, 0.2, 0.0);
-                serverLevel.sendParticles(ParticleTypes.NOTE,
-                        spawnPos.getX() + 0.5, spawnPos.getY() + 1.2, spawnPos.getZ() + 0.5,
-                        15, 0.6, 0.8, 0.6, 0.1);
+                        25, 0.4, 0.6, 0.4, 0.05);
+                serverLevel.sendParticles(ParticleTypes.LAVA,
+                        spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5,
+                        6, 0.2, 0.4, 0.2, 0.05);
             }
 
             if (player != null && !player.getAbilities().instabuild) {
@@ -88,7 +87,8 @@ public class AstraYaoTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("item.gachawaifus.astra_yao_token.desc"));
+        tooltipComponents.add(Component.literal("§7Invoca a §cBurnice White§7 (DPS de Fuego)."));
+        tooltipComponents.add(Component.literal("§8Sons of Calydon"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

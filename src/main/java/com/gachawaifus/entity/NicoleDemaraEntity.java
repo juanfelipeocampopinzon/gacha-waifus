@@ -36,23 +36,26 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public class AstraYaoEntity extends AbstractWaifuEntity {
-    private int normalAttackCooldown = 0;
-    private int specialSkillCooldown = 100; // Inicia casi listo
-    private int ultimateCooldown = 300;     // Inicia cargando
+public class NicoleDemaraEntity extends AbstractWaifuEntity {
 
-    public AstraYaoEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
+    private int normalAttackCooldown = 0;
+    private int specialSkillCooldown = 120; // Inicia casi listo (Ether Grenade)
+    private int ultimateCooldown = 400;     // Inicia cargando (Black Hole)
+
+    public NicoleDemaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
     }
 
+    /**
+     * Atributos: MAX_HEALTH = 95.0D, MOVEMENT_SPEED = 0.32D, ATTACK_DAMAGE = 8.0D, ARMOR = 8.0D
+     */
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, 100.0D)
+                .add(Attributes.MAX_HEALTH, 95.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.32D)
                 .add(Attributes.ATTACK_DAMAGE, 8.0D)
-                .add(Attributes.ARMOR, 10.0D)
-                .add(Attributes.FOLLOW_RANGE, 32.0D);
+                .add(Attributes.ARMOR, 8.0D);
     }
 
     @Override
@@ -86,22 +89,25 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
             // Mirar al objetivo
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
-            // Prioridad 1: Ultimate (Grand Finale Concert)
-            if (this.ultimateCooldown <= 0 && distanceSq <= 144.0D) { // 12 bloques
+            // Prioridad 1: Ultimate (Special Delivery - Black Hole)
+            if (this.ultimateCooldown <= 0 && distanceSq <= 484.0D) { // 22 bloques
                 performUltimate();
             }
-            // Prioridad 2: Special Skill (Vocal Solo)
-            else if (this.specialSkillCooldown <= 0 && distanceSq <= 64.0D) { // 8 bloques
+            // Prioridad 2: Special Skill (Ether Grenade)
+            else if (this.specialSkillCooldown <= 0 && distanceSq <= 196.0D) { // 14 bloques
                 performSpecialSkill();
             }
-            // Prioridad 3: Normal Attack (Ether Blast)
+            // Prioridad 3: Normal Attack (Sugarcoated Bullet)
             else if (this.normalAttackCooldown <= 0 && distanceSq <= 256.0D) { // 16 bloques
                 performNormalAttack(target);
             }
         }
     }
 
-    // 1. ATAQUE NORMAL: Ether Blast
+    /**
+     * 1. ATAQUE NORMAL: Sugarcoated Bullet - Disparo con maletín, 8 daño, partículas ENCHANTED_HIT y WITCH
+     * Cooldown: 25 ticks (1.25 segundos)
+     */
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 25; // Cada 1.25 segundos
 
@@ -109,7 +115,7 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
         Vec3 targetPos = target.getEyePosition();
         Vec3 direction = targetPos.subtract(eyePos).normalize();
 
-        EtherBlastEntity blast = new EtherBlastEntity(this.level(), this, 9.0F);
+        EtherBlastEntity blast = new EtherBlastEntity(this.level(), this, 8.0F);
         blast.setPos(eyePos.x, eyePos.y - 0.1, eyePos.z);
         blast.shoot(direction.x, direction.y, direction.z, 1.6F, 1.0F);
 
@@ -118,82 +124,113 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
                 SoundEvents.ALLAY_THROW, SoundSource.PLAYERS, 1.0F, 1.6F);
     }
 
-    // 2. HABILIDAD ESPECIAL: Vocal Solo (Onda de sonido, buffs a aliados y slow a enemigos)
+    /**
+     * 2. HABILIDAD ESPECIAL: Ether Grenade - Granada gravitatoria que atrae y daña enemigos
+     * Cooldown: 220 ticks (~11 segundos)
+     * Efectos: Daño de 14, atrae enemigos cercanos, aplica WEAKNESS
+     */
     private void performSpecialSkill() {
-        this.specialSkillCooldown = 280; // ~14 segundos
+        this.specialSkillCooldown = 220; // ~11 segundos
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.8F, 1.2F);
 
         if (this.getOwner() instanceof Player player) {
-            player.displayClientMessage(Component.translatable("message.gachawaifus.astra_yao_special"), true);
             // Buffs al jugador
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
         }
 
-        // Efectos en área
-        AABB aabb = this.getBoundingBox().inflate(6.0D);
-        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb);
-        for (LivingEntity e : nearby) {
-            if (e != this && e != this.getOwner() && (e instanceof Enemy || e == this.getTarget())) {
-                DamageSource source = this.damageSources().mobAttack(this);
-                e.hurt(source, 16.0F);
-                e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
+        // Efectos en área - atrae y daña enemigos
+        AABB aabb = this.getBoundingBox().inflate(8.0D);
+        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
+                e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
 
-                // Empuje sónico
-                Vec3 push = e.position().subtract(this.position()).normalize().scale(0.8D);
-                e.push(push.x, 0.3D, push.z);
-            }
+        for (LivingEntity e : nearby) {
+            DamageSource source = this.damageSources().mobAttack(this);
+            e.hurt(source, 14.0F);
+
+            // Efecto de debilidad (Weakness)
+            e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
+
+            // Empuje gravitatorio hacia el centro (efecto atraente)
+            Vec3 center = this.position();
+            Vec3 push = center.subtract(e.position()).normalize().scale(0.5D);
+            e.push(push.x, 0.1F, push.z);
         }
 
-        // Partículas sónicas
+        // Partículas gravitatorias
         if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.SONIC_BOOM,
+            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
                     this.getX(), this.getY() + 1.0, this.getZ(),
-                    1, 0, 0, 0, 0);
-            serverLevel.sendParticles(ParticleTypes.NOTE,
+                    8, 1.0, 0.5, 1.0, 0.3);
+            serverLevel.sendParticles(ParticleTypes.WITCH,
                     this.getX(), this.getY() + 1.2, this.getZ(),
-                    12, 1.5, 0.5, 1.5, 0.2);
+                    6, 1.2, 0.8, 1.2, 0.4);
         }
     }
 
-    // 3. ULTIMATE: Grand Finale Concert (Detonación masiva de Éter)
+    /**
+     * 3. ULTIMATE: Special Delivery - Black Hole (Vórtice Gravitatorio)
+     * Cooldown: 650 ticks (~32.7 segundos)
+     * Efectos:
+     * - Vórtice de 10 bloques que atrae y daña enemigos (26 daño mágico)
+     * - Aplica SLOWDOWN II a todos los enemigos afectados
+     * - Buffea al jugador (owner): REGENERATION I (15s), LUCK I
+     */
     private void performUltimate() {
-        this.ultimateCooldown = 700; // ~35 segundos
+        this.ultimateCooldown = 650; // ~32.7 segundos
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 2.0F, 1.1F);
 
         if (this.getOwner() instanceof Player player) {
-            player.displayClientMessage(Component.translatable("message.gachawaifus.astra_yao_ultimate"), true);
-            // Curación masiva y escudos
-            player.heal(20.0F);
-            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1));
-            player.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 400, 2));
-            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
+            player.sendSystemMessage(Component.literal("§d[Nicole Demara] §o\"¡Todo tiene un precio... y ustedes acaban de pagar la cuenta!\""));
+            // Curación y buffs al dueño
+            player.heal(30.0F);
+            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 280, 0)); // 14s
+            player.addEffect(new MobEffectInstance(MobEffects.LUCK, 400, 1));
         }
 
-        // Daño masivo a todos los hostiles en 10 bloques
+        // Daño masivo a todos los hostiles en un área de 10 bloques
         AABB aabb = this.getBoundingBox().inflate(10.0D);
-        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb);
+        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
+                e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
+
         for (LivingEntity e : nearby) {
-            if (e != this && e != this.getOwner() && (e instanceof Enemy || e == this.getTarget())) {
-                DamageSource source = this.damageSources().magic();
-                e.hurt(source, 38.0F);
-                e.addEffect(new MobEffectInstance(MobEffects.GLOWING, 160, 0));
-                e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 160, 1));
-            }
+            DamageSource source = this.damageSources().magic();
+            e.hurt(source, 26.0F); // 26 daño mágico
+            e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 280, 1));
+
+            // Atracción gravitatoria al centro
+            Vec3 center = this.position();
+            Vec3 pull = center.subtract(e.position()).normalize().scale(0.8D);
+            e.setDeltaMovement(pull.x, 0.2D, pull.z);
+
+            this.level().playSound(null, e.getX(), e.getY(), e.getZ(),
+                    SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.PLAYERS, 1.0F, 1.4F);
         }
 
-        // Espectáculo visual de partículas
+        // Espectáculo visual cinemático - partículas de vórtice y flash
         if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.TOTEM_OF_UNDYING,
-                    this.getX(), this.getY() + 1.5, this.getZ(),
-                    40, 2.0, 1.0, 2.0, 0.4);
+            // Vórtice gravitatorio en el centro
+            for (int i = 0; i < 20; i++) {
+                double angle = (i * Math.PI / 10.0);
+                double px = this.getX() + 6.0 * Math.cos(angle);
+                double pz = this.getZ() + 6.0 * Math.sin(angle);
+                serverLevel.sendParticles(ParticleTypes.PORTAL,
+                        px, this.getY() + 1.0, pz,
+                        4, 0.2, 0.5, 0.2, 0.1);
+            }
+
+            // Flash de luz en el centro
             serverLevel.sendParticles(ParticleTypes.FLASH,
-                    this.getX(), this.getY() + 1.0, this.getZ(),
+                    this.getX(), this.getY() + 1.5, this.getZ(),
                     3, 0.5, 0.5, 0.5, 0.0);
+
+            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                    this.getX(), this.getY() + 1.0, this.getZ(),
+                    40, 2.0F, 1.0F, 2.0F, 0.4F);
         }
     }
 

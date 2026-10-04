@@ -1,6 +1,6 @@
 package com.gachawaifus.item;
 
-import com.gachawaifus.entity.AstraYaoEntity;
+import com.gachawaifus.entity.EllenJoeEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -20,9 +20,9 @@ import net.minecraft.world.phys.AABB;
 
 import java.util.List;
 
-public class AstraYaoTokenItem extends Item {
+public class EllenJoeTokenItem extends Item {
 
-    public AstraYaoTokenItem(Properties properties) {
+    public EllenJoeTokenItem(Properties properties) {
         super(properties);
     }
 
@@ -35,14 +35,14 @@ public class AstraYaoTokenItem extends Item {
 
         Player player = context.getPlayer();
         if (player != null) {
-            // Verificar si el jugador ya tiene una Astra Yao activa en el mundo
+            // Restricción: No se pueden tener dos Ellens activas simultáneamente
             AABB searchArea = player.getBoundingBox().inflate(128.0D);
-            List<AstraYaoEntity> existing = level.getEntitiesOfClass(AstraYaoEntity.class, searchArea,
+            List<EllenJoeEntity> existing = level.getEntitiesOfClass(EllenJoeEntity.class, searchArea,
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
                 player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Astra Yao activa! Solo puedes tener 1 activa a la vez."
+                        "§c[GachaWaifus] ¡Ya tienes una Ellen Joe activa! Solo puedes tener 1 activa a la vez."
                 ), true);
                 return InteractionResult.FAIL;
             }
@@ -52,28 +52,28 @@ public class AstraYaoTokenItem extends Item {
         Direction face = context.getClickedFace();
         BlockPos spawnPos = clickedPos.relative(face);
 
-        AstraYaoEntity astraYao = ModEntities.ASTRA_YAO.get().create(level);
-        if (astraYao != null) {
-            astraYao.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
+        EllenJoeEntity ellenJoe = ModEntities.ELLEN_JOE.get().create(level);
+        if (ellenJoe != null) {
+            ellenJoe.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                     player != null ? player.getYRot() : 0.0F, 0.0F);
 
             if (player != null) {
-                astraYao.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Astra Yao ha sido invocada!"), true);
+                ellenJoe.tame(player);
+                player.displayClientMessage(Component.literal("§b[GachaWaifus] ¡Ellen Joe ha sido invocada!"), true);
             }
 
-            level.addFreshEntity(astraYao);
+            level.addFreshEntity(ellenJoe);
 
-            level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
-            level.playSound(null, spawnPos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.5F, 1.0F);
+            level.playSound(null, spawnPos, SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1.2F, 1.4F);
+            level.playSound(null, spawnPos, SoundEvents.POWDER_SNOW_FALL, SoundSource.PLAYERS, 1.5F, 1.0F);
 
             if (level instanceof ServerLevel serverLevel) {
+                serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
+                        spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5,
+                        25, 0.4, 0.6, 0.4, 0.05);
                 serverLevel.sendParticles(ParticleTypes.FLASH,
                         spawnPos.getX() + 0.5, spawnPos.getY() + 1.0, spawnPos.getZ() + 0.5,
-                        2, 0.2, 0.5, 0.2, 0.0);
-                serverLevel.sendParticles(ParticleTypes.NOTE,
-                        spawnPos.getX() + 0.5, spawnPos.getY() + 1.2, spawnPos.getZ() + 0.5,
-                        15, 0.6, 0.8, 0.6, 0.1);
+                        2, 0.1, 0.1, 0.1, 0.0);
             }
 
             if (player != null && !player.getAbilities().instabuild) {
@@ -88,7 +88,8 @@ public class AstraYaoTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.translatable("item.gachawaifus.astra_yao_token.desc"));
+        tooltipComponents.add(Component.literal("§7Invoca a §bEllen Joe§7 (DPS de Hielo)."));
+        tooltipComponents.add(Component.literal("§8Victoria Housekeeping Co."));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }
