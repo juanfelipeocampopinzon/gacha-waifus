@@ -25,3 +25,10 @@ Prototipo: Astra Yao con ataque normal de éter, habilidad especial acústica y 
     versionRange="[1.21.1,1.22)"
     ordering="NONE"
     side="BOTH"
+
+[[dependencies.gachawaifus]]
+    modId="geckolib"
+    type="required"
+    versionRange="[4.9,)"
+    ordering="NONE"
+    side="BOTH"

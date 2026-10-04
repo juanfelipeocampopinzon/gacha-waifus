@@ -43,9 +43,17 @@ sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     mavenLocal()
     mavenCentral()
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup("software.bernie.geckolib")
+        }
+    }
 }
 
 dependencies {
+    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.3"
 }
 
 tasks.withType(JavaCompile).configureEach {

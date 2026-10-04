@@ -31,7 +31,17 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public class EllenJoeEntity extends AbstractWaifuEntity {
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class EllenJoeEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120; // Inicia casi listo
     private int ultimateCooldown = 360;     // Inicia cargando
@@ -40,6 +50,25 @@ public class EllenJoeEntity extends AbstractWaifuEntity {
     public EllenJoeEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.ellen_joe.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.ellen_joe.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.ellen_joe.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.ellen_joe.special")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -110,6 +139,7 @@ public class EllenJoeEntity extends AbstractWaifuEntity {
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 20; // Cooldown de 1 segundo
 
+        this.triggerAnim("attack_controller", "attack");
         this.doHurtTarget(target);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0));
 
@@ -130,6 +160,8 @@ public class EllenJoeEntity extends AbstractWaifuEntity {
      */
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 200; // Cooldown de 10 segundos
+
+        this.triggerAnim("attack_controller", "special");
 
         // Invulnerabilidad temporal durante el dash de la embestida tiburón
         this.setInvulnerable(true);
