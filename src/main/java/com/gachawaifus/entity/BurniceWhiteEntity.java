@@ -31,7 +31,17 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
-public class BurniceWhiteEntity extends AbstractWaifuEntity {
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
     private int ultimateCooldown = 360;
@@ -40,6 +50,27 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity {
     public BurniceWhiteEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§cBurnice White"));
+        this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.burnice_white.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.burnice_white.special")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -108,6 +139,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity {
      */
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 20;
+        this.triggerAnim("attack_controller", "attack");
 
         this.doHurtTarget(target);
         target.igniteForSeconds(3);
@@ -129,6 +161,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity {
      */
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 200;
+        this.triggerAnim("attack_controller", "special");
 
         this.setInvulnerable(true);
         this.invulnerableTicks = 25;

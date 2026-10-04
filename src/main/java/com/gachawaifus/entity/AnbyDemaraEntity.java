@@ -27,13 +27,45 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import java.util.List;
-public class AnbyDemaraEntity extends AbstractWaifuEntity {
+
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class AnbyDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
     private int ultimateCooldown = 360;
     public AnbyDemaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
+        this.setCustomName(Component.literal("§eAnby Demara"));
+        this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.anby_demara.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.anby_demara.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.anby_demara.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.anby_demara.special")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
@@ -78,6 +110,7 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity {
     }
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 20;
+        this.triggerAnim("attack_controller", "attack");
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 8, 0.3, 0.5, 0.3, 0.1);
@@ -86,6 +119,7 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity {
     }
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 200;
+        this.triggerAnim("attack_controller", "special");
         target.hurt(this.damageSources().mobAttack(this), 16.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 2));
         target.addEffect(new MobEffectInstance(MobEffects.GLOWING, 60, 0));
