@@ -36,6 +36,9 @@ public class ModCreativeTabs {
                                 output.accept(ModItems.UKINAMI_YUZUHA_TOKEN.get());
                                 output.accept(ModItems.PROMEIA_TOKEN.get());
                                 output.accept(ModItems.DORMANT_WAIFU_CORE.get());
+                                // — Utilidades: sistema gacha y almacén portátil
+                                output.accept(ModItems.GACHA_TERMINAL.get());
+                                output.accept(ModItems.WAIFU_CAPSULE.get());
                             })
                             .build());
 }

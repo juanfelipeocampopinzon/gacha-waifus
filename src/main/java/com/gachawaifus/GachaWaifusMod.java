@@ -19,12 +19,15 @@ import com.gachawaifus.entity.client.AnbyDemaraRenderer;
 import com.gachawaifus.entity.client.EtherBlastRenderer;
 import com.gachawaifus.entity.client.UkinamiYuzuhaRenderer;
 import com.gachawaifus.entity.client.PromeiaRenderer;
+import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.registry.ModCreativeTabs;
 import com.gachawaifus.registry.ModEntities;
 import com.gachawaifus.registry.ModItems;
+import com.gachawaifus.registry.ModMenuTypes;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 import net.neoforged.neoforge.event.entity.EntityAttributeCreationEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,9 +43,15 @@ public class GachaWaifusMod {
         ModEntities.ENTITY_TYPES.register(modEventBus);
         ModItems.ITEMS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
+        ModMenuTypes.MENU_TYPES.register(modEventBus);
 
         modEventBus.addListener(this::registerAttributes);
         modEventBus.addListener(this::registerRenderers);
+        modEventBus.addListener(this::registerScreens);
+    }
+
+    private void registerScreens(RegisterMenuScreensEvent event) {
+        event.register(ModMenuTypes.WAIFU_STORAGE.get(), WaifuStorageScreen::new);
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {

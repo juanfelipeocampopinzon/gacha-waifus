@@ -64,6 +64,7 @@
           "name": "left_side_root",
           "parent": "left_side_tail",
           "pivot": [3.8, 29.8, 0],
+          "rotation": [0, 0, -76],
           "cubes": [
             { "origin": [3.3, 27, -1.5], "size": [2.5, 3, 3], "uv": [16, 64] }
           ]
@@ -81,6 +82,7 @@
           "name": "right_side_root",
           "parent": "right_side_tail",
           "pivot": [-3.8, 29.8, 0],
+          "rotation": [0, 0, 76],
           "cubes": [
             { "origin": [-5.8, 27, -1.5], "size": [2.5, 3, 3], "uv": [48, 64] }
           ]

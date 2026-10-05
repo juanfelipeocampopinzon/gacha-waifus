@@ -5,12 +5,14 @@ import com.gachawaifus.item.AstraYaoTokenItem;
 import com.gachawaifus.item.BurniceWhiteTokenItem;
 import com.gachawaifus.item.DormantWaifuCoreItem;
 import com.gachawaifus.item.EllenJoeTokenItem;
+import com.gachawaifus.item.GachaTerminalItem;
 import com.gachawaifus.item.MiyabiMisiramaTokenItem;
 import com.gachawaifus.item.NicoleDemaraTokenItem;
 import com.gachawaifus.item.YeShunguangTokenItem;
 import com.gachawaifus.item.AnbyDemaraTokenItem;
 import com.gachawaifus.item.UkinamiYuzuhaTokenItem;
 import com.gachawaifus.item.PromeiaTokenItem;
+import com.gachawaifus.item.WaifuCapsuleItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -57,4 +59,12 @@ public class ModItems {
     /** ★★★★★ Promeia — Token de invocación */
     public static final DeferredHolder<Item, Item> PROMEIA_TOKEN =
             ITEMS.register("promeia_token", () -> new PromeiaTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Terminal Gacha — máquina de tiradas con diamantes (1 diamante = 1 tirada, Shift = x10) */
+    public static final DeferredHolder<Item, Item> GACHA_TERMINAL =
+            ITEMS.register("gacha_terminal", () -> new GachaTerminalItem(new Item.Properties().stacksTo(1)));
+
+    /** Cápsula Waifu — cofre portátil: guarda (Shift+clic) e invoca a tus waifus. La colección vive en el mundo. */
+    public static final DeferredHolder<Item, Item> WAIFU_CAPSULE =
+            ITEMS.register("waifu_capsule", () -> new WaifuCapsuleItem(new Item.Properties().stacksTo(1)));
 }
