@@ -37,6 +37,8 @@ public class ModCreativeTabs {
                                 output.accept(ModItems.UKINAMI_YUZUHA_TOKEN.get());
                                 output.accept(ModItems.PROMEIA_TOKEN.get());
                                 // — Utilidades: sistema gacha y cápsula (guardar / invocar / revivir)
+                                output.accept(ModItems.PINK_BALL.get());
+                                output.accept(ModItems.BLUE_BALL.get());
                                 output.accept(ModItems.GACHA_TERMINAL.get());
                                 output.accept(ModItems.WAIFU_CAPSULE.get());
                             })

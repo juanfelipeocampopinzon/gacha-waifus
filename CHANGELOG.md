@@ -4,6 +4,50 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.4.0] — 2026-10-06
+
+### 🔮 Bolitas de tirada en vez de diamantes
+Los tiros ya no se pagan con diamantes: ahora hay dos **bolitas**, dibujadas a partir de la imagen
+que mandaste (mismos colores: relleno `#FDA6F2`, banda `#F759C9`, brillo `#FEF9FE`, borde `#120D3B`).
+
+| Item | Qué es |
+|---|---|
+| **Bolita Rosa — Tirada** | la moneda del Gacha: **1 bolita = 1 tirada** (Shift + clic = x10) |
+| **Bolita Azul — Tirada** | reservada para más adelante; de momento no se gasta en nada |
+
+Las dos están en el **menú creativo**, con su modelo y su nombre en español e inglés.
+
+### 🧪 Receta de la Bolita Rosa (en cruz)
+```
+ . C .        C = lingote de cobre
+ L D I        L = lapislázuli
+ . O .        D = diamante (centro)
+              I = lingote de hierro
+              O = carbón
+```
+El diamante va **en el centro** y el cobre, lapislázuli, hierro y carbón **en las cuatro casillas de
+al lado**, en cruz. Da 1 bolita.
+
+### 📅 Tirada diaria
+Una **Bolita Rosa gratis cada día** de verdad (no cada día de Minecraft, que son 20 minutos):
+
+- **al entrar al mundo** te la dan sola si no la has reclamado hoy, con su mensajito y su sonido;
+- y con el comando **`/tirada`**, por si te quedas conectado y cambia el día sin reconectar.
+
+El día se guarda en los datos persistentes del jugador (sobreviven a la muerte), así que no necesita
+ningún archivo extra. Si ya la reclamaste, `/tirada` te lo dice.
+
+### 🔁 Terminal Gacha
+El terminal ahora cuenta y gasta **Bolitas Rosas** (antes diamantes) y su mensaje de error explica
+cómo conseguirlas. La **revive** de la Cápsula Waifu sigue costando **4 diamantes**, porque ahí el
+diamante tiene su gracia.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.4.0.jar`** · JSON de idiomas validados (45 y 46 claves) ·
+desplegado en Prism `1.21.1` y `.minecraft/mods`.
+
+---
+
 ## [3.3.3] — 2026-10-05
 
 ### 🫧 Física, reintentada y ahora sí con el ángulo bueno

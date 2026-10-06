@@ -56,9 +56,22 @@ public class ModItems {
     public static final DeferredHolder<Item, Item> PROMEIA_TOKEN =
             ITEMS.register("promeia_token", () -> new PromeiaTokenItem(new Item.Properties().stacksTo(1)));
 
-    /** Terminal Gacha — máquina de tiradas con diamantes (1 diamante = 1 tirada, Shift = x10) */
+    /** Terminal Gacha — máquina de tiradas con bolitas rojas (1 bolita = 1 tirada, Shift = x10) */
     public static final DeferredHolder<Item, Item> GACHA_TERMINAL =
             ITEMS.register("gacha_terminal", () -> new GachaTerminalItem(new Item.Properties().stacksTo(1)));
+
+    /**
+     * Bolita Rosa — una tirada del Gacha.
+     *
+     * <p>Se craftea en cruz: un diamante en el centro y cobre, lapislázuli, hierro y carbón en las
+     * cuatro casillas de al lado. Además el sistema de diarias regala una por día.
+     */
+    public static final DeferredHolder<Item, Item> PINK_BALL =
+            ITEMS.register("pink_ball", () -> new Item(new Item.Properties()));
+
+    /** Bolita Azul — tirada reservada para más adelante (todavía no se gasta en nada). */
+    public static final DeferredHolder<Item, Item> BLUE_BALL =
+            ITEMS.register("blue_ball", () -> new Item(new Item.Properties()));
 
     /** Cápsula Waifu — cofre portátil: guarda (Shift+clic) e invoca a tus waifus. La colección vive en el mundo. */
     public static final DeferredHolder<Item, Item> WAIFU_CAPSULE =

@@ -2,6 +2,7 @@ package com.gachawaifus.item;
 
 import com.gachawaifus.gacha.GachaSavedData;
 import com.gachawaifus.gacha.WaifuRoster;
+import com.gachawaifus.registry.ModItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -67,12 +68,14 @@ public class GachaTerminalItem extends Item {
         }
 
         int pulls = player.isShiftKeyDown() ? 10 : 1;
-        if (countDiamonds(player) < pulls) {
+        if (countPinkBalls(player) < pulls) {
             player.sendSystemMessage(Component.literal(
-                    "§c[GachaWaifus] Necesitas §f" + pulls + " diamante(s)§c para tirar (tienes " + countDiamonds(player) + ")."));
+                    "§c[GachaWaifus] Necesitas §f" + pulls + " Bolita(s) Rosa(s)§c para tirar (tienes " + countPinkBalls(player) + ")."
+                    + " §7Se craftean con un diamante en el centro y cobre, lapislázuli, hierro y carbón en cruz,"
+                    + " y cada día recibes una gratis al entrar."));
             return InteractionResultHolder.fail(stack);
         }
-        consumeDiamonds(player, pulls);
+        consumePinkBalls(player, pulls);
 
         List<String> foodNames = new ArrayList<>();
         int fiveStars = 0;
@@ -166,22 +169,23 @@ public class GachaTerminalItem extends Item {
         player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 
-    private int countDiamonds(Player player) {
+    /** Cuántas bolitas rojas lleva el jugador encima. */
+    private int countPinkBalls(Player player) {
         int count = 0;
         net.minecraft.world.entity.player.Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             ItemStack s = inv.getItem(i);
-            if (s.is(Items.DIAMOND)) count += s.getCount();
+            if (s.is(ModItems.PINK_BALL.get())) count += s.getCount();
         }
         return count;
     }
 
-    private void consumeDiamonds(Player player, int amount) {
+    private void consumePinkBalls(Player player, int amount) {
         int remaining = amount;
         net.minecraft.world.entity.player.Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize() && remaining > 0; i++) {
             ItemStack s = inv.getItem(i);
-            if (s.is(Items.DIAMOND)) {
+            if (s.is(ModItems.PINK_BALL.get())) {
                 int take = Math.min(s.getCount(), remaining);
                 s.shrink(take);
                 remaining -= take;
