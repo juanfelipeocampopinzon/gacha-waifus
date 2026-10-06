@@ -28,6 +28,12 @@ public class GachaTerminalItem extends Item {
     private static final int SOFT_PITY_START = 50;
     private static final int HARD_PITY = 64;
 
+    /**
+     * Probabilidad de <b>tirada doble</b>: cuando sale un 5★, hay este porcentaje de que caiga
+     * ADEMÁS la waifu siguiente de la rotación (dos de golpe). Subirlo o bajarlo aquí.
+     */
+    private static final float DOUBLE_CHANCE = 0.15F;
+
     private static final List<FoodPrize> FOOD_TABLE = List.of(
             new FoodPrize(Items.COOKIE, 5),
             new FoodPrize(Items.BREAD, 4),
@@ -61,10 +67,18 @@ public class GachaTerminalItem extends Item {
         GachaSavedData data = GachaSavedData.get(level);
         GachaSavedData.PlayerState state = data.state(player.getUUID());
 
+        if (WaifuRoster.anyUnowned(player) == null) {
+            // Colección completa: NO se cobra nada ni se toca la pity. Tener a la destacada nunca
+            // bloquea (antes bloqueaba todas las tiradas y el terminal quedaba inservible).
+            player.sendSystemMessage(Component.literal(
+                    "§e[GachaWaifus] Ya tienes a §f" + WaifuRoster.ROTATION.size()
+                            + "§e waifus: la colección está completa. No se gastan bolitas."));
+            return InteractionResultHolder.fail(stack);
+        }
         if (WaifuRoster.owns(player, featured)) {
             player.sendSystemMessage(Component.literal(
-                    "§e[GachaWaifus] Ya tienes a §f" + featured.name() + "§e. La destacada cambia cada día de Minecraft — vuelve mañana."));
-            return InteractionResultHolder.fail(stack);
+                    "§7[GachaWaifus] Ya tienes a §f" + featured.name()
+                            + "§7: si sale un 5★ te dará otra que no tengas (o una copia de repuesto)."));
         }
 
         int pulls = player.isShiftKeyDown() ? 10 : 1;
@@ -78,6 +92,7 @@ public class GachaTerminalItem extends Item {
         consumePinkBalls(player, pulls);
 
         List<String> foodNames = new ArrayList<>();
+        List<String> wonNames = new ArrayList<>();
         int fiveStars = 0;
         for (int i = 0; i < pulls; i++) {
             int pullNumber = state.pity + 1;
@@ -85,15 +100,28 @@ public class GachaTerminalItem extends Item {
             boolean fiveStar = pullNumber >= HARD_PITY || player.getRandom().nextDouble() < chance;
 
             if (fiveStar) {
-                fiveStars++;
                 WaifuRoster.Entry won = resolveFiveStar(player, featured, state);
-                state.pity = 0;
-                if (won != null) {
-                    giveToken(player, won);
-                    announceFiveStar(serverLevel, player, won, featured);
-                } else {
-                    // Colección completa a mitad de tirada múltiple: premio de comida
+                if (won == null) {
+                    // No queda nada por conseguir: se devuelve la tirada como comida y NO se toca
+                    // la pity (antes se reseteaba a 0 y se quemaba la garantía para nada).
+                    state.pity++;
                     giveFood(player, level.getRandom(), foodNames);
+                    continue;
+                }
+                fiveStars++;
+                state.pity = 0;
+                giveToken(player, won);
+                wonNames.add(won.name());
+                announceFiveStar(serverLevel, player, won, featured);
+
+                // Tirada DOBLE: un porcentaje de que caiga TAMBIÉN la siguiente de la rotación.
+                if (player.getRandom().nextFloat() < DOUBLE_CHANCE) {
+                    WaifuRoster.Entry bonus = WaifuRoster.next(won);
+                    if (bonus != null) {
+                        giveToken(player, bonus);
+                        wonNames.add(bonus.name());
+                        announceDouble(serverLevel, player, bonus);
+                    }
                 }
             } else {
                 state.pity++;
@@ -102,33 +130,53 @@ public class GachaTerminalItem extends Item {
         }
         data.setDirty();
 
+        // Resumen SIEMPRE, en x1 y en x10: antes una tirada simple con 5★ no decía nada.
         if (pulls > 1) {
             player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Tirada x10: §d" + fiveStars + "× 5★§7, §f" + foodNames.size() + " comidas§7. Pity: §b" + state.pity + "/64"));
+                    "§7[GachaWaifus] Tirada x10: §d" + fiveStars + "× 5★§7"
+                            + (wonNames.isEmpty() ? "" : " §f(" + String.join("§7, §f", wonNames) + ")§7")
+                            + ", §f" + foodNames.size() + " comida(s)§7. Pity: §b"
+                            + state.pity + "/" + HARD_PITY));
         } else if (fiveStars == 0) {
             player.sendSystemMessage(Component.literal(
                     "§7[GachaWaifus] " + featured.name() + " te cocinó: §f" + String.join("§7, §f", foodNames)
-                            + "§7. Pity: §b" + state.pity + "/64"));
+                            + "§7. Pity: §b" + state.pity + "/" + HARD_PITY));
+        } else {
+            player.sendSystemMessage(Component.literal(
+                    "§7[GachaWaifus] Pity: §b" + state.pity + "/" + HARD_PITY
+                            + (state.guaranteed ? "§7 · §e¡la próxima 5★ está garantizada!" : "")));
         }
         return InteractionResultHolder.consume(stack);
     }
 
     private WaifuRoster.Entry resolveFiveStar(Player player, WaifuRoster.Entry featured, GachaSavedData.PlayerState state) {
         if (state.guaranteed) {
+            // Garantizada: la destacada, aunque ya la tengas (se entrega como copia de repuesto).
             state.guaranteed = false;
-            return WaifuRoster.owns(player, featured) ? null : featured;
+            return featured;
         }
-        if (player.getRandom().nextBoolean()) {
-            return WaifuRoster.owns(player, featured) ? null : featured;
+        if (player.getRandom().nextBoolean() && !WaifuRoster.owns(player, featured)) {
+            return featured;
         }
-        // 50/50 perdido: cae una waifu no poseída (antes era Nicole fija como placeholder).
-        WaifuRoster.Entry consolation = WaifuRoster.anyUnowned(player);
-        if (consolation != null && !consolation.id().equals(featured.id())) {
+        // 50/50 perdido (o la destacada ya es tuya): cae otra que no tengas, AL AZAR, y la próxima
+        // 5★ queda garantizada.
+        WaifuRoster.Entry consolation = WaifuRoster.randomUnowned(player, featured);
+        if (consolation != null) {
             state.guaranteed = true;
             return consolation;
         }
-        // Colección completa o solo falta la destacada: no se entrega duplicado.
-        return null;
+        // Colección completa: copia de repuesto de la destacada. Antes esto devolvía null y el 5★
+        // se convertía en comida, gastando el pity para nada.
+        return featured;
+    }
+
+    /** Aviso de que la tirada ha sido doble: además de la 5★, cae la siguiente de la rotación. */
+    private void announceDouble(ServerLevel level, Player player, WaifuRoster.Entry bonus) {
+        player.sendSystemMessage(Component.literal(
+                "§b§l★★ TIRADA DOBLE ★★ §r§f¡También cae §b" + bonus.name() + "§f!"));
+        level.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
+        level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(), 30, 0.6, 0.8, 0.6, 0.1);
+        level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.4F, 1.8F);
     }
 
     private void giveToken(Player player, WaifuRoster.Entry entry) {
@@ -169,7 +217,7 @@ public class GachaTerminalItem extends Item {
         player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.6F, 1.4F);
     }
 
-    /** Cuántas bolitas rojas lleva el jugador encima. */
+    /** Cuántas bolitas rojas lleva el jugador encima (inventario + mano secundaria). */
     private int countPinkBalls(Player player) {
         int count = 0;
         net.minecraft.world.entity.player.Inventory inv = player.getInventory();
@@ -177,6 +225,8 @@ public class GachaTerminalItem extends Item {
             ItemStack s = inv.getItem(i);
             if (s.is(ModItems.PINK_BALL.get())) count += s.getCount();
         }
+        ItemStack offhand = player.getOffhandItem();
+        if (offhand.is(ModItems.PINK_BALL.get())) count += offhand.getCount();
         return count;
     }
 
@@ -190,6 +240,10 @@ public class GachaTerminalItem extends Item {
                 s.shrink(take);
                 remaining -= take;
             }
+        }
+        ItemStack offhand = player.getOffhandItem();
+        if (remaining > 0 && offhand.is(ModItems.PINK_BALL.get())) {
+            offhand.shrink(Math.min(offhand.getCount(), remaining));
         }
     }
 

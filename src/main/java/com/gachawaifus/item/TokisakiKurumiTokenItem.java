@@ -3,10 +3,9 @@ package com.gachawaifus.item;
 import com.gachawaifus.color.ColorTooltip;
 import com.gachawaifus.color.WaifuColor;
 
-import com.gachawaifus.entity.PromeiaEntity;
+import com.gachawaifus.entity.TokisakiKurumiEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -22,8 +21,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import java.util.List;
 
-public class PromeiaTokenItem extends Item {
-    public PromeiaTokenItem(Properties properties) {
+public class TokisakiKurumiTokenItem extends Item {
+    public TokisakiKurumiTokenItem(Properties properties) {
         super(properties);
     }
 
@@ -34,26 +33,30 @@ public class PromeiaTokenItem extends Item {
 
         Player player = context.getPlayer();
         if (player != null) {
-            List<PromeiaEntity> existing = level.getEntitiesOfClass(PromeiaEntity.class,
+            List<TokisakiKurumiEntity> existing = level.getEntitiesOfClass(TokisakiKurumiEntity.class,
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
                 player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Promeia activa!"), true);
+                        "§c[GachaWaifus] ¡Ya tienes una Tokisaki Kurumi activa! Solo puedes tener 1 activa a la vez."), true);
                 return InteractionResult.FAIL;
             }
         }
 
         BlockPos spawnPos = context.getClickedPos().relative(context.getClickedFace());
-        PromeiaEntity entity = ModEntities.PROMEIA.get().create(level);
+        TokisakiKurumiEntity entity = ModEntities.TOKISAKI_KURUMI.get().create(level);
         if (entity != null) {
             entity.moveTo(spawnPos.getX() + 0.5D, spawnPos.getY(), spawnPos.getZ() + 0.5D,
                     player != null ? player.getYRot() : 0.0F, 0.0F);
-            if (player != null) entity.tame(player);
+            if (player != null) {
+                entity.tame(player);
+                player.displayClientMessage(Component.translatable("message.gachawaifus.tokisaki_kurumi_summoned"), true);
+            }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
             if (level instanceof ServerLevel sl) {
                 sl.sendParticles(ParticleTypes.FLASH, spawnPos.getX()+0.5, spawnPos.getY()+1.0, spawnPos.getZ()+0.5, 2, 0.2, 0.5, 0.2, 0.0);
+                sl.sendParticles(ParticleTypes.NOTE, spawnPos.getX()+0.5, spawnPos.getY()+1.2, spawnPos.getZ()+0.5, 12, 0.4, 0.6, 0.4, 0.3);
             }
             if (player != null && !player.getAbilities().instabuild) context.getItemInHand().shrink(1);
             return InteractionResult.CONSUME;
@@ -63,8 +66,9 @@ public class PromeiaTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.BLANCO);
-        tooltipComponents.add(Component.literal("§7Un token para invocar a la juez del Krampus Compliance Authority (Blanco)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.ROJO);
+        tooltipComponents.add(Component.literal("§7Invoca a §9Tokisaki Kurumi§7 (Rojo / Anomaly)."));
+        tooltipComponents.add(Component.literal("§8Shadow Strike · Temporal Stasis · Zafkiel: Clockwork Demon"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

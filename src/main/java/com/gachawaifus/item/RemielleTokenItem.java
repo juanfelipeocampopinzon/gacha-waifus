@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.RemielleEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -62,7 +65,8 @@ public class RemielleTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.literal("§7Invoca a §6Remielle§7 (Éter / Anomaly DPS)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);
+        tooltipComponents.add(Component.literal("§7Invoca a §6Remielle§7 (Negro / Anomaly DPS)."));
         tooltipComponents.add(Component.literal("§8Rainbow's End · Ode to Dawn · Dazzling Curtain Call"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

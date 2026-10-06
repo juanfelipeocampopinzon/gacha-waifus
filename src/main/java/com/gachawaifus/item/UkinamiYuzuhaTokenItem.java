@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.UkinamiYuzuhaEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -87,7 +90,8 @@ public class UkinamiYuzuhaTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.literal("§7Invoca a Ukinami Yuzuha, la pequeña tanuki del apoyo físico."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.VERDE);
+        tooltipComponents.add(Component.literal("§7Invoca a Ukinami Yuzuha, la pequeña tanuki del apoyo (Verde)."));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

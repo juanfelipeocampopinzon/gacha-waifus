@@ -13,6 +13,7 @@ import com.gachawaifus.item.UkinamiYuzuhaTokenItem;
 import com.gachawaifus.item.PromeiaTokenItem;
 import com.gachawaifus.item.WaifuCapsuleItem;
 import com.gachawaifus.item.RemielleTokenItem;
+import com.gachawaifus.item.TokisakiKurumiTokenItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -80,4 +81,8 @@ public class ModItems {
     /** Remielle — token de invocación */
     public static final DeferredHolder<Item, Item> REMIELLE_TOKEN =
             ITEMS.register("remielle_token", () -> new RemielleTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Tokisaki Kurumi — token de invocación */
+    public static final DeferredHolder<Item, Item> TOKISAKI_KURUMI_TOKEN =
+            ITEMS.register("tokisaki_kurumi_token", () -> new TokisakiKurumiTokenItem(new Item.Properties().stacksTo(1)));
 }

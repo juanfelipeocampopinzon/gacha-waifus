@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.AnbyDemaraEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -88,6 +91,7 @@ public class AnbyDemaraTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        ColorTooltip.append(tooltipComponents, WaifuColor.MORADO);
         tooltipComponents.add(Component.translatable("item.gachawaifus.anby_demara_token.desc"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

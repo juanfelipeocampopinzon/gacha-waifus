@@ -24,9 +24,16 @@ public class GachaSavedData extends SavedData {
 
     private final Map<UUID, PlayerState> players = new HashMap<>();
 
+    /**
+     * Estado del Gacha, SIEMPRE guardado en el Overworld.
+     *
+     * <p>Antes se usaba el nivel del jugador, y como cada dimensión tiene su propio almacén
+     * ({@code world/DIM-1/data/...}), el pity y la garantía se reiniciaban al tirar en el Nether
+     * o en el End. Con el Overworld fijo hay una sola pity por jugador y mundo.
+     */
     public static GachaSavedData get(Level level) {
-        ServerLevel serverLevel = (ServerLevel) level;
-        return serverLevel.getDataStorage().computeIfAbsent(
+        ServerLevel overworld = ((ServerLevel) level).getServer().overworld();
+        return overworld.getDataStorage().computeIfAbsent(
                 new SavedData.Factory<>(GachaSavedData::new, GachaSavedData::load, null), NAME);
     }
 

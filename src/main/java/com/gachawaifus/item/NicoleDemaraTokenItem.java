@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.NicoleDemaraEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -29,9 +32,10 @@ public class NicoleDemaraTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        ColorTooltip.append(tooltipComponents, WaifuColor.ROSA);
         tooltipComponents.add(Component.literal("★★★★☆ A-Rank — Nicole Demara").withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltipComponents.add(Component.literal("Líder de las Liebres Astutas (Cunning Hares)").withStyle(ChatFormatting.GOLD));
-        tooltipComponents.add(Component.literal("Elemento: Éter | Vórtice Gravitatorio").withStyle(ChatFormatting.WHITE));
+        tooltipComponents.add(Component.literal("Color: Rosa | Vórtice Gravitatorio").withStyle(ChatFormatting.WHITE));
         tooltipComponents.add(Component.translatable("item.gachawaifus.nicole_demara_token.desc").withStyle(ChatFormatting.GRAY));
     }
 

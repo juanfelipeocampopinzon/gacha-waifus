@@ -135,7 +135,10 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
             }
             return; // jamás super.clicked: los items display no se pueden tomar
         }
-        // resto de interacciones bloqueadas
+        // Cualquier otra interacción (los slots del inventario del jugador, QUICK_MOVE, etc.) va al
+        // comportamiento normal del contenedor: antes se tragaba todo y con la cápsula abierta no
+        // se podía mover nada del inventario.
+        super.clicked(slotId, button, clickType, player);
     }
 
     private boolean isSeparator(int slotId) {
@@ -151,7 +154,12 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
             return;
         }
 
-        spawnWaifu(entry, player, 1.0F);
+        if (!spawnWaifu(entry, player, 1.0F)) {
+            // Si la entidad no se ha podido crear, la waifu se queda en la cápsula (antes se
+            // borraba la entrada igualmente y se perdía sin haber invocado nada).
+            player.sendSystemMessage(Component.literal("§c[GachaWaifus] No se ha podido invocar a " + entry.name() + "."));
+            return;
+        }
         WaifuStorageSavedData.get(player.level()).remove(player.getUUID(), entry.id());
 
         ServerLevel serverLevel = (ServerLevel) player.level();
@@ -181,9 +189,12 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
                     "§c[GachaWaifus] El ritual necesita §f" + REVIVE_COST + " diamantes§c (tienes " + diamonds + ")."));
             return;
         }
+        // Se invoca ANTES de cobrar: si la entidad no se puede crear, no se gastan los diamantes.
+        if (!spawnWaifu(entry, player, 0.5F)) {
+            player.sendSystemMessage(Component.literal("§c[GachaWaifus] No se ha podido revivir a " + entry.name() + "."));
+            return;
+        }
         consumeDiamonds(player, REVIVE_COST);
-
-        spawnWaifu(entry, player, 0.5F);
         WaifuStorageSavedData.get(player.level()).revive(player.getUUID(), entry.id());
 
         ServerLevel serverLevel = (ServerLevel) player.level();
@@ -198,10 +209,15 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         this.broadcastChanges();
     }
 
-    /** Crea y coloca la waifu 1.5 bloques frente al jugador, domesticada y con la vida indicada. */
-    private void spawnWaifu(WaifuRoster.Entry entry, Player player, float healthFraction) {
+    /**
+     * Crea y coloca la waifu 1.5 bloques frente al jugador, domesticada y con la vida indicada.
+     *
+     * @return {@code false} si la entidad no se ha podido crear (entonces quien llama NO debe
+     *         gastar diamantes ni borrar la entrada de la cápsula).
+     */
+    private boolean spawnWaifu(WaifuRoster.Entry entry, Player player, float healthFraction) {
         AbstractWaifuEntity waifu = entry.type().get().create(player.level());
-        if (waifu == null) return;
+        if (waifu == null) return false;
         double x = player.getX() + (-Math.sin(Math.toRadians(player.getYRot())) * 1.5);
         double z = player.getZ() + (Math.cos(Math.toRadians(player.getYRot())) * 1.5);
         waifu.moveTo(x, player.getY(), z, player.getYRot(), 0.0F);
@@ -209,7 +225,7 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         if (healthFraction < 1.0F) {
             waifu.setHealth(Math.max(1.0F, waifu.getMaxHealth() * healthFraction));
         }
-        player.level().addFreshEntity(waifu);
+        return player.level().addFreshEntity(waifu);
     }
 
     private int countDiamonds(Player player) {

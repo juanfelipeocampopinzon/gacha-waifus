@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.BurniceWhiteEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -87,7 +90,8 @@ public class BurniceWhiteTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.literal("§7Invoca a §cBurnice White§7 (DPS de Fuego)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);
+        tooltipComponents.add(Component.literal("§7Invoca a §cBurnice White§7 (Naranja / DPS)."));
         tooltipComponents.add(Component.literal("§8Sons of Calydon"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

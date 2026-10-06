@@ -4,6 +4,164 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.6.1] — 2026-10-06
+
+### 🚶 Miyabi y Burnice vuelven a caminar
+No era cosa de la 3.6.0: el fallback de la **pose neutra** en su segundo controlador de animación
+estaba ahí desde la 3.2.9. GeckoLib aplica los controladores **en orden y sin mezclar**, y el
+`attack_controller` se registra después del de movimiento, así que devolver la pose `rest` (un único
+keyframe a cero en piernas, brazos, cuerpo y cabeza) **pisaba la animación de caminar**: se
+calculaba y se borraba en el mismo fotograma. Solo les pasaba a ellas dos porque las otras cuatro
+devuelven `PlayState.STOP`.
+
+- **Miyabi**: la pose neutra solo manda **parada** (`ultimatePhase == 0 && !state.isMoving()`).
+- **Burnice**: caminando devuelve `PlayState.STOP` y manda el controlador de movimiento.
+
+De paso, `flame_rain` (que se disparaba sin estar declarado, así que se ignoraba) ya está
+registrado como animación disparable.
+
+### 🎰 Lógica del Gacha rectificada
+Auditoría completa de la lógica (tasas reales: **1,6 %** base, soft pity desde la **51** con +6 por
+tirada, **64** garantizada, media ~37 tiradas) y arreglo de lo que iba raro:
+
+| Lo que pasaba | Cómo queda |
+|---|---|
+| **Un 5★ podía no dar nada** y aun así resetear la pity y quemar la garantía (si el "consuelo" era la propia destacada) | Un 5★ **nunca sale vacío**: destacada → no poseída al azar → copia de repuesto. La pity solo se resetea cuando se entrega |
+| **Si ya tenías la destacada, el terminal se bloqueaba entero** (con la colección completa, muerto para siempre) | Tenerla **no bloquea**: solo avisa. Solo se bloquea con la colección **completa**, sin cobrar bolitas |
+| **La pity y la garantía eran por dimensión** (tirar en el Nether empezaba de cero) | Se guardan **siempre en el Overworld**: una sola pity por jugador y mundo (igual en la Cápsula: una waifu caída en el Nether ya aparece en el Overworld) |
+| El "consuelo" del 50/50 era **siempre la primera no poseída** (Miyabi, luego Ye...) | Se elige **al azar** entre las que faltan |
+| Un 5★ en tirada simple **no decía nada**; el resumen del x10 no cuadraba | Resumen **siempre**, con las waifus que cayeron y la pity; avisa cuando la próxima 5★ está garantizada |
+| `owns()` **ignoraba la cápsula** → duplicados al guardar una waifu | Cuenta también las guardadas y las caídas |
+| La bolita **en la mano secundaria no contaba** | Cuenta inventario + offhand |
+
+### 🎲 Tirada DOBLE (nuevo)
+Cuando sale un 5★ hay un **15 %** (`DOUBLE_CHANCE` en `GachaTerminalItem`) de que caiga **también la
+siguiente waifu de la rotación**, con su propio aviso y sonido.
+
+### 🧰 Extra: la cápsula ya no se come el inventario
+Con la cápsula abierta no se podía mover **nada** del inventario (el menú se tragaba los clics) y
+**invocar podía borrar la waifu** sin crearla. Ahora los clics de los slots del jugador van al
+comportamiento normal, y la waifu solo se quita de la cápsula (y los diamantes solo se cobran en el
+revive) **si la entidad se ha creado de verdad**.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · `validate_v5.py` **11/11** (ahora comprueba también que la textura de la pieza
+no esté invertida, celda a celda contra la skin) · desplegado en Prism `1.21.1` y `.minecraft/mods`.
+
+---
+
+## [3.6.0] — 2026-10-06
+
+### 🌈 El sistema de clasificación pasa de elementos a COLORES
+Los elementos de ZZZ (Fuego, Éter, Hielo…) eran solo texto en el tooltip: **no hacían nada**. Ahora
+cada waifu tiene un **color** sacado de su paleta (traje, pelo o poder) y los colores **sí tienen
+mecánica**. El **rol** (Attack/Support/Anomaly/Stun/Defense) se queda como estaba.
+
+| Waifu | Color | | Waifu | Color |
+|---|---|---|---|---|
+| Tokisaki Kurumi | 🔴 Rojo | | Anby Demara | 🟣 Morado |
+| Burnice White | 🟠 Naranja | | Nicole Demara | 🩷 Rosa |
+| Astra Yao | 🟡 Amarillo | | Ye Shunguang | 🟤 Marrón |
+| Ukinami Yuzuha | 🟢 Verde | | Remielle | ⚫ Negro |
+| Hoshimi Miyabi | 🔵 Azul | | Promeia | ⚪ Blanco |
+| | | | Ellen Joe | 🩶 Gris |
+
+### ⚔️ La matriz de daño
+Cada color hace **+33 % de daño a 3 colores** y **−33 % a otros 3**; los 4 restantes (y él mismo) son
+neutros. La rueda es `Rojo → Naranja → Amarillo → Verde → Azul → Morado → Rosa → Marrón → Negro →
+Blanco → Gris` y cada color pega fuerte a los que están 4, 5 y 6 pasos por delante.
+
+- **Es regular:** los 11 colores tienen 3 fuertes, 3 débiles y 4 neutros, y cada uno **recibe**
+  exactamente 3 bonos y 3 penalizaciones: ningún color es mejor que otro.
+- **La media no cambia:** 1.33 y 0.67 promedian 1.00, así que el daño medio del roster sigue igual.
+- Con 11 colores es imposible repartir 3+3 sin dejar 4 neutros: es estructural, no un descuido.
+- Lo comprueba un validador que lee el Java: `research/colors/validate_colors.py`.
+
+### 👹 Los enemigos salen con color aleatorio (y el daño recibido también cuenta)
+- Cada mob hostil recibe **1 de los 11 colores al azar**, derivado de su **UUID**: aleatorio por
+  aparición, **estable** al guardar el mundo, sin gastar NBT y sin necesitar sincronización.
+- **Se ve de dos formas:** una **etiqueta flotante** con el nombre del color encima del mob (≤24
+  bloques) y un **aura de partículas** de su color exacto. Además hay **avisos** en la barra de acción
+  al pegar fuerte/flojo y al recibirlo.
+- **Tu color es el de tu waifu activa** (la más cercana, radio 32): el color del enemigo también
+  modifica **el daño que tú y tus waifus recibís**.
+- Comandos: **`/gwcolor`** (color de lo que miras, o el tuyo) y **`/gwcolor list`** (los 11 colores con
+  su fuerte y su débil).
+- ⚠️ **Detalle técnico importante:** el color **no** se pone como nombre del mob. Un mob con nombre
+  propio **nunca desaparece** (`Mob.checkDespawn` no borra mobs con nombre), así que las granjas se
+  llenarían de mobs. Por eso el color va como **capa de render**, y el mob sigue siendo anónimo.
+
+### 🎌 Buff de Tokisaki Kurumi
+Su Especial hacía **5.0** de daño, la más baja del mod (banda del roster: 8-18). Ahora hace **10.0** y
+el stasis dura **100 ticks** (5 s) en vez de 60.
+
+### 🧹 Limpieza
+- Los tooltips de los **11 tokens** ya no dicen el elemento: muestran el **color con su hex**, contra
+  qué 3 colores pega fuerte (`+33 %`) y contra qué 3 pega flojo (`−33 %`), vía `ColorTooltip`.
+- Los `.desc` de los dos idiomas cambian el elemento por el color.
+
+### 🧪 Verificación
+- **Build:** `BUILD SUCCESSFUL` · Artifact **`gachawaifus-3.6.0.jar`** (276 KB).
+- **`validate_colors.py`:** 11 colores, matriz regular, roster con color y los 2 idiomas completos.
+- **`validate_v5.py`:** 11/11 piezas del pecho intactas · **`compare_originals.py`:** 0 píxeles dañados.
+- **`um publish check`:** PASS — 518 archivos, 0 fallos, 0 avisos.
+
+---
+
+## [3.5.0] — 2026-10-06
+
+### 🎌 Tokisaki Kurumi — la primera waifu que NO viene de un videojuego
+Kurumi (**Date A Live**, anime/light novel) entra al roster como undécima waifu. Como su obra no
+tiene kit de juego que copiar, su **set de movimientos se inventó** a partir de su canon (Zafkiel,
+el ángel del tiempo) siguiendo la **RAMA B** del meta-prompt `research/prompt`.
+
+| | |
+|---|---|
+| **Elemento / Rol** | Éter / Anomaly |
+| **Rareza** | ★★★★★ |
+| **Nametag** | `§9` azul (color nuevo: los 6 clásicos ya estaban ocupados) |
+| **Normal** | Shadow Strike |
+| **Especial** | Temporal Stasis |
+| **Ultimate** | Zafkiel: Clockwork Demon — *"I'll take your time."* |
+
+### 🧩 Hueco que cubre
+Es la primera waifu **de anime** del mod: el pipeline de personajes deja de estar atado a ZZZ.
+
+### 👗 Pieza del pecho (sección 3×3)
+Kurumi usa el modelo de jugador slim, así que la pieza va **horneada por código** con la capa
+`WaifuBustLayers.TUBE_BIG` (la grande), como Astra, Nicole, Remielle y Burnice. Su desplegado vive
+en `(0, 121)` de su skin 64×128 y copia el traje real de su pecho (negro/rojo con la ventana del
+escote). Su skin original queda guardada en `chicas/tokisaki-kurumi/`.
+
+### 🔧 Arreglos de la IA local y del script del pecho
+- **Error de compilación corregido:** el código generado importaba `net.minecraft.world.item.TooltipContext`,
+  una clase que **no existe** (ya estaba avisado en la Regla 12 del meta-prompt). Quitando ese `import`
+  la build pasa.
+- **`research/bust/tube_v5_sizes.py` ahora es idempotente:** al volver a correrlo, el desplegado de las
+  6 de GeckoLib se **mudaba** un cuadro (el hueco anterior ya no estaba transparente) y dejaba píxeles
+  viejos de basura. Ahora **reutiliza el UV del hueso `breasts`** si ya existe.
+- `validate_v5.py` coge **el jar más nuevo** de `build/libs` (antes estaba fijado a 3.3.3 y validaba un
+  jar viejo), `compare_originals.py` ya no revienta al dibujar la hoja de diferencias y
+  `mockup_tube_v5.py` refleja los tamaños reales (Astra es 3×3 desde hace varias versiones).
+- **Clave duplicada en `es_es.json`:** `item.gachawaifus.anby_demara_token` estaba dos veces, así que en
+  español el token de Anby mostraba el texto de ayuda como nombre y su descripción no existía. Corregida
+  a `.desc`; los dos idiomas quedan con **50 claves idénticas**.
+- La invocación de Kurumi usa ya `Component.translatable("message.gachawaifus.tokisaki_kurumi_summoned")`
+  (la clave existía en los dos idiomas pero el código la ignoraba con un literal hardcodeado).
+- **Meta-prompt (`research/prompt`):** bandas de daño explícitas por habilidad (Especial **8-18**,
+  Ultimate **28-45**) medidas sobre el roster, porque la Especial inventada de Kurumi salió con **5.0**
+  de daño, la más baja del mod. También: fila de Kurumi en la tabla del roster, colores ocupados al día
+  (`§9` pasa a ocupado; libres `§5, §2, §3, §4, §f, §8`), la nota de huecos de Éter corregida a 5, y la
+  línea `import net.minecraft.world.item.TooltipContext;` marcada como **prohibida** con un checklist de
+  cierre (el prompt generado para Kurumi traía los imports bien: el modelo local se inventó la línea igual).
+
+### 🧪 Verificación
+- **Build:** `BUILD SUCCESSFUL` · Artifact **`gachawaifus-3.5.0.jar`** (260 KB).
+- **`validate_v5.py`:** 11/11 · 0 choques de UV · todas las celdas pintadas.
+- **`compare_originals.py`:** **0 píxeles dañados** en las 11 skins.
+
+---
+
 ## [3.4.0] — 2026-10-06
 
 ### 🔮 Bolitas de tirada en vez de diamantes

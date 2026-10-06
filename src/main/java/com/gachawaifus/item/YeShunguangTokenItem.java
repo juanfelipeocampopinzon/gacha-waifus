@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.YeShunguangEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -29,9 +32,10 @@ public class YeShunguangTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        ColorTooltip.append(tooltipComponents, WaifuColor.MARRON);
         tooltipComponents.add(Component.literal("★★★★★ S-Rank — Ye Shunguang (Yixuan)").withStyle(ChatFormatting.LIGHT_PURPLE));
         tooltipComponents.add(Component.literal("Alto Preceptor de la Cumbre de Yunkui").withStyle(ChatFormatting.GRAY));
-        tooltipComponents.add(Component.literal("Elemento: Éter | Arte de Tinta Áurica").withStyle(ChatFormatting.WHITE));
+        tooltipComponents.add(Component.literal("Color: Marrón | Arte de Tinta Áurica").withStyle(ChatFormatting.WHITE));
         tooltipComponents.add(Component.translatable("item.gachawaifus.ye_shunguang_token.desc").withStyle(ChatFormatting.DARK_PURPLE));
     }
 

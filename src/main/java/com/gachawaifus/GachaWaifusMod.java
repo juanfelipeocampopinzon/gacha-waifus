@@ -21,6 +21,8 @@ import com.gachawaifus.entity.client.UkinamiYuzuhaRenderer;
 import com.gachawaifus.entity.client.PromeiaRenderer;
 import com.gachawaifus.entity.RemielleEntity;
 import com.gachawaifus.entity.client.RemielleRenderer;
+import com.gachawaifus.entity.TokisakiKurumiEntity;
+import com.gachawaifus.entity.client.TokisakiKurumiRenderer;
 import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.client.bust.WaifuBustLayers;
 import com.gachawaifus.registry.ModCreativeTabs;
@@ -92,6 +94,9 @@ public class GachaWaifusMod {
         event.put(ModEntities.PROMEIA.get(), PromeiaEntity.createAttributes().build());
         // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
         event.put(ModEntities.REMIELLE.get(), RemielleEntity.createAttributes().build());
+
+        // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
+        event.put(ModEntities.TOKISAKI_KURUMI.get(), TokisakiKurumiEntity.createAttributes().build());
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -118,5 +123,8 @@ public class GachaWaifusMod {
         event.registerEntityRenderer(ModEntities.PROMEIA.get(), com.gachawaifus.entity.client.PromeiaRenderer::new);
         // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
         event.registerEntityRenderer(ModEntities.REMIELLE.get(), RemielleRenderer::new);
+
+        // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
+        event.registerEntityRenderer(ModEntities.TOKISAKI_KURUMI.get(), TokisakiKurumiRenderer::new);
     }
 }

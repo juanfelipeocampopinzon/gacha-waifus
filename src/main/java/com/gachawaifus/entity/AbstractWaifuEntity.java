@@ -2,6 +2,8 @@ package com.gachawaifus.entity;
 
 import com.gachawaifus.bust.BustPhysics;
 import com.gachawaifus.bust.BustState;
+import com.gachawaifus.color.WaifuColor;
+import com.gachawaifus.color.WaifuColors;
 import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
 import net.minecraft.core.particles.ParticleTypes;
@@ -33,6 +35,22 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     public BustState bustState() {
         return this.bustState;
     }
+
+    /**
+     * Color de clasificación de esta waifu (el del sistema de colores). Se resuelve una sola vez
+     * por entidad y se guarda: lo llaman tanto el combate como el renderizado.
+     */
+    @Nullable
+    public WaifuColor waifuColor() {
+        if (this.cachedColor == null) {
+            this.cachedColor = WaifuColors.of(this.getType());
+        }
+        return this.cachedColor;
+    }
+
+    /** Color ya resuelto (o {@code null} si la waifu no está en la tabla de colores). */
+    @Nullable
+    private WaifuColor cachedColor;
 
     @Override
     public void tick() {

@@ -12,6 +12,7 @@ import com.gachawaifus.entity.AnbyDemaraEntity;
 import com.gachawaifus.entity.NicoleDemaraEntity;
 import com.gachawaifus.entity.UkinamiYuzuhaEntity;
 import com.gachawaifus.entity.RemielleEntity;
+import com.gachawaifus.entity.TokisakiKurumiEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -108,4 +109,12 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("remielle"));
+
+    /** Tokisaki Kurumi — "Time and Space" (Éter / Anomaly) */
+    public static final DeferredHolder<EntityType<?>, EntityType<TokisakiKurumiEntity>> TOKISAKI_KURUMI =
+            ENTITY_TYPES.register("tokisaki_kurumi", () ->
+                    EntityType.Builder.of(TokisakiKurumiEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("tokisaki_kurumi"));
 }

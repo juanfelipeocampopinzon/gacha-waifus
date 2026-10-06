@@ -93,10 +93,15 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> {
             // Sin habilidad activa se vuelve a la pose neutra (si el predicado se quedara en STOP,
             // la última pose de la ultimate —brazos abiertos tras el giro— se pegaría al caminar).
-            if (this.ultimatePhase == 0) {
+            //
+            // ⚠ Pero solo valiendo para PARADA: este controlador se registra DESPUÉS del de
+            // movimiento y GeckoLib aplica los controladores en orden sin mezclar, así que si
+            // devolviera la pose neutra también caminando, pisaría la animación de caminar y la
+            // waifu se deslizaría con las piernas rígidas (el fallo que reportó el usuario).
+            if (this.ultimatePhase == 0 && !state.isMoving()) {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.rest"));
             }
-            return PlayState.STOP; // durante la secuencia manda la animación disparada
+            return PlayState.STOP; // caminando manda "movement"; con habilidad, la animación disparada
         })
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.miyabi.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.miyabi.special"))

@@ -31,9 +31,17 @@ public class WaifuStorageSavedData extends SavedData {
     private final Map<UUID, List<String>> captured = new HashMap<>();
     private final Map<UUID, List<String>> fallen = new HashMap<>();
 
+    /**
+     * Almacén de waifus, SIEMPRE en el Overworld.
+     *
+     * <p>Antes se usaba el nivel del jugador y cada dimensión tiene su propio almacén
+     * ({@code world/DIM-1/data/...}): una waifu que caía en el Nether no aparecía en la cápsula
+     * del Overworld, y guardarla allí la "desaparecía". Con el Overworld fijo la colección es una
+     * sola por jugador y mundo.
+     */
     public static WaifuStorageSavedData get(Level level) {
-        ServerLevel serverLevel = (ServerLevel) level;
-        return serverLevel.getDataStorage().computeIfAbsent(
+        ServerLevel overworld = ((ServerLevel) level).getServer().overworld();
+        return overworld.getDataStorage().computeIfAbsent(
                 new SavedData.Factory<>(WaifuStorageSavedData::new, WaifuStorageSavedData::load, null), NAME);
     }
 

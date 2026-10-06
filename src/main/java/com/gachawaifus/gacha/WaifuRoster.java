@@ -33,9 +33,10 @@ public final class WaifuRoster {
     public static final Entry YUZUHA = new Entry("ukinami_yuzuha", () -> ModEntities.UKINAMI_YUZUHA.get(), () -> ModItems.UKINAMI_YUZUHA_TOKEN.get(), "Ukinami Yuzuha");
     public static final Entry PROMEIA = new Entry("promeia", () -> ModEntities.PROMEIA.get(), () -> ModItems.PROMEIA_TOKEN.get(), "Promeia");
     public static final Entry REMIELLE = new Entry("remielle", () -> ModEntities.REMIELLE.get(), () -> ModItems.REMIELLE_TOKEN.get(), "Remielle");
+    public static final Entry TOKISAKI_KURUMI = new Entry("tokisaki_kurumi", () -> ModEntities.TOKISAKI_KURUMI.get(), () -> ModItems.TOKISAKI_KURUMI_TOKEN.get(), "Tokisaki Kurumi");
 
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI);
 
     private WaifuRoster() {
     }
@@ -52,6 +53,17 @@ public final class WaifuRoster {
         return null;
     }
 
+    /**
+     * La waifu SIGUIENTE en la rotación (dando la vuelta al final). Se usa para la tirada doble:
+     * cuando un 5★ sale, hay una probabilidad de que caiga también la siguiente del roster.
+     */
+    @Nullable
+    public static Entry next(Entry entry) {
+        int i = ROTATION.indexOf(entry);
+        if (i < 0) return null;
+        return ROTATION.get((i + 1) % ROTATION.size());
+    }
+
     public static Entry byToken(Item item) {
         for (Entry e : ROTATION) {
             if (e.token().get() == item) return e;
@@ -60,24 +72,45 @@ public final class WaifuRoster {
     }
 
     /**
-     * "Consuelo" del 50/50: cualquier waifu de la rotación que el jugador aún no posea.
-     * Antes estaba fijado a Nicole Demara como placeholder, lo que hacía que el gacha
-     * dejara de aportar waifus nuevas al crecer el roster.
+     * "Consuelo" del 50/50: cualquier waifu de la rotación que el jugador aún no posea,
+     * elegida AL AZAR. Antes recorría la lista en orden fijo y devolvía siempre la primera que
+     * faltara (siempre Miyabi, luego siempre Ye Shunguang...), lo que hacía que la colección
+     * tendiera a ser un prefijo de la rotación.
      */
     @Nullable
     public static Entry anyUnowned(Player player) {
-        for (Entry e : ROTATION) {
-            if (!owns(player, e)) return e;
-        }
-        return null;
+        return randomUnowned(player, null);
     }
 
-    /** "Tenerla" = token en el inventario o entidad viva propia en un radio de 128 bloques. */
+    /**
+     * Una waifu no poseída al azar, excluyendo la indicada (normalmente la destacada, que ya se
+     * resuelve en el 50/50). Devuelve {@code null} solo si no queda ninguna por conseguir.
+     */
+    @Nullable
+    public static Entry randomUnowned(Player player, @Nullable Entry exclude) {
+        List<Entry> libres = new java.util.ArrayList<>();
+        for (Entry e : ROTATION) {
+            if (exclude != null && e.id().equals(exclude.id())) continue;
+            if (!owns(player, e)) libres.add(e);
+        }
+        if (libres.isEmpty()) return null;
+        return libres.get(player.getRandom().nextInt(libres.size()));
+    }
+
+    /**
+     * "Tenerla" = token en el inventario, entidad viva propia cerca, o guardada/caída en la
+     * Cápsula Waifu. Antes la cápsula no contaba, así que guardar una waifu hacía que el gacha la
+     * volviera a dar (duplicado) y una waifu caída parecía no poseída.
+     */
     public static boolean owns(Player player, Entry entry) {
         Item token = entry.token().get();
         net.minecraft.world.entity.player.Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             if (inv.getItem(i).is(token)) return true;
+        }
+        WaifuStorageSavedData storage = WaifuStorageSavedData.get(player.level());
+        if (storage.contains(player.getUUID(), entry.id()) || storage.isFallen(player.getUUID(), entry.id())) {
+            return true;
         }
         AABB box = player.getBoundingBox().inflate(128.0D);
         List<AbstractWaifuEntity> owned = player.level().getEntitiesOfClass(AbstractWaifuEntity.class, box,

@@ -99,6 +99,12 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
                         ? state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.flame_rain"))
                         : state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.flame_rest"));
             }
+
+            // ⚠ Caminando NO se devuelve la pose neutra: este controlador se registra después del
+            // de movimiento y GeckoLib los aplica en orden sin mezclar, así que la pose neutra
+            // pisaría la animación de caminar (piernas rígidas deslizándose, el fallo reportado).
+            if (state.isMoving()) return PlayState.STOP;
+
             // Sin habilidad activa: volver a la pose neutra de brazos (no a la última pose de la skill).
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.rest"));
         })
@@ -106,6 +112,8 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.burnice_white.special"))
                 // Lanzallamas sostenido (EX): se queda plantada y dispara el soplete de ambos brazos.
                 .triggerableAnim("flame_channel", RawAnimation.begin().thenPlay("animation.burnice_white.flame_channel"))
+                // Lluvia de fuego de la fase 2 de la ultimate (antes se disparaba sin declararlo).
+                .triggerableAnim("flame_rain", RawAnimation.begin().thenPlay("animation.burnice_white.flame_rain"))
                 // Ultimate aérea: salto -> lluvia de fuego mientras está en el aire.
                 .triggerableAnim("ultimate_leap", RawAnimation.begin().thenPlay("animation.burnice_white.leap")));
     }

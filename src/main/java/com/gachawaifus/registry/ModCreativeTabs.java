@@ -23,6 +23,8 @@ public class ModCreativeTabs {
                                 // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz (Katana / Ice DPS)
                                 output.accept(ModItems.MIYABI_TOKEN.get());
                                 output.accept(ModItems.REMIELLE_TOKEN.get());
+                                // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
+                                output.accept(ModItems.TOKISAKI_KURUMI_TOKEN.get());
                                 // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
     // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
                                 output.accept(ModItems.YE_SHUNGUANG_TOKEN.get());

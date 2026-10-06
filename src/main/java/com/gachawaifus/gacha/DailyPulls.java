@@ -52,6 +52,24 @@ public final class DailyPulls {
                     ServerPlayer player = context.getSource().getPlayerOrException();
                     return grantDaily(player, true) ? 1 : 0;
                 }));
+        // Consultar la destacada de hoy y el estado de la pity (antes no había forma de saberlo).
+        dispatcher.register(Commands.literal("banner")
+                .executes(context -> {
+                    ServerPlayer player = context.getSource().getPlayerOrException();
+                    WaifuRoster.Entry featured = WaifuRoster.featured(player.serverLevel());
+                    GachaSavedData.PlayerState state = GachaSavedData.get(player.level())
+                            .state(player.getUUID());
+                    player.sendSystemMessage(Component.literal(
+                            "§d[GachaWaifus] §fDestacada de hoy: §d" + featured.name()
+                                    + "§f. §7(rota cada día de Minecraft)"));
+                    player.sendSystemMessage(Component.literal(
+                            "§7Pity: §b" + state.pity + "§7/64"
+                                    + (state.guaranteed ? " §7· §e¡la próxima 5★ es la destacada!" : "")));
+                    boolean hoy = player.getPersistentData().getLong(KEY_LAST_DAY) >= LocalDate.now().toEpochDay();
+                    player.sendSystemMessage(Component.literal(
+                            "§7Tirada diaria: " + (hoy ? "§aya recogida hoy" : "§e¡disponible! usa §f/tirada")));
+                    return 1;
+                }));
     }
 
     /**

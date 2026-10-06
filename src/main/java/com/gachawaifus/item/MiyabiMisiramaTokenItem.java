@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.MiyabiMisiramaEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.ChatFormatting;
@@ -29,9 +32,10 @@ public class MiyabiMisiramaTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
+        ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
         tooltipComponents.add(Component.literal("★★★★★ S-Rank — Hoshimi Miyabi").withStyle(ChatFormatting.AQUA));
         tooltipComponents.add(Component.literal("La Dama de la Luz | Jefa de la Sección 6").withStyle(ChatFormatting.GRAY));
-        tooltipComponents.add(Component.literal("Elemento: Hielo | Katana Ancestral del Zorro").withStyle(ChatFormatting.WHITE));
+        tooltipComponents.add(Component.literal("Color: Azul | Katana Ancestral del Zorro").withStyle(ChatFormatting.WHITE));
         tooltipComponents.add(Component.translatable("item.gachawaifus.miyabi_token.desc").withStyle(ChatFormatting.DARK_AQUA));
     }
 

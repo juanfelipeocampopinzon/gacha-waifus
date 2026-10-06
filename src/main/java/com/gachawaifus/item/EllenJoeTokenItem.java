@@ -1,5 +1,8 @@
 package com.gachawaifus.item;
 
+import com.gachawaifus.color.ColorTooltip;
+import com.gachawaifus.color.WaifuColor;
+
 import com.gachawaifus.entity.EllenJoeEntity;
 import com.gachawaifus.registry.ModEntities;
 import net.minecraft.core.BlockPos;
@@ -88,7 +91,8 @@ public class EllenJoeTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        tooltipComponents.add(Component.literal("§7Invoca a §bEllen Joe§7 (DPS de Hielo)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
+        tooltipComponents.add(Component.literal("§7Invoca a §bEllen Joe§7 (Gris / DPS)."));
         tooltipComponents.add(Component.literal("§8Victoria Housekeeping Co."));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
