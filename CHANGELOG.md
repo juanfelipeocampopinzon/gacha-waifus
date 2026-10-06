@@ -4,6 +4,57 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.3.0] — 2026-10-05
+
+### 💗 Astra Yao, un cuadro más grande
+Astra pasa a **sección 3×3** (como Nicole, Remielle y Burnice): su pieza crece un cuadro hacia
+arriba, con banda frontal de 8 × 4,24. En las de modelo de jugador eso es cambiar su renderer a
+`WaifuBustLayers.TUBE_BIG` y volver a pintar su trozo de skin.
+
+### 🕳️ Nicole: el agujero negro de verdad (kit real de ZZZ)
+Se revisó su kit en internet y **el que ya trae el juego no era coherente con el personaje**:
+
+| Real (ZZZ) | Qué es | Cómo estaba en el mod |
+|---|---|---|
+| Basic Attack "Cunning Combo" | 3 golpes físicos | — (el mod usa un disparo a distancia) |
+| Special "Sugarcoated Bullet" | disparo Éter a distancia | estaba como **ataque normal** |
+| **EX Special "Stuffed Sugarcoated Bullet"** | **campo de energía que atrae a los enemigos al centro y hace daño Éter por ticks** | una explosión instantánea de 14 💥 |
+| Chain "Ether Shellacking" | golpe + campo atractor | — |
+| **Ultimate "Ether Grenade"** | **el mismo campo pero mucho más potente** (~1416 % vs ~915 %) + Energía al equipo | una explosión instantánea de 26 💥 |
+
+Ahora, como en el personaje:
+
+- **EX Special** (`blackhole_ex`): abre un **vórtice sobre el objetivo** que **atrae** a los enemigos
+  al centro y les hace **2,5 de daño cada 0,5 s durante 6 s** (radio 8), con debilidad encima
+  (que aquí representa su rotura de DEF). Cooldown 11 s.
+- **Ultimate** (`blackhole_ult`): **el mismo campo, más potente** — radio 12, **4 de daño cada
+  0,5 s durante 8 s**, lentitud y el fogonazo final, además de curar y buffear al dueño. Cooldown 32,7 s.
+- El campo **se queda actuando** aunque Nicole se mueva o pierda el objetivo, va dibujando un
+  vórtice de partículas que **cierra hacia el centro** y empuja a los enemigos cada tick (con
+  `hurtMarked` para que el cliente reciba el tirón).
+
+### 🎬 Animaciones nuevas para Nicole
+Dos animaciones propias en `nicole_demara.animation.json` (antes la ultimate reutilizaba la del
+especial, que es el mismo fallo que tenía Miyabi con la katana):
+
+- `blackhole_ex` (1,2 s): lanza con el maletín-cañón y canaliza con las dos manos al frente, con
+  tembleque y el pelo hacia atrás.
+- `blackhole_ult` (1,9 s): abre los brazos, remata hacia delante y mantiene el vórtico más tiempo,
+  con coletas y pelo volando.
+
+### 📖 Manual
+Nueva **sección 8** de `research/manual-pieza-pecho.md`: reglas para que una futura IA haga
+texturas de un modelo GeckoLib **sin dañar lo que ya hay** (la skin original de 64×64 es intocable,
+lo nuevo va en la mitad de abajo o en zonas transparentes, hay que mirar **todos** los cubos del
+modelo antes de pintar, y cómo comprobarlo y repararlo con `compare_originals.py` /
+`restore_originals.py`).
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · `validate_v5.py`: 10/10 · 0 clases de físicas · desplegado en Prism `1.21.1` y
+`.minecraft/mods` · **cambios guardados en git** (`23d2e05` en `origin/main`).
+
+---
+
 ## [3.2.9] — 2026-10-05
 
 ### 🔁 Intercambio de franjas, resuelto (ahora sí)

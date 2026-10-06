@@ -55,8 +55,32 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
     private static final double ULTIMATE_RADIUS = 14.0D;
 
     private int normalAttackCooldown = 0;
-    private int specialSkillCooldown = 120; // Inicia casi listo (Ether Grenade)
-    private int ultimateCooldown = 400;     // Inicia cargando (Black Hole)
+    private int specialSkillCooldown = 120; // Inicia casi listo (EX: campo de energia)
+    private int ultimateCooldown = 400;     // Inicia cargando (Ultimate: Ether Grenade)
+
+    // --- Agujero negro / campo de energia activo (Kit real de ZZZ) -------------------
+    // El EX Special "Stuffed Sugarcoated Bullet" y la Ultimate "Ether Grenade" abren un
+    // campo de energia que ATRAE a los enemigos al centro y les hace dano Eter por TICKS
+    // mientras dura; la ultimate es el mismo campo pero mas grande y mas potente.
+    private int blackHoleTicks = 0;          // ticks que le quedan al campo
+    private int blackHoleDamageTimer = 0;    // cuenta atras para el siguiente tick de dano
+    private double blackHoleX;
+    private double blackHoleY;
+    private double blackHoleZ;
+    private double blackHoleRadius = 8.0D;
+    private float blackHoleDamage = 2.5F;    // dano de CADA tick
+    private boolean blackHoleUltimate = false;
+
+    /** Cada cuantos ticks pega el campo. */
+    private static final int BLACK_HOLE_DAMAGE_INTERVAL = 10;
+    /** Cuanto dura el campo del EX y el de la ultimate, en ticks. */
+    private static final int BLACK_HOLE_EX_TICKS = 120;
+    private static final int BLACK_HOLE_ULT_TICKS = 160;
+    /** Radios y dano por tick de cada uno. */
+    private static final double BLACK_HOLE_EX_RADIUS = 8.0D;
+    private static final float BLACK_HOLE_EX_DAMAGE = 2.5F;
+    private static final double BLACK_HOLE_ULT_RADIUS = 12.0D;
+    private static final float BLACK_HOLE_ULT_DAMAGE = 4.0F;
 
     public NicoleDemaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -76,7 +100,14 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
 
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.nicole_demara.attack"))
-                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nicole_demara.special")));
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nicole_demara.special"))
+                // Animaciones nuevas del agujero negro: el EX lanza el campo con el maletin y
+                // las dos manos, y la ultimate abre los brazos y remata manteniendo mas tiempo
+                // el vortice.
+                .triggerableAnim("blackhole_ex",
+                        RawAnimation.begin().thenPlay("animation.nicole_demara.blackhole_ex"))
+                .triggerableAnim("blackhole_ult",
+                        RawAnimation.begin().thenPlay("animation.nicole_demara.blackhole_ult")));
     }
 
     @Override
@@ -121,6 +152,11 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         if (this.specialSkillCooldown > 0) this.specialSkillCooldown--;
         if (this.ultimateCooldown > 0) this.ultimateCooldown--;
 
+        // El campo de energia sigue actuando aunque ella se mueva o pierda el objetivo.
+        if (!this.level().isClientSide && this.blackHoleTicks > 0) {
+            tickBlackHole();
+        }
+
         LivingEntity target = this.getTarget();
         if (target != null && target.isAlive() && !this.isOrderedToSit()) {
             double distanceSq = this.distanceToSqr(target);
@@ -128,11 +164,11 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             // Mirar al objetivo
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
-            // Prioridad 1: Ultimate (Special Delivery - Black Hole)
+            // Prioridad 1: Ultimate "Ether Grenade" (el campo mas potente)
             if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
                 performUltimate(target);
             }
-            // Prioridad 2: Special Skill (Ether Grenade)
+            // Prioridad 2: EX Special "Stuffed Sugarcoated Bullet" (campo de energia)
             else if (this.specialSkillCooldown <= 0 && distanceSq <= SPECIAL_RANGE * SPECIAL_RANGE) {
                 performSpecialSkill(target);
             }
@@ -166,71 +202,49 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
     }
 
     /**
-     * 2. HABILIDAD ESPECIAL: Ether Grenade - Granada gravitatoria que atrae y daña enemigos
-     * Cooldown: 220 ticks (~11 segundos)
-     * Efectos: Daño de 14, atrae enemigos cercanos, aplica WEAKNESS
-     * La granada aterriza donde está el objetivo, así que el alcance ampliado sirve de verdad.
+     * 2. EX SPECIAL: "Stuffed Sugarcoated Bullet" (Kit real de ZZZ) — campo de energia.
+     *
+     * Abre un vortice sobre el objetivo que ATRAE a los enemigos hacia el centro y les hace
+     * dano Eter por TICKS mientras dura (2,5 de dano cada 0,5 s durante 6 s). Aplica
+     * debilidad, que aqui hace de la rotura de DEF de su pasiva. Cooldown: 220 ticks.
      */
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 220; // ~11 segundos
 
-        this.triggerAnim("attack_controller", "special");
+        this.triggerAnim("attack_controller", "blackhole_ex");
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.8F, 1.2F);
+                SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1.6F, 1.3F);
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.4F, 1.2F);
 
         if (this.getOwner() instanceof Player player) {
-            // Buffs al jugador
+            // Es soporte: el campo tambien buffea al dueño.
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
         }
 
-        // Centro de la explosión: el objetivo (o Nicole si no hay objetivo válido).
+        // El campo se abre donde esta el objetivo, asi el alcance largo sirve de verdad.
         Vec3 center = (target != null ? target.position() : this.position());
-
-        // Efectos en área - atrae y daña enemigos
-        AABB aabb = new AABB(center, center).inflate(SPECIAL_RADIUS);
-        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
-                e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
-
-        for (LivingEntity e : nearby) {
-            DamageSource source = this.damageSources().mobAttack(this);
-            e.hurt(source, 14.0F);
-
-            // Efecto de debilidad (Weakness)
-            e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
-
-            // Empuje gravitatorio hacia el centro (efecto atraente)
-            Vec3 push = center.subtract(e.position()).normalize().scale(0.5D);
-            e.push(push.x, 0.1F, push.z);
-        }
-
-        // Partículas gravitatorias
-        if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    center.x, center.y + 1.0, center.z,
-                    8, 1.0, 0.5, 1.0, 0.3);
-            serverLevel.sendParticles(ParticleTypes.WITCH,
-                    center.x, center.y + 1.2, center.z,
-                    6, 1.2, 0.8, 1.2, 0.4);
-        }
+        openBlackHole(center, BLACK_HOLE_EX_RADIUS, BLACK_HOLE_EX_DAMAGE,
+                BLACK_HOLE_EX_TICKS, false);
     }
 
     /**
-     * 3. ULTIMATE: Special Delivery - Black Hole (Vórtice Gravitatorio)
-     * Cooldown: 650 ticks (~32.7 segundos)
-     * Efectos:
-     * - Vórtice que atrae y daña enemigos (26 daño mágico) alrededor del objetivo
-     * - Aplica SLOWDOWN II a todos los enemigos afectados
-     * - Buffea al jugador (owner): REGENERATION I (15s), LUCK I
+     * 3. ULTIMATE: "Ether Grenade" (Kit real de ZZZ) — el mismo campo pero mas potente.
+     *
+     * Mismo vortice que atrae y hace dano por ticks, con mas radio (12), mas dano por tick
+     * (4) y mas duracion (8 s), ademas de curar y buffear al dueño. Cooldown: 650 ticks.
      */
     private void performUltimate(LivingEntity target) {
         this.ultimateCooldown = 650; // ~32.7 segundos
 
-        this.triggerAnim("attack_controller", "special");
+        this.triggerAnim("attack_controller", "blackhole_ult");
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 2.0F, 1.1F);
+        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 2.0F, 0.8F);
 
         if (this.getOwner() instanceof Player player) {
             player.sendSystemMessage(Component.literal("§d[Nicole Demara] §o\"¡Todo tiene un precio... y ustedes acaban de pagar la cuenta!\""));
@@ -242,45 +256,100 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
 
         // El agujero negro se abre sobre el objetivo: alcance largo de verdad.
         Vec3 center = (target != null ? target.position() : this.position());
+        openBlackHole(center, BLACK_HOLE_ULT_RADIUS, BLACK_HOLE_ULT_DAMAGE,
+                BLACK_HOLE_ULT_TICKS, true);
+    }
 
-        // Daño masivo a todos los hostiles dentro del radio
-        AABB aabb = new AABB(center, center).inflate(ULTIMATE_RADIUS);
-        List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
+    /** Abre el campo de energia en un punto. */
+    private void openBlackHole(Vec3 center, double radius, float damage, int ticks, boolean ultimate) {
+        this.blackHoleX = center.x;
+        this.blackHoleY = center.y;
+        this.blackHoleZ = center.z;
+        this.blackHoleRadius = radius;
+        this.blackHoleDamage = damage;
+        this.blackHoleTicks = ticks;
+        this.blackHoleDamageTimer = BLACK_HOLE_DAMAGE_INTERVAL;
+        this.blackHoleUltimate = ultimate;
+
+        if (this.level() instanceof ServerLevel serverLevel) {
+            // Estallido de apertura
+            serverLevel.sendParticles(ParticleTypes.FLASH,
+                    center.x, center.y + 1.2, center.z, 3, 0.3, 0.3, 0.3, 0.0);
+            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                    center.x, center.y + 1.2, center.z, 40, 1.0, 1.0, 1.0, 0.25);
+        }
+    }
+
+    /**
+     * Avanza el campo de energia: atrae a los enemigos al centro, les hace dano cada
+     * {@link #BLACK_HOLE_DAMAGE_INTERVAL} ticks y dibuja el vortice.
+     */
+    private void tickBlackHole() {
+        this.blackHoleTicks--;
+        Vec3 center = new Vec3(this.blackHoleX, this.blackHoleY, this.blackHoleZ);
+
+        // Atraccion gravitatoria: cada tick empuja a los enemigos hacia el centro.
+        AABB area = new AABB(center, center).inflate(this.blackHoleRadius);
+        List<LivingEntity> atraidos = this.level().getEntitiesOfClass(LivingEntity.class, area,
                 e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
 
-        for (LivingEntity e : nearby) {
-            DamageSource source = this.damageSources().magic();
-            e.hurt(source, 26.0F); // 26 daño mágico
-            e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 280, 1));
-
-            // Atracción gravitatoria al centro
-            Vec3 pull = center.subtract(e.position()).normalize().scale(0.8D);
-            e.setDeltaMovement(pull.x, 0.2D, pull.z);
-
-            this.level().playSound(null, e.getX(), e.getY(), e.getZ(),
-                    SoundEvents.AMETHYST_BLOCK_HIT, SoundSource.PLAYERS, 1.0F, 1.4F);
+        boolean tocaDano = --this.blackHoleDamageTimer <= 0;
+        if (tocaDano) {
+            this.blackHoleDamageTimer = BLACK_HOLE_DAMAGE_INTERVAL;
         }
 
-        // Espectáculo visual cinemático - partículas de vórtice y flash
-        if (this.level() instanceof ServerLevel serverLevel) {
-            // Vórtice gravitatorio en el centro
-            for (int i = 0; i < 20; i++) {
-                double angle = (i * Math.PI / 10.0);
-                double px = center.x + 6.0 * Math.cos(angle);
-                double pz = center.z + 6.0 * Math.sin(angle);
-                serverLevel.sendParticles(ParticleTypes.PORTAL,
-                        px, center.y + 1.0, pz,
-                        4, 0.2, 0.5, 0.2, 0.1);
+        for (LivingEntity e : atraidos) {
+            Vec3 haciaCentro = center.subtract(e.position());
+            double distancia = haciaCentro.length();
+            if (distancia > 0.2D) {
+                // Cuanto mas lejos, mas fuerte tira; cerca del centro solo lo mantiene.
+                double fuerza = this.blackHoleUltimate ? 0.30D : 0.22D;
+                Vec3 pull = haciaCentro.normalize().scale(Math.min(fuerza, distancia * 0.25D));
+                e.push(pull.x, 0.02D, pull.z);
+                e.hurtMarked = true;   // que el cliente reciba el empujon
             }
 
-            // Flash de luz en el centro
-            serverLevel.sendParticles(ParticleTypes.FLASH,
-                    center.x, center.y + 1.5, center.z,
-                    3, 0.5, 0.5, 0.5, 0.0);
+            if (tocaDano) {
+                e.hurt(this.blackHoleUltimate ? this.damageSources().magic()
+                                : this.damageSources().indirectMagic(this, this),
+                        this.blackHoleDamage);
+                e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 80, 1));
+                if (this.blackHoleUltimate) {
+                    e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                }
+            }
+        }
 
-            serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    center.x, center.y + 1.0, center.z,
-                    40, 2.0F, 1.0F, 2.0F, 0.4F);
+        if (this.level() instanceof ServerLevel serverLevel) {
+            // Vortice: portales girando hacia dentro, mas densos en la ultimate.
+            int brazos = this.blackHoleUltimate ? 18 : 12;
+            double giro = (this.blackHoleTicks * 0.35D);
+            double cierre = 1.0D - (this.blackHoleTicks % 40) / 40.0D;   // va cerrándose
+            for (int i = 0; i < brazos; i++) {
+                double angulo = giro + i * (Math.PI * 2.0D / brazos);
+                double radio = this.blackHoleRadius * (0.35D + 0.65D * (1.0D - cierre));
+                serverLevel.sendParticles(ParticleTypes.PORTAL,
+                        center.x + Math.cos(angulo) * radio,
+                        center.y + 1.0D + Math.sin(giro + i) * 0.6D,
+                        center.z + Math.sin(angulo) * radio,
+                        2, 0.15, 0.15, 0.15, 0.02);
+            }
+            if (this.blackHoleTicks % 4 == 0) {
+                serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
+                        center.x, center.y + 1.2D, center.z, 10, 0.6, 0.6, 0.6, 0.1);
+                serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
+                        center.x, center.y + 1.0D, center.z, 6, 0.8, 0.5, 0.8, 0.15);
+            }
+
+            // Al cerrarse, un fogonazo final.
+            if (this.blackHoleTicks <= 0) {
+                serverLevel.sendParticles(ParticleTypes.FLASH,
+                        center.x, center.y + 1.2D, center.z, 2, 0.2, 0.2, 0.2, 0.0);
+                serverLevel.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
+                        center.x, center.y + 1.0D, center.z, 1, 0, 0, 0, 0);
+                this.level().playSound(null, this.blackHoleX, this.blackHoleY, this.blackHoleZ,
+                        SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.4F, 0.7F);
+            }
         }
     }
 

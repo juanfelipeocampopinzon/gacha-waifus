@@ -13,8 +13,8 @@ public class AstraYaoRenderer extends LivingEntityRenderer<AstraYaoEntity, Playe
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/astra_yao.png");
 
     public AstraYaoRenderer(EntityRendererProvider.Context context) {
-        // Modelo de jugador SLIM con el tubo del pecho horneado en su propia capa.
-        super(context, new PlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE), true), 0.5F);
+        // Modelo de jugador SLIM con la pieza del pecho (la grande) en su propia capa.
+        super(context, new PlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true), 0.5F);
     }
 
     @Override
