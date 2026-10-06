@@ -4,6 +4,34 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.3.2] — 2026-10-05
+
+### ↩️ Física deshecha: el fallo fue sobrescribir el giro de 45°
+La física de la 3.3.1 se quitó porque **no funcionó**: la pieza **no se movía** y además **perdía el
+ángulo de 45°** y se veía fuera de su sitio. El motivo era un fallo claro en mi código:
+
+```java
+bone.setRotX(sample.swayX());     // ❌ esto BORRA los 45° que trae el hueso del .geo.json
+bone.setRotX(45° + sample.swayX());  // ✅ así se conserva el ángulo base
+```
+
+El hueso `breasts` trae `rotation: [45, 0, 0]` en el `.geo.json` (y la capa de las de modelo de
+jugador su `PartPose.offsetAndRotation(..., 45°, 0, 0)`). Al asignar solo el balanceo, **se
+sobrescribía ese giro**: el rombo quedaba como una caja recta, mal colocada, y como el balanceo ronda
+cero no se veía movimiento. Lo mismo pasaba en las 4 de modelo de jugador.
+
+El mod vuelve a estar **exactamente como la 3.3.0** (pieza fija con su giro de 45°), revertido con
+`git revert` (`f38fdab`). Si se retoma, la regla es: **la física SUMA al giro base, nunca lo
+reemplaza** — y si algún día se quiere que la silueta se deforme de verdad (solo la punta, con las
+esquinas clavadas en el pecho), el camino es **dibujar la pieza a mano** cada fotograma con sus UVs,
+no las transformaciones de hueso.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.3.2.jar`** con **0 clases de físicas** · desplegado en
+Prism `1.21.1` y `.minecraft/mods`.
+
+---
+
 ## [3.3.0] — 2026-10-05
 
 ### 💗 Astra Yao, un cuadro más grande
