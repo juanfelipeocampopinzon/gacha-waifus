@@ -4,6 +4,41 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.3.1] — 2026-10-05
+
+### 🫧 Física de la pieza, pero con las puntas pegadas al pecho
+Tu idea era la buena: **si las puntas de arriba y abajo se quedan fijas y solo se mueve la punta
+del pecho, se ve natural**. Y resulta que se puede, porque el **pivote está justo en la cara
+delantera del torso** (z = −2): las puntas del rombo quedan a z = 0 respecto a ese pivote, así que
+al **escalar** el hueso se quedan exactamente apoyadas en el pecho.
+
+Antes no salía bien porque la física movía la **posición** del hueso (y eso despegaba la pieza, se
+veía flotando). Ahora solo se toca la **escala** y, como mucho, unos pocos grados:
+
+| Canal | Qué hace | Efecto |
+|---|---|---|
+| `tip` (escala Z) | la punta sale y entra | el pecho respira hacia delante sin despegarse |
+| `swell` (escala Y) | se hincha o se aplasta | las puntas resbalan por el pecho pero siguen apoyadas |
+| `swayX` / `swayZ` (±5°) | balanceo adelante/atrás y lateral | acompaña el arranque, el freno y los giros |
+
+Se mueve con la **aceleración real** (medida por desplazamiento por tick, que sí funciona en el
+cliente, a diferencia de `getDeltaMovement()`), más el ciclo de andar y una respiración muy leve.
+Aplica a las **10 waifus**: en las 6 de GeckoLib desde `BustBones.drive(...)` y en las 4 de modelo
+de jugador desde `WaifuBustPlayerModel`.
+
+**Para ajustarlo o quitarlo** (todo en `com/gachawaifus/bust/BustPhysics.java`): `TIP_RANGE`,
+`SWELL_RANGE`, `SWAY_DEGREES`, `STIFFNESS`, `DAMPING`, y **`ENABLED = false` deja la pieza
+completamente quieta**.
+
+El manual estrena una **sección 10** con el truco del pivote, para que ninguna IA vuelva a intentar
+la física moviendo la posición.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.3.1.jar`** (236 KB) · desplegado en Prism `1.21.1` y
+`.minecraft/mods`.
+
+---
+
 ## [3.3.0] — 2026-10-05
 
 ### 💗 Astra Yao, un cuadro más grande
