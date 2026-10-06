@@ -14,7 +14,7 @@ public class AstraYaoRenderer extends LivingEntityRenderer<AstraYaoEntity, Waifu
 
     public AstraYaoRenderer(EntityRendererProvider.Context context) {
         // Modelo de jugador SLIM con la pieza del pecho (la grande) en su propia capa.
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true), 0.5F);
+        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true, 3.0F), 0.5F);
     }
 
     @Override

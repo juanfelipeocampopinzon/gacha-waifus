@@ -4,6 +4,60 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.6.2] — 2026-10-06
+
+### 📏 La punta ahora se mueve en CUADROS (y se nota)
+Tenías razón: la deformación no se notaba en la punta. El problema era que los canales estaban en
+**escalas** (`1.0 ± tanto`) y la punta no está a la misma distancia del pivote en la pieza normal
+(2×2) que en la grande (3×3), así que el mismo número movía la punta una cantidad distinta en cada
+waifu y, con resortes duros, se quedaba en nada.
+
+Ahora la física pide **cuadros de modelo** (1 cuadro = 1 unidad = **1 píxel de skin**) y quien
+aplica convierte con el medio lado del rombo, que lee del propio cubo de la pieza:
+
+```
+escalaZ = 1 + cuadros / medioLado,   medioLado = sección × 0.7071
+→ 1 cuadro de petición = 1 cuadro de movimiento real en la punta, en las dos piezas
+```
+
+| Canal | Intervalo |
+|---|---|
+| Punta hacia fuera | **hasta 1 cuadro** (con un 10 % de rebote por la inercia) |
+| Punta hacia dentro | 0,35 cuadros |
+| Hinchazón vertical | ±0,30 cuadros |
+
+### 🌊 Movida por la inercia (y con velocidad propia)
+Los resortes son **blandos a propósito** (rigidez 30, freno 4,2) para que el movimiento **dure** y
+se vea el bamboleo en vez de un tirón seco, y lo que los mueve es la inercia real:
+
+| Inercia | Efecto |
+|---|---|
+| **Caída** (velocidad vertical) | la punta **flota hacia fuera** (1 bloque/tick de caída = 1 cuadro) |
+| **Aterrizaje** (frenazo) | la punta se mete y la pieza se aplasta |
+| **Caminar** (velocidad de avance) | la punta **se queda atrás**, más el vaivén del paso |
+| **Girar** | balanceo lateral suave |
+
+Comprobado con `research/bust/sim_physics.py`, que reproduce los resortes fuera del juego:
+
+```
+caida suave (-0.3 bl/tick)   punta +0.02..+0.38 cuadros
+caida fuerte (-1.0 bl/tick)  punta +0.08..+1.10 cuadros
+aterrizaje (frenazo)         punta -0.09..+0.37 cuadros
+caminar (bob del paso)       punta -0.16..+0.64 cuadros
+bamboleo libre tras un tirón de 1 cuadro: 10 cruces por cero y se apaga solo (no oscila sin fin)
+```
+
+**Para ajustarlo** (todo en `com/gachawaifus/bust/BustPhysics.java`): `TIP_OUT_UNITS` /
+`TIP_IN_UNITS` (el intervalo, en cuadros), `SWELL_UNITS`, `SWAY_DEGREES`, los multiplicadores
+`FALL_TO_UNITS`, `LAND_TO_UNITS`, `WALK_LAG_UNITS`, `STEP_UNITS`, `BREATH_UNITS`, y `STIFFNESS` /
+`DAMPING` (más bajos = bamboleo más largo). `ENABLED = false` la deja quieta.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.6.2.jar`** · `validate_v5.py` 11/11 (piezas y texturas) ·
+desplegado en Prism `1.21.1` y `.minecraft/mods`.
+
+---
+
 ## [3.6.1] — 2026-10-06
 
 ### 🚶 Miyabi y Burnice vuelven a caminar

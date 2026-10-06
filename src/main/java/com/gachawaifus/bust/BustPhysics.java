@@ -4,15 +4,20 @@ import com.gachawaifus.entity.AbstractWaifuEntity;
 import net.minecraft.util.Mth;
 
 /**
- * Fisica de la pieza del pecho: resortes sobre la ESCALA del hueso (no sobre su posicion),
- * que es lo que permite que las puntas de arriba y abajo del rombo no se despeguen del pecho.
+ * Fisica de la pieza del pecho: resortes sobre la ESCALA del hueso, con los canales medidos en
+ * <b>cuadros de modelo</b>, para que las puntas de arriba y abajo del rombo no se despeguen del
+ * pecho mientras solo se mueve la punta.
  *
  * <p>Se integra una vez por tick en el cliente y el render interpola con el partial tick.
- * Los mandos estan todos aqui arriba.
+ * Los mandos estan todos aqui:
  *
- * <p>En la v3.3.1 esto no funciono porque quien aplicaba los valores hacia
- * {@code setRotX(sway)}, borrando el giro base de 45 grados. Ahora la rotacion se SUMA al giro
- * base (ver {@code BustBones.BASE_TILT}) y los recorridos son mas amplios.
+ * <ul>
+ *   <li>{@link #TIP_OUT_UNITS} / {@link #TIP_IN_UNITS}: intervalo de la punta, en cuadros.</li>
+ *   <li>{@link #FALL_TO_UNITS} y compañía: cuanto mueve cada tipo de inercia.</li>
+ *   <li>{@link #STIFFNESS} y {@link #DAMPING}: rigidez y freno. Mas bajos = bamboleo mas largo
+ *       (mas inercia); mas altos = vuelve antes a su sitio.</li>
+ *   <li>{@link #ENABLED} en false deja la pieza completamente quieta.</li>
+ * </ul>
  */
 public final class BustPhysics {
 
@@ -22,24 +27,31 @@ public final class BustPhysics {
     /** Un tick, en segundos. */
     private static final double DT = 0.05D;
 
-    // --- cuanto se puede mover cada canal -------------------------------------------
-    private static final float TIP_RANGE = 0.55F;      // la punta sale/entra (escala Z)
-    private static final float SWELL_RANGE = 0.30F;    // se hincha/aplasta (escala Y)
-    private static final float SWAY_DEGREES = 8.0F;    // balanceo maximo
+    // --- intervalo de movimiento, en CUADROS (1 cuadro = 1 pixel de skin) ---------------
+    /** Cuanto puede salir la punta hacia delante. */
+    private static final float TIP_OUT_UNITS = 1.00F;
+    /** Cuanto puede meterse hacia dentro. */
+    private static final float TIP_IN_UNITS = 0.35F;
+    /** Cuanto se hincha (+) o se aplasta (-) en vertical. */
+    private static final float SWELL_UNITS = 0.30F;
+    /** Balanceo maximo, en grados. */
+    private static final float SWAY_DEGREES = 8.0F;
 
-    // --- multiplicadores de cada mando (mas grande = mas exagerado) -----------------
-    private static final double TIP_FROM_FALL = 0.030D;      // velocidad vertical
-    private static final double TIP_FROM_LANDING = 0.055D;   // frenazo al aterrizar
-    private static final double TIP_FROM_STEP = 0.150D;      // vaiven al andar
-    private static final double SWELL_FROM_FALL = 0.018D;
-    private static final double SWELL_FROM_LANDING = 0.065D;
-    private static final double SWELL_FROM_STEP = 0.070D;
-    private static final double SWAY_FROM_WALK = 3.2D;
-    private static final double SWAY_FROM_ACCEL = 1.2D;
-    private static final double SWAY_FROM_TURN = 0.16D;
+    // --- cuanto mueve cada inercia (los desplazamientos van en bloques por tick) --------
+    /** Caida: la punta flota hacia fuera. 1 bloque/tick de caida = 1 cuadro. */
+    private static final double FALL_TO_UNITS = 1.00D;
+    /** Frenazo del aterrizaje (aceleracion vertical): la punta se mete y la pieza se aplasta. */
+    private static final double LAND_TO_UNITS = 0.055D;
+    /** Avance: la punta se queda atras. */
+    private static final double WALK_LAG_UNITS = 1.60D;
+    /** Vaiven del paso (sube y baja dos veces por ciclo). */
+    private static final double STEP_UNITS = 0.30D;
+    /** Respiracion, muy suave. */
+    private static final double BREATH_UNITS = 0.060D;
 
-    private static final double STIFFNESS = 55.0D;
-    private static final double DAMPING = 8.0D;
+    // --- resortes: blandos, para que la inercia se NOTE --------------------------------
+    private static final double STIFFNESS = 30.0D;
+    private static final double DAMPING = 4.2D;
 
     private BustPhysics() {
     }
@@ -54,8 +66,8 @@ public final class BustPhysics {
         s.prevSwayZ = s.swayZ;
 
         if (!ENABLED) {
-            s.tip = 1.0F;
-            s.swell = 1.0F;
+            s.tip = 0.0F;
+            s.swell = 0.0F;
             s.swayX = 0.0F;
             s.swayZ = 0.0F;
             return;
@@ -83,12 +95,12 @@ public final class BustPhysics {
             return;
         }
 
-        // Velocidad (bloques/segundo) y aceleracion de este tick.
-        double velForward = Mth.clamp(forward / DT, -8.0D, 8.0D);
-        double velSide = Mth.clamp(side / DT, -8.0D, 8.0D);
-        double velUp = Mth.clamp(up / DT, -14.0D, 14.0D);
+        // Velocidad (bloques por tick) y aceleracion vertical (bloques por tick y segundo).
+        double velForward = Mth.clamp(forward, -1.5D, 1.5D);
+        double velSide = Mth.clamp(side, -1.5D, 1.5D);
+        double velUp = Mth.clamp(up, -4.0D, 4.0D);
         double accelForward = Mth.clamp((forward - s.lastForward) / DT, -8.0D, 8.0D);
-        double accelUp = Mth.clamp((up - s.lastUp) / DT, -14.0D, 14.0D);
+        double accelUp = Mth.clamp((up - s.lastUp) / DT, -20.0D, 20.0D);
         float yawDelta = Mth.clamp(Mth.wrapDegrees(waifu.getYRot() - s.lastYaw), -40.0F, 40.0F);
 
         s.lastForward = forward;
@@ -104,30 +116,28 @@ public final class BustPhysics {
         double lean = walking ? Math.sin(walkPos) * walkSpeed : 0.0D;
         double breath = Mth.sin((waifu.tickCount + 1) * 0.09F);
 
-        // Objetivos (1.0 = forma modelada, 0 = sin balanceo)
-        double targetTip = 1.0D
-                - velUp * TIP_FROM_FALL            // al caer la punta sale (flota hacia arriba)
-                - accelUp * TIP_FROM_LANDING       // al frenar en seco se mete
-                + bob * TIP_FROM_STEP              // vaiven del paso
-                + breath * 0.020D;                 // respiracion
-        double targetSwell = 1.0D
-                - Math.abs(velUp) * SWELL_FROM_FALL
-                - accelUp * SWELL_FROM_LANDING     // al caer se aplasta y se ensancha
-                + bob * SWELL_FROM_STEP
-                + breath * 0.012D;
-        double targetSwayX = -velForward * 0.55D - accelForward * SWAY_FROM_ACCEL
-                + bob * SWAY_FROM_WALK + lean * 1.4D;
-        double targetSwayZ = velSide * 0.9D + lean * SWAY_FROM_WALK - yawDelta * SWAY_FROM_TURN;
+        // Objetivos, en CUADROS.
+        double targetTip = -velUp * FALL_TO_UNITS          // al caer, la punta flota hacia fuera
+                - accelUp * LAND_TO_UNITS                  // al frenar en seco, se mete
+                - velForward * WALK_LAG_UNITS              // al avanzar, se queda atras
+                + bob * STEP_UNITS                         // vaiven del paso
+                + breath * BREATH_UNITS;                   // respiracion
+        double targetSwell = -Math.abs(velUp) * 0.35D      // al caer se estira en vertical
+                - accelUp * LAND_TO_UNITS * 0.9D           // y al aterrizar se aplasta
+                + bob * STEP_UNITS * 0.45D
+                + breath * BREATH_UNITS * 0.4D;
+        double targetSwayX = -velForward * 6.0D - accelForward * 1.2D + bob * 4.0D + lean * 1.5D;
+        double targetSwayZ = velSide * 4.0D + lean * 3.5D - yawDelta * 0.16D;
 
-        // Topes
-        targetTip = Mth.clamp(targetTip, 1.0D - TIP_RANGE, 1.0D + TIP_RANGE);
-        targetSwell = Mth.clamp(targetSwell, 1.0D - SWELL_RANGE, 1.0D + SWELL_RANGE);
+        // Topes: la punta puede salir TIP_OUT_UNITS cuadros y meterse TIP_IN_UNITS.
+        targetTip = Mth.clamp(targetTip, -(double) TIP_IN_UNITS, (double) TIP_OUT_UNITS);
+        targetSwell = Mth.clamp(targetSwell, -(double) SWELL_UNITS, (double) SWELL_UNITS);
         targetSwayX = Mth.clamp(targetSwayX, -SWAY_DEGREES, SWAY_DEGREES);
         targetSwayZ = Mth.clamp(targetSwayZ, -SWAY_DEGREES, SWAY_DEGREES);
 
         if (waifu.isOrderedToSit()) {
-            targetTip = 1.0D;
-            targetSwell = 1.0D;
+            targetTip = 0.0D;
+            targetSwell = 0.0D;
             targetSwayX = 0.0D;
             targetSwayZ = 0.0D;
         }
@@ -136,20 +146,21 @@ public final class BustPhysics {
         s.tip = tip.value();
         s.velTip = tip.velocity();
 
-        Spring swell = spring(s.swell, s.velSwell, targetSwell, STIFFNESS * 0.9D, DAMPING);
+        Spring swell = spring(s.swell, s.velSwell, targetSwell, STIFFNESS * 0.9D, DAMPING * 1.05D);
         s.swell = swell.value();
         s.velSwell = swell.velocity();
 
-        Spring swayX = spring(s.swayX, s.velSwayX, targetSwayX, STIFFNESS * 0.7D, DAMPING);
+        Spring swayX = spring(s.swayX, s.velSwayX, targetSwayX, STIFFNESS * 0.6D, DAMPING * 1.1D);
         s.swayX = swayX.value();
         s.velSwayX = swayX.velocity();
 
-        Spring swayZ = spring(s.swayZ, s.velSwayZ, targetSwayZ, STIFFNESS * 0.7D, DAMPING);
+        Spring swayZ = spring(s.swayZ, s.velSwayZ, targetSwayZ, STIFFNESS * 0.6D, DAMPING * 1.1D);
         s.swayZ = swayZ.value();
         s.velSwayZ = swayZ.velocity();
 
-        s.tip = Mth.clamp(s.tip, 1.0F - TIP_RANGE * 1.4F, 1.0F + TIP_RANGE * 1.4F);
-        s.swell = Mth.clamp(s.swell, 1.0F - SWELL_RANGE * 1.4F, 1.0F + SWELL_RANGE * 1.4F);
+        // El resorte rebota un poco por la inercia: se deja pasar un 10 % y no mas.
+        s.tip = Mth.clamp(s.tip, -TIP_IN_UNITS * 1.4F, TIP_OUT_UNITS * 1.10F);
+        s.swell = Mth.clamp(s.swell, -SWELL_UNITS * 1.4F, SWELL_UNITS * 1.4F);
         s.swayX = Mth.clamp(s.swayX, -SWAY_DEGREES * 1.5F, SWAY_DEGREES * 1.5F);
         s.swayZ = Mth.clamp(s.swayZ, -SWAY_DEGREES * 1.5F, SWAY_DEGREES * 1.5F);
     }
@@ -165,11 +176,11 @@ public final class BustPhysics {
         return new Spring((float) (value + v * DT), (float) v);
     }
 
-    /** Muestra ya interpolada para dibujar. */
-    public record Sample(float tip, float swell, float swayX, float swayZ) {
+    /** Muestra ya interpolada, EN CUADROS de modelo, lista para el render. */
+    public record Sample(float tipUnits, float swellUnits, float swayX, float swayZ) {
     }
 
-    /** Valores suavizados con el partial tick, listos para el render. */
+    /** Valores suavizados con el partial tick. */
     public static Sample sample(AbstractWaifuEntity waifu, float partialTick) {
         BustState s = waifu.bustState();
         float t = Mth.clamp(partialTick, 0.0F, 1.0F);

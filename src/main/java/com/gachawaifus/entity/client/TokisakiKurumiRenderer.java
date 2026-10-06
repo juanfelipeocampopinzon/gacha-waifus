@@ -14,7 +14,7 @@ public class TokisakiKurumiRenderer extends LivingEntityRenderer<TokisakiKurumiE
 
     public TokisakiKurumiRenderer(EntityRendererProvider.Context context) {
         // Modelo de jugador SLIM con la pieza del pecho (la grande, seccion 3x3) en su propia capa.
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true), 0.5F);
+        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true, 3.0F), 0.5F);
     }
 
     @Override

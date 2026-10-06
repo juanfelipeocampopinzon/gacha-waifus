@@ -3,40 +3,36 @@ package com.gachawaifus.bust;
 /**
  * Estado por entidad de la fisica de la pieza del pecho.
  *
- * <p>No se mueven vertices (una caja tiene los suyos fijos): lo que se mueve es el HUESO, y
- * solo en los grados de libertad que dejan la pieza pegada al pecho. Como el pivote esta
- * justo en la cara delantera del torso (z = -2) y las puntas de arriba y abajo del rombo
- * caen a z = 0 respecto a ese pivote, al escalar:
+ * <p>Todos los canales van en <b>cuadros de modelo</b> (1 cuadro = 1 unidad = 1 pixel de skin),
+ * no en escalas: así "un cuadro" significa lo mismo en la pieza normal (2x2) y en la grande (3x3).
  *
  * <ul>
- *   <li><b>hacia delante ({@link #tip})</b>: la punta del pecho sale y entra, y las puntas
- *       de arriba y abajo se quedan EXACTAMENTE sobre la cara del pecho, sin despegarse.</li>
- *   <li><b>en vertical ({@link #swell})</b>: la pieza se hincha o se aplasta, y las puntas
- *       resbalan por la cara del pecho pero siguen apoyadas en ella.</li>
- *   <li><b>balanceo ({@link #swayX}, {@link #swayZ})</b>: un giro muy leve, de pocos grados,
- *       para que acompanne al cuerpo sin que las puntas se separen.</li>
+ *   <li>{@link #tip}: cuadros que sobresale la punta (>0 sale, &lt;0 se mete).</li>
+ *   <li>{@link #swell}: cuadros que se hincha (+) o se aplasta (-) en vertical.</li>
+ *   <li>{@link #swayX}, {@link #swayZ}: balanceo en grados.</li>
  * </ul>
  *
- * <p>Todo en unidades de escala (1.0 = como esta modelado) salvo los balanceos, en grados.
+ * <p>El pivote está en la cara delantera del torso, así que escalar hacia delante y en vertical
+ * deja las puntas de arriba y abajo del rombo apoyadas en esa cara: nunca se despegan.
  */
 public final class BustState {
 
-    /** Escala hacia delante: >1 saca la punta, <1 la mete. */
-    public float tip = 1.0F;
-    /** Escala vertical: >1 hincha, <1 aplasta. */
-    public float swell = 1.0F;
+    /** Cuadros que sobresale la punta. */
+    public float tip;
+    /** Cuadros que se hincha en vertical. */
+    public float swell;
     /** Balanceo adelante/atras, en grados. */
     public float swayX;
     /** Balanceo lateral, en grados. */
     public float swayZ;
 
     /** Valores del tick anterior, para interpolar en el render. */
-    public float prevTip = 1.0F;
-    public float prevSwell = 1.0F;
+    public float prevTip;
+    public float prevSwell;
     public float prevSwayX;
     public float prevSwayZ;
 
-    /** Velocidades de los resortes. */
+    /** Velocidades de los resortes (cuadros/tick y grados/tick). */
     public float velTip;
     public float velSwell;
     public float velSwayX;

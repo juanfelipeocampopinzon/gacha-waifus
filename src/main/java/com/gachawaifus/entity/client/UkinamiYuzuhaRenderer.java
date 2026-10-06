@@ -14,7 +14,7 @@ public class UkinamiYuzuhaRenderer extends LivingEntityRenderer<UkinamiYuzuhaEnt
 
     public UkinamiYuzuhaRenderer(EntityRendererProvider.Context context) {
         // Modelo de jugador SLIM con el tubo del pecho horneado en su propia capa.
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE), true), 0.5F);
+        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE), true, 2.0F), 0.5F);
     }
 
     @Override
