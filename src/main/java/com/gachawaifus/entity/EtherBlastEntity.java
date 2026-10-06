@@ -48,8 +48,9 @@ public class EtherBlastEntity extends ThrowableProjectile {
                     1, 0.05, 0.05, 0.05, 0.1);
         }
 
-        // Si vuela más de 5 segundos (100 ticks) se disipa
-        if (this.tickCount > 100) {
+        // Si vuela más de 8 segundos (160 ticks) se disipa. Holgado para el alcance
+        // ampliado de Astra y Nicole (hasta 30 bloques).
+        if (this.tickCount > 160) {
             this.discard();
         }
     }

@@ -22,6 +22,7 @@ public class ModCreativeTabs {
                             .displayItems((parameters, output) -> {
                                 // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz (Katana / Ice DPS)
                                 output.accept(ModItems.MIYABI_TOKEN.get());
+                                output.accept(ModItems.REMIELLE_TOKEN.get());
                                 // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
     // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
                                 output.accept(ModItems.YE_SHUNGUANG_TOKEN.get());
@@ -35,8 +36,7 @@ public class ModCreativeTabs {
                                 output.accept(ModItems.ANBY_DEMARA_TOKEN.get());
                                 output.accept(ModItems.UKINAMI_YUZUHA_TOKEN.get());
                                 output.accept(ModItems.PROMEIA_TOKEN.get());
-                                output.accept(ModItems.DORMANT_WAIFU_CORE.get());
-                                // — Utilidades: sistema gacha y almacén portátil
+                                // — Utilidades: sistema gacha y cápsula (guardar / invocar / revivir)
                                 output.accept(ModItems.GACHA_TERMINAL.get());
                                 output.accept(ModItems.WAIFU_CAPSULE.get());
                             })

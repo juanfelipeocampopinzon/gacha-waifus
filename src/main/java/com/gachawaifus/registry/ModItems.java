@@ -3,7 +3,6 @@ package com.gachawaifus.registry;
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.item.AstraYaoTokenItem;
 import com.gachawaifus.item.BurniceWhiteTokenItem;
-import com.gachawaifus.item.DormantWaifuCoreItem;
 import com.gachawaifus.item.EllenJoeTokenItem;
 import com.gachawaifus.item.GachaTerminalItem;
 import com.gachawaifus.item.MiyabiMisiramaTokenItem;
@@ -13,6 +12,7 @@ import com.gachawaifus.item.AnbyDemaraTokenItem;
 import com.gachawaifus.item.UkinamiYuzuhaTokenItem;
 import com.gachawaifus.item.PromeiaTokenItem;
 import com.gachawaifus.item.WaifuCapsuleItem;
+import com.gachawaifus.item.RemielleTokenItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
 import net.neoforged.neoforge.registries.DeferredHolder;
@@ -35,10 +35,6 @@ public class ModItems {
     /** ★★★★★ Burnice White — Token de invocación */
     public static final DeferredHolder<Item, Item> BURNICE_WHITE_TOKEN =
             ITEMS.register("burnice_white_token", () -> new BurniceWhiteTokenItem(new Item.Properties().stacksTo(16)));
-
-    /** ★★★★★ Dormant Waifu Core — Núcleo durmiente para resurrección de waifus */
-    public static final DeferredHolder<Item, Item> DORMANT_WAIFU_CORE =
-            ITEMS.register("dormant_waifu_core", () -> new DormantWaifuCoreItem(new Item.Properties().stacksTo(64)));
 
     /** ★★★★★ Ye Shunguang (Yixuan) — Token de invocación */
     public static final DeferredHolder<Item, Item> YE_SHUNGUANG_TOKEN =
@@ -67,4 +63,8 @@ public class ModItems {
     /** Cápsula Waifu — cofre portátil: guarda (Shift+clic) e invoca a tus waifus. La colección vive en el mundo. */
     public static final DeferredHolder<Item, Item> WAIFU_CAPSULE =
             ITEMS.register("waifu_capsule", () -> new WaifuCapsuleItem(new Item.Properties().stacksTo(1)));
+
+    /** Remielle — token de invocación */
+    public static final DeferredHolder<Item, Item> REMIELLE_TOKEN =
+            ITEMS.register("remielle_token", () -> new RemielleTokenItem(new Item.Properties().stacksTo(1)));
 }

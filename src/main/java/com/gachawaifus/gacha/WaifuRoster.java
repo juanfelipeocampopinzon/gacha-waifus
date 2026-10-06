@@ -9,6 +9,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -31,9 +32,10 @@ public final class WaifuRoster {
     public static final Entry ANBY = new Entry("anby_demara", () -> ModEntities.ANBY_DEMARA.get(), () -> ModItems.ANBY_DEMARA_TOKEN.get(), "Anby Demara");
     public static final Entry YUZUHA = new Entry("ukinami_yuzuha", () -> ModEntities.UKINAMI_YUZUHA.get(), () -> ModItems.UKINAMI_YUZUHA_TOKEN.get(), "Ukinami Yuzuha");
     public static final Entry PROMEIA = new Entry("promeia", () -> ModEntities.PROMEIA.get(), () -> ModItems.PROMEIA_TOKEN.get(), "Promeia");
+    public static final Entry REMIELLE = new Entry("remielle", () -> ModEntities.REMIELLE.get(), () -> ModItems.REMIELLE_TOKEN.get(), "Remielle");
 
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE);
 
     private WaifuRoster() {
     }
@@ -53,6 +55,19 @@ public final class WaifuRoster {
     public static Entry byToken(Item item) {
         for (Entry e : ROTATION) {
             if (e.token().get() == item) return e;
+        }
+        return null;
+    }
+
+    /**
+     * "Consuelo" del 50/50: cualquier waifu de la rotación que el jugador aún no posea.
+     * Antes estaba fijado a Nicole Demara como placeholder, lo que hacía que el gacha
+     * dejara de aportar waifus nuevas al crecer el roster.
+     */
+    @Nullable
+    public static Entry anyUnowned(Player player) {
+        for (Entry e : ROTATION) {
+            if (!owns(player, e)) return e;
         }
         return null;
     }

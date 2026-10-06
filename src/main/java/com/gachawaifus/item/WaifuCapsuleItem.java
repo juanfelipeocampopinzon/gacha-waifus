@@ -39,7 +39,7 @@ public class WaifuCapsuleItem extends Item {
             return InteractionResult.PASS;
         }
         if (!player.isShiftKeyDown()) {
-            player.displayClientMessage(Component.literal("§7[GachaWaifus] Agáchate (Shift) + clic para guardar a tu waifu en la cápsula."), true);
+            player.displayClientMessage(Component.literal("§7[GachaWaifus] Agáchate (Shift) + clic para guardar a tu waifu. Clic derecho en el aire para ver tu colección y revivir a las caídas."), true);
             return InteractionResult.PASS;
         }
 

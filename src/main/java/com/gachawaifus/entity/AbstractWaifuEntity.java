@@ -1,7 +1,9 @@
 package com.gachawaifus.entity;
 
-import com.gachawaifus.registry.ModItems;
+import com.gachawaifus.gacha.WaifuRoster;
+import com.gachawaifus.gacha.WaifuStorageSavedData;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -59,7 +61,9 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     }
 
     /**
-     * Sistema de Muerte y Núcleo Durmiente: Al morir, la waifu deja caer su núcleo para ser revivida con diamantes.
+     * Sistema de Caída y Revivificación: al morir, el alma de la waifu se resguarda en la Cápsula
+     * Waifu del dueño. Desde la cápsula se la puede revivir con 4 diamantes — sin recetas ambiguas
+     * y sin depender de un núcleo genérico que no sabía a quién pertenecía.
      */
     @Override
     public void die(DamageSource source) {
@@ -67,11 +71,17 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             LivingEntity owner = this.getOwner();
             Component name = this.getDisplayName();
 
-            // Notificación global / al dueño
-            if (owner instanceof Player player) {
+            // Identidad real de la waifu caída: se guarda server-side, no en un item anónimo.
+            WaifuRoster.Entry entry = WaifuRoster.byId(
+                    BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getPath());
+
+            if (owner instanceof Player player && entry != null) {
+                WaifuStorageSavedData.get(this.level()).addFallen(player.getUUID(), entry.id());
                 player.sendSystemMessage(Component.literal(
-                        "§c[GachaWaifus] ¡" + name.getString() + " ha caído en batalla! Ha soltado su Núcleo Durmiente. Craftéalo con 4 Diamantes para revivirla."
-                ));
+                        "§c[GachaWaifus] ¡" + name.getString() + " ha caído en combate!"));
+                player.sendSystemMessage(Component.literal(
+                        "§7Su alma quedó resguardada en tu §dCápsula Waifu§7. "
+                                + "Ábrela (clic derecho) y selecciónala para revivirla con §b4 diamantes§7."));
             }
 
             // Efectos de partículas de muerte celestial
@@ -79,14 +89,14 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                 serverLevel.sendParticles(ParticleTypes.SOUL_FIRE_FLAME,
                         this.getX(), this.getY() + 1.0, this.getZ(),
                         30, 0.5, 0.8, 0.5, 0.05);
+                serverLevel.sendParticles(ParticleTypes.SOUL,
+                        this.getX(), this.getY() + 0.8, this.getZ(),
+                        12, 0.4, 0.6, 0.4, 0.02);
                 serverLevel.sendParticles(ParticleTypes.FLASH,
                         this.getX(), this.getY() + 1.0, this.getZ(),
                         2, 0.1, 0.1, 0.1, 0.0);
             }
             this.level().playSound(null, this.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0F, 1.5F);
-
-            // Dejar caer el núcleo durmiente
-            this.spawnAtLocation(new ItemStack(ModItems.DORMANT_WAIFU_CORE.get()));
         }
 
         super.die(source);

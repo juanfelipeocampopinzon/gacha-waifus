@@ -37,6 +37,11 @@ import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class AstraYaoEntity extends AbstractWaifuEntity {
+    /** Alcance de cada habilidad, en bloques. Astra es tiradora: el normal llega muy lejos. */
+    private static final double NORMAL_RANGE = 30.0D;
+    private static final double SPECIAL_RANGE = 10.0D;
+    private static final double ULTIMATE_RANGE = 14.0D;
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 100; // Inicia casi listo
     private int ultimateCooldown = 300;     // Inicia cargando
@@ -52,7 +57,7 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
                 .add(Attributes.MOVEMENT_SPEED, 0.32D)
                 .add(Attributes.ATTACK_DAMAGE, 8.0D)
                 .add(Attributes.ARMOR, 10.0D)
-                .add(Attributes.FOLLOW_RANGE, 32.0D);
+                .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
     @Override
@@ -87,15 +92,15 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             // Prioridad 1: Ultimate (Grand Finale Concert)
-            if (this.ultimateCooldown <= 0 && distanceSq <= 144.0D) { // 12 bloques
+            if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
                 performUltimate();
             }
             // Prioridad 2: Special Skill (Vocal Solo)
-            else if (this.specialSkillCooldown <= 0 && distanceSq <= 64.0D) { // 8 bloques
+            else if (this.specialSkillCooldown <= 0 && distanceSq <= SPECIAL_RANGE * SPECIAL_RANGE) {
                 performSpecialSkill();
             }
-            // Prioridad 3: Normal Attack (Ether Blast)
-            else if (this.normalAttackCooldown <= 0 && distanceSq <= 256.0D) { // 16 bloques
+            // Prioridad 3: Normal Attack (Ether Blast) — alcance largo, es su ataque a distancia
+            else if (this.normalAttackCooldown <= 0 && distanceSq <= NORMAL_RANGE * NORMAL_RANGE) {
                 performNormalAttack(target);
             }
         }
@@ -133,7 +138,7 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
         }
 
         // Efectos en área
-        AABB aabb = this.getBoundingBox().inflate(6.0D);
+        AABB aabb = this.getBoundingBox().inflate(SPECIAL_RANGE);
         List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb);
         for (LivingEntity e : nearby) {
             if (e != this && e != this.getOwner() && (e instanceof Enemy || e == this.getTarget())) {
@@ -174,8 +179,8 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
         }
 
-        // Daño masivo a todos los hostiles en 10 bloques
-        AABB aabb = this.getBoundingBox().inflate(10.0D);
+        // Daño masivo a todos los hostiles en el radio de la ultimate
+        AABB aabb = this.getBoundingBox().inflate(ULTIMATE_RANGE);
         List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb);
         for (LivingEntity e : nearby) {
             if (e != this && e != this.getOwner() && (e instanceof Enemy || e == this.getTarget())) {

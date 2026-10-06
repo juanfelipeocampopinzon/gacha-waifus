@@ -118,12 +118,14 @@ public class GachaTerminalItem extends Item {
         if (player.getRandom().nextBoolean()) {
             return WaifuRoster.owns(player, featured) ? null : featured;
         }
-        if (!WaifuRoster.owns(player, WaifuRoster.NICOLE)) {
+        // 50/50 perdido: cae una waifu no poseída (antes era Nicole fija como placeholder).
+        WaifuRoster.Entry consolation = WaifuRoster.anyUnowned(player);
+        if (consolation != null && !consolation.id().equals(featured.id())) {
             state.guaranteed = true;
-            return WaifuRoster.NICOLE;
+            return consolation;
         }
-        // Nicole ya poseída: la "derrota" del 50/50 cae a la destacada
-        return WaifuRoster.owns(player, featured) ? null : featured;
+        // Colección completa o solo falta la destacada: no se entrega duplicado.
+        return null;
     }
 
     private void giveToken(Player player, WaifuRoster.Entry entry) {

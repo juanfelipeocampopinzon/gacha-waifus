@@ -19,7 +19,10 @@ import com.gachawaifus.entity.client.AnbyDemaraRenderer;
 import com.gachawaifus.entity.client.EtherBlastRenderer;
 import com.gachawaifus.entity.client.UkinamiYuzuhaRenderer;
 import com.gachawaifus.entity.client.PromeiaRenderer;
+import com.gachawaifus.entity.RemielleEntity;
+import com.gachawaifus.entity.client.RemielleRenderer;
 import com.gachawaifus.client.WaifuStorageScreen;
+import com.gachawaifus.client.bust.WaifuBustLayers;
 import com.gachawaifus.registry.ModCreativeTabs;
 import com.gachawaifus.registry.ModEntities;
 import com.gachawaifus.registry.ModItems;
@@ -47,7 +50,17 @@ public class GachaWaifusMod {
 
         modEventBus.addListener(this::registerAttributes);
         modEventBus.addListener(this::registerRenderers);
+        modEventBus.addListener(this::registerLayers);
         modEventBus.addListener(this::registerScreens);
+    }
+
+    /**
+     * Mallas con la pieza del pecho para las waifus que usan el modelo de jugador vanilla.
+     * Son capas propias: no se toca la capa compartida de jugador.
+     */
+    private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
+        event.registerLayerDefinition(WaifuBustLayers.TUBE, WaifuBustLayers::create);
+        event.registerLayerDefinition(WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {
@@ -77,6 +90,8 @@ public class GachaWaifusMod {
 
         // ★★★★★ Promeia — "La Juez del Krampus Compliance Authority" (Hielo / Anomalía)
         event.put(ModEntities.PROMEIA.get(), PromeiaEntity.createAttributes().build());
+        // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
+        event.put(ModEntities.REMIELLE.get(), RemielleEntity.createAttributes().build());
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -101,5 +116,7 @@ public class GachaWaifusMod {
 
         // ★★★★★ Promeia — "La Juez del Krampus Compliance Authority" (Hielo / Anomalía)
         event.registerEntityRenderer(ModEntities.PROMEIA.get(), com.gachawaifus.entity.client.PromeiaRenderer::new);
+        // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
+        event.registerEntityRenderer(ModEntities.REMIELLE.get(), RemielleRenderer::new);
     }
 }

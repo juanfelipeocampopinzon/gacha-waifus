@@ -47,6 +47,13 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
+    /** Alcance de cada habilidad, en bloques. Nicole dispara desde muy lejos. */
+    private static final double NORMAL_RANGE = 30.0D;
+    private static final double SPECIAL_RANGE = 20.0D;
+    private static final double SPECIAL_RADIUS = 10.0D;
+    private static final double ULTIMATE_RANGE = 24.0D;
+    private static final double ULTIMATE_RADIUS = 14.0D;
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120; // Inicia casi listo (Ether Grenade)
     private int ultimateCooldown = 400;     // Inicia cargando (Black Hole)
@@ -85,7 +92,9 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
                 .add(Attributes.MAX_HEALTH, 95.0D)
                 .add(Attributes.MOVEMENT_SPEED, 0.32D)
                 .add(Attributes.ATTACK_DAMAGE, 8.0D)
-                .add(Attributes.ARMOR, 8.0D);
+                .add(Attributes.ARMOR, 8.0D)
+                // Tiradora: necesita ver lejos para aprovechar su alcance ampliado.
+                .add(Attributes.FOLLOW_RANGE, 48.0D);
     }
 
     @Override
@@ -120,15 +129,15 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             // Prioridad 1: Ultimate (Special Delivery - Black Hole)
-            if (this.ultimateCooldown <= 0 && distanceSq <= 484.0D) { // 22 bloques
-                performUltimate();
+            if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
+                performUltimate(target);
             }
             // Prioridad 2: Special Skill (Ether Grenade)
-            else if (this.specialSkillCooldown <= 0 && distanceSq <= 196.0D) { // 14 bloques
-                performSpecialSkill();
+            else if (this.specialSkillCooldown <= 0 && distanceSq <= SPECIAL_RANGE * SPECIAL_RANGE) {
+                performSpecialSkill(target);
             }
             // Prioridad 3: Normal Attack (Sugarcoated Bullet)
-            else if (this.normalAttackCooldown <= 0 && distanceSq <= 256.0D) { // 16 bloques
+            else if (this.normalAttackCooldown <= 0 && distanceSq <= NORMAL_RANGE * NORMAL_RANGE) {
                 performNormalAttack(target);
             }
         }
@@ -160,8 +169,9 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
      * 2. HABILIDAD ESPECIAL: Ether Grenade - Granada gravitatoria que atrae y daña enemigos
      * Cooldown: 220 ticks (~11 segundos)
      * Efectos: Daño de 14, atrae enemigos cercanos, aplica WEAKNESS
+     * La granada aterriza donde está el objetivo, así que el alcance ampliado sirve de verdad.
      */
-    private void performSpecialSkill() {
+    private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 220; // ~11 segundos
 
         this.triggerAnim("attack_controller", "special");
@@ -175,8 +185,11 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
         }
 
+        // Centro de la explosión: el objetivo (o Nicole si no hay objetivo válido).
+        Vec3 center = (target != null ? target.position() : this.position());
+
         // Efectos en área - atrae y daña enemigos
-        AABB aabb = this.getBoundingBox().inflate(8.0D);
+        AABB aabb = new AABB(center, center).inflate(SPECIAL_RADIUS);
         List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
                 e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
 
@@ -188,7 +201,6 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             e.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 200, 1));
 
             // Empuje gravitatorio hacia el centro (efecto atraente)
-            Vec3 center = this.position();
             Vec3 push = center.subtract(e.position()).normalize().scale(0.5D);
             e.push(push.x, 0.1F, push.z);
         }
@@ -196,10 +208,10 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         // Partículas gravitatorias
         if (this.level() instanceof ServerLevel serverLevel) {
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    this.getX(), this.getY() + 1.0, this.getZ(),
+                    center.x, center.y + 1.0, center.z,
                     8, 1.0, 0.5, 1.0, 0.3);
             serverLevel.sendParticles(ParticleTypes.WITCH,
-                    this.getX(), this.getY() + 1.2, this.getZ(),
+                    center.x, center.y + 1.2, center.z,
                     6, 1.2, 0.8, 1.2, 0.4);
         }
     }
@@ -208,11 +220,11 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
      * 3. ULTIMATE: Special Delivery - Black Hole (Vórtice Gravitatorio)
      * Cooldown: 650 ticks (~32.7 segundos)
      * Efectos:
-     * - Vórtice de 10 bloques que atrae y daña enemigos (26 daño mágico)
+     * - Vórtice que atrae y daña enemigos (26 daño mágico) alrededor del objetivo
      * - Aplica SLOWDOWN II a todos los enemigos afectados
      * - Buffea al jugador (owner): REGENERATION I (15s), LUCK I
      */
-    private void performUltimate() {
+    private void performUltimate(LivingEntity target) {
         this.ultimateCooldown = 650; // ~32.7 segundos
 
         this.triggerAnim("attack_controller", "special");
@@ -228,8 +240,11 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             player.addEffect(new MobEffectInstance(MobEffects.LUCK, 400, 1));
         }
 
-        // Daño masivo a todos los hostiles en un área de 10 bloques
-        AABB aabb = this.getBoundingBox().inflate(10.0D);
+        // El agujero negro se abre sobre el objetivo: alcance largo de verdad.
+        Vec3 center = (target != null ? target.position() : this.position());
+
+        // Daño masivo a todos los hostiles dentro del radio
+        AABB aabb = new AABB(center, center).inflate(ULTIMATE_RADIUS);
         List<LivingEntity> nearby = this.level().getEntitiesOfClass(LivingEntity.class, aabb,
                 e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
 
@@ -239,7 +254,6 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 280, 1));
 
             // Atracción gravitatoria al centro
-            Vec3 center = this.position();
             Vec3 pull = center.subtract(e.position()).normalize().scale(0.8D);
             e.setDeltaMovement(pull.x, 0.2D, pull.z);
 
@@ -252,20 +266,20 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             // Vórtice gravitatorio en el centro
             for (int i = 0; i < 20; i++) {
                 double angle = (i * Math.PI / 10.0);
-                double px = this.getX() + 6.0 * Math.cos(angle);
-                double pz = this.getZ() + 6.0 * Math.sin(angle);
+                double px = center.x + 6.0 * Math.cos(angle);
+                double pz = center.z + 6.0 * Math.sin(angle);
                 serverLevel.sendParticles(ParticleTypes.PORTAL,
-                        px, this.getY() + 1.0, pz,
+                        px, center.y + 1.0, pz,
                         4, 0.2, 0.5, 0.2, 0.1);
             }
 
             // Flash de luz en el centro
             serverLevel.sendParticles(ParticleTypes.FLASH,
-                    this.getX(), this.getY() + 1.5, this.getZ(),
+                    center.x, center.y + 1.5, center.z,
                     3, 0.5, 0.5, 0.5, 0.0);
 
             serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                    this.getX(), this.getY() + 1.0, this.getZ(),
+                    center.x, center.y + 1.0, center.z,
                     40, 2.0F, 1.0F, 2.0F, 0.4F);
         }
     }
