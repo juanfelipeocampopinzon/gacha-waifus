@@ -1,7 +1,5 @@
 package com.gachawaifus.entity;
 
-import com.gachawaifus.bust.BustPhysics;
-import com.gachawaifus.bust.BustState;
 import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,24 +20,8 @@ import org.jetbrains.annotations.Nullable;
 
 public abstract class AbstractWaifuEntity extends TamableAnimal {
 
-    /** Fisica de la pieza del pecho (solo cliente; en el servidor no se usa). */
-    private final BustState bustState = new BustState();
-
     protected AbstractWaifuEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
-    }
-
-    /** Estado de los resortes de la pieza del pecho. */
-    public BustState bustState() {
-        return this.bustState;
-    }
-
-    @Override
-    public void tick() {
-        super.tick();
-        if (this.level().isClientSide) {
-            BustPhysics.tick(this);
-        }
     }
 
     @Override
