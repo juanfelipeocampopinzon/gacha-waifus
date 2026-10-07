@@ -29,6 +29,8 @@ import com.gachawaifus.entity.YidhariEntity;
 import com.gachawaifus.entity.client.YidhariRenderer;
 import com.gachawaifus.entity.RinaEntity;
 import com.gachawaifus.entity.client.RinaRenderer;
+import com.gachawaifus.entity.GraceHowardEntity;
+import com.gachawaifus.entity.client.GraceHowardRenderer;
 import com.gachawaifus.entity.VonLycaonEntity;
 import com.gachawaifus.entity.client.VonLycaonRenderer;
 import com.gachawaifus.entity.KoledaEntity;
@@ -82,13 +84,13 @@ public class GachaWaifusMod {
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {
-        // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz
+        // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz (Katana / Ice DPS)
         event.put(ModEntities.MIYABI.get(), MiyabiMisiramaEntity.createAttributes().build());
         // ★★★★☆ — Astra Yao
         event.put(ModEntities.ASTRA_YAO.get(), AstraYaoEntity.createAttributes().build());
         // ★★★☆☆ — Ellen Joe
         event.put(ModEntities.ELLEN_JOE.get(), EllenJoeEntity.createAttributes().build());
-        // ★★★★★ — Ye Shunguang: Alto Preceptor de Yunkui (Ether / Auric Ink)
+        // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
         event.put(ModEntities.YE_SHUNGUANG.get(), YeShunguangEntity.createAttributes().build());
 
         // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
@@ -97,10 +99,13 @@ public class GachaWaifusMod {
         // ★★★★★ Anby Demara — Soldier 0 (Physical / Combatant)
         event.put(ModEntities.ANBY_DEMARA.get(), AnbyDemaraEntity.createAttributes().build());
 
+        /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
+        event.put(ModEntities.GRACE_HOWARD.get(), GraceHowardEntity.createAttributes().build());
+
         // ★★★★★ Ukinami Yuzuha — "La Zarigüeya de la Suerte" (Físico / Support)
         event.put(ModEntities.UKINAMI_YUZUHA.get(), UkinamiYuzuhaEntity.createAttributes().build());
 
-        // ★★★★★ Promeia — "La Juez del Krampus Compliance Authority" (Hielo / Anomalía)
+        /** ★★★★★ Promeia — "La Juez del Krampus Compliance Authority" (Hielo / Anomalía) */
         event.put(ModEntities.PROMEIA.get(), PromeiaEntity.createAttributes().build());
         // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
         event.put(ModEntities.REMIELLE.get(), RemielleEntity.createAttributes().build());
@@ -166,5 +171,8 @@ public class GachaWaifusMod {
 
         // ★★★★★ Koleda Belobog — modelo de jugador slim (sin GeckoLib: no tiene geo ni animaciones)
         event.registerEntityRenderer(ModEntities.KOLEDA.get(), KoledaRenderer::new);
+
+        /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
+        event.registerEntityRenderer(ModEntities.GRACE_HOWARD.get(), com.gachawaifus.entity.client.GraceHowardRenderer::new);
     }
 }

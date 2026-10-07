@@ -94,5 +94,8 @@
   "entity.gachawaifus.koleda": "Koleda Belobog",
   "item.gachawaifus.koleda_token": "Token de Invocación — Koleda",
   "item.gachawaifus.koleda_token.desc": "Click derecho para invocar a Koleda Belobog (Rojo / Stun), el martillo de Belobog Heavy Industries.",
-  "message.gachawaifus.koleda_summoned": "✨ ¡Koleda Belobog ha llegado... y el martillo está listo!"
+  "message.gachawaifus.koleda_summoned": "✨ ¡Koleda Belobog ha llegado... y el martillo está listo!",
+  "entity.gachawaifus.grace_howard": "Grace Howard",
+  "item.gachawaifus.grace_howard_token": "Token de Invocación — Grace Howard",
+  "item.gachawaifus.grace_howard_token.desc": "Click derecho para invocar a Grace Howard (Azul / Anomalía)."
 }

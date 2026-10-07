@@ -94,5 +94,8 @@
   "entity.gachawaifus.koleda": "Koleda Belobog",
   "item.gachawaifus.koleda_token": "Koleda Token",
   "item.gachawaifus.koleda_token.desc": "Right-click to summon Koleda Belobog (Red / Stun), hammer of Belobog Heavy Industries.",
-  "message.gachawaifus.koleda_summoned": "✨ Koleda Belobog has arrived... the hammer is ready!"
+  "message.gachawaifus.koleda_summoned": "✨ Koleda Belobog has arrived... the hammer is ready!",
+  "entity.gachawaifus.grace_howard": "Grace Howard",
+  "item.gachawaifus.grace_howard_token": "Grace Howard Token",
+  "item.gachawaifus.grace_howard_token.desc": "Right-click to summon Grace Howard (Blue / Anomaly)."
 }

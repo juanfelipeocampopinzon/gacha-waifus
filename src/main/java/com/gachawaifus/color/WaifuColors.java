@@ -27,11 +27,12 @@ public final class WaifuColors {
         put("ye_shunguang", WaifuColor.MARRON);    // tinta ámbar sobre blanco
         put("nicole_demara", WaifuColor.ROSA);     // pelo rosa-magenta
         put("anby_demara", WaifuColor.MORADO);     // pelo violeta
-        put("ukinami_yuzuha", WaifuColor.VERDE);   // traje verde-teal
+        put("ukinami_yuzuha", WaifuColor.VERDE);    // traje verde-teal
         put("promeia", WaifuColor.BLANCO);         // paleta pálida/glacial
         put("remielle", WaifuColor.NEGRO);         // cazadora del vacío
         put("tokisaki_kurumi", WaifuColor.ROJO);   // vestido negro con rojos, ojos rojo/ámbar
         put("koleda", WaifuColor.ROJO);                // cabello y efectos de fuego
+        put("grace_howard", WaifuColor.AZUL);      // Azul / Anomaly (Electricidad)
         put("yidhari", WaifuColor.AZUL);   // color primario de su elemento de Hielo
         put("von_lycaon", WaifuColor.AZUL);   // color primario de su elemento de Hielo
         put("rina", WaifuColor.ROSA);

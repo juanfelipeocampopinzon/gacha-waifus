@@ -166,4 +166,12 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("rina"));
+
+    /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.GraceHowardEntity>> GRACE_HOWARD =
+            ENTITY_TYPES.register("grace_howard", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.GraceHowardEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("grace_howard"));
 }

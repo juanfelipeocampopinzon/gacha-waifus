@@ -28,10 +28,12 @@ public class ModCreativeTabs {
                                 // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
                                 output.accept(ModItems.TOKISAKI_KURUMI_TOKEN.get());
                                 // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
-    // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
                                 output.accept(ModItems.YE_SHUNGUANG_TOKEN.get());
-                            output.accept(ModItems.NICOLE_DEMARA_TOKEN.get());
-                                // ★★★★★ Von Lycaon — "Victoria Housekeeping" (Ice / Stun)
+                                // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
+                                output.accept(ModItems.NICOLE_DEMARA_TOKEN.get());
+                                // Grace Howard Token — Token de invocación para Grace Howard
+                                output.accept(ModItems.GRACE_HOWARD_TOKEN.get());
+                                /** Von Lycaon — "Victoria Housekeeping" (Ice / Stun) */
                                 output.accept(ModItems.VON_LYCAON_TOKEN.get());
                                 // ★★★★☆ — Astra Yao: Estrellas de Lyra (Ether Support)
                                 output.accept(ModItems.ASTRA_YAO_TOKEN.get());

@@ -76,7 +76,7 @@ public class ModItems {
      * cuatro casillas de al lado. Además el sistema de diarias regala una por día.
      */
     public static final DeferredHolder<Item, Item> PINK_BALL =
-            ITEMS.register("pink_ball", () -> new Item(new Item.Properties()));
+            ITEMS.register("pink_ball", () -> new Item(new Item.Properties().stacksTo(25)));
 
     /** Bolita Azul — tirada reservada para más adelante (todavía no se gasta en nada). */
     public static final DeferredHolder<Item, Item> BLUE_BALL =
@@ -116,4 +116,8 @@ public class ModItems {
     /** Rina — token de invocación */
     public static final DeferredHolder<Item, Item> RINA_TOKEN =
             ITEMS.register("rina_token", () -> new RinaTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Grace Howard Token — Token de invocación para Grace Howard */
+    public static final DeferredHolder<Item, Item> GRACE_HOWARD_TOKEN =
+            ITEMS.register("grace_howard_token", () -> new com.gachawaifus.item.GraceHowardTokenItem(new Item.Properties().stacksTo(16)));
 }

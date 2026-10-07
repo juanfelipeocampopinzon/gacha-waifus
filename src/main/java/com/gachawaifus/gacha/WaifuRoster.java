@@ -39,8 +39,11 @@ public final class WaifuRoster {
     public static final Entry RINA = new Entry("rina", () -> ModEntities.RINA_ENTITY.get(), () -> ModItems.RINA_TOKEN.get(), "Rina");
     public static final Entry VON_LYCAON = new Entry("von_lycaon", () -> ModEntities.VON_LYCAON.get(), () -> ModItems.VON_LYCAON_TOKEN.get(), "Von Lycaon");
 
+    /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
+    public static final Entry GRACE_HOWARD = new Entry("grace_howard", () -> ModEntities.GRACE_HOWARD.get(), () -> ModItems.GRACE_HOWARD_TOKEN.get(), "Grace Howard");
+
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD);
 
     private WaifuRoster() {
     }
