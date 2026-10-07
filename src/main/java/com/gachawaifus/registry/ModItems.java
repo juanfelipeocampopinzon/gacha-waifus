@@ -14,8 +14,13 @@ import com.gachawaifus.item.PromeiaTokenItem;
 import com.gachawaifus.item.WaifuCapsuleItem;
 import com.gachawaifus.item.RemielleTokenItem;
 import com.gachawaifus.item.TokisakiKurumiTokenItem;
+import com.gachawaifus.item.VonLycaonTokenItem;
+import com.gachawaifus.item.YidhariTokenItem;
+import com.gachawaifus.item.KoledaTokenItem;
+import com.gachawaifus.item.RinaTokenItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SpawnEggItem;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -28,6 +33,9 @@ public class ModItems {
 
     public static final DeferredHolder<Item, Item> ELLEN_JOE_TOKEN =
             ITEMS.register("ellen_joe_token", () -> new EllenJoeTokenItem(new Item.Properties().stacksTo(16)));
+
+    public static final DeferredHolder<Item, Item> KOLEDA_TOKEN =
+            ITEMS.register("koleda_token", () -> new KoledaTokenItem(new Item.Properties().stacksTo(16)));
 
     /** ★★★★★ Hoshimi Miyabi — Token de invocación (sumona a la Dama de la Luz) */
     public static final DeferredHolder<Item, Item> MIYABI_TOKEN =
@@ -85,4 +93,27 @@ public class ModItems {
     /** Tokisaki Kurumi — token de invocación */
     public static final DeferredHolder<Item, Item> TOKISAKI_KURUMI_TOKEN =
             ITEMS.register("tokisaki_kurumi_token", () -> new TokisakiKurumiTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Yidhari Murphy — token de invocación */
+    public static final DeferredHolder<Item, Item> YIDHARI_TOKEN =
+            ITEMS.register("yidhari_token", () -> new YidhariTokenItem(new Item.Properties().stacksTo(1)));
+
+    /**
+     * Huevo de invocación de Ricardo Milos (el jefe neutral que suelta 10 tiradas).
+     *
+     * <p>Es la forma cómoda de probarlo: se puede colocar desde el menú creativo. Los colores del
+     * huevo los toma el propio {@link net.minecraft.world.item.SpawnEggItem} (violeta oscuro con
+     * brillo magenta), sin registrar nada a mano.
+     */
+    public static final DeferredHolder<Item, Item> RICARDO_MILOS_SPAWN_EGG =
+            ITEMS.register("ricardo_milos_spawn_egg", () -> new SpawnEggItem(
+                    ModEntities.RICARDO_MILOS.get(), 0x2B1B45, 0xFF4BD8, new Item.Properties()));
+
+    /** Von Lycaon — token de invocación */
+    public static final DeferredHolder<Item, Item> VON_LYCAON_TOKEN =
+            ITEMS.register("von_lycaon_token", () -> new VonLycaonTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Rina — token de invocación */
+    public static final DeferredHolder<Item, Item> RINA_TOKEN =
+            ITEMS.register("rina_token", () -> new RinaTokenItem(new Item.Properties().stacksTo(1)));
 }

@@ -4,6 +4,213 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [3.9.0] — 2026-10-06
+
+### 🐺 Rina (Alexandrina) y Von Lycaon entran al roster
+Dos personajes nuevos, y **no compilaban**: siete errores, todos de la misma familia de siempre.
+
+| Error | Arreglo |
+|---|---|
+| `VonLycaonTokenItem`: `import ...TooltipContext` | **Cuarta vez.** Esa clase no existe en 1.21.1 → import fuera |
+| `RinaTokenItem` y `VonLycaonTokenItem`: usaban `ColorTooltip` y `WaifuColor` sin importarlos | Los dos imports añadidos (es el color del tooltip y su fila en la matriz de daño) |
+| `GachaWaifusMod`: usaba `VonLycaonEntity` y `VonLycaonRenderer` sin importarlos | Imports añadidos |
+| `en_us.json` / `es_es.json`: `entity.gachawaifus.rina` estaba **dos veces** | Duplicado eliminado (92 claves únicas e idénticas en los dos idiomas) |
+
+**Reparto de la pieza del pecho (lo que pediste):**
+
+| Personaje | Pieza | Skin | Modelo |
+|---|---|---|---|
+| **Rina (Alexandrina)** | **Grande 3×3** (`TUBE_BIG`, `3.0F`) | 64×128 con el desplegado en (0,121) | Jugador **slim** |
+| **Von Lycaon** | **Ninguna** (es hombre) | **64×64** (sin mitad de abajo) | Jugador **ancho (`ModelLayers.PLAYER`, el de Steve)** + `scale(1.15)` para que se vea más grande que las waifus |
+
+Von Lycaon queda **fuera** de `SECTION`/`VANILLA_IDS` y del validador: si se apuntara, el script le
+pintaría un desplegado que nadie usa y `validate_v5.py` fallaría buscando una pieza inexistente. Su
+mensaje de invocación también se corrigió a "ha sido **invocado**".
+
+### 🎰 El 50/50 del gacha (verificado, no tocado)
+Comprobado en el código: **no hay ningún nombre escrito a mano** en `GachaTerminalItem`. El consuelo
+del 50/50 perdido lo decide `WaifuRoster.randomUnowned(player, destacada)`, que elige **al azar entre
+todas las no poseídas de la rotación**. Con Lycaon y Rina ya dentro de `ROTATION` (14 entradas), los
+dos entran solos en el banner diario, en el 50/50 y en el consuelo: en cuanto la destacada sea una
+de ellos, o al perder el 50/50, pueden salir. Si antes salía siempre Nicole, era porque en ese
+momento era la única que faltaba (no hay lista fija).
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.9.0.jar`** · `validate_v5.py` **13/13** (6 normales + 7
+grandes; Rina 3×3 con 114/114 celdas, 0 choques; Lycaon correctamente ausente) ·
+`compare_originals.py` **0 píxeles dañados en las 14 skins** · `validate_colors.py` **OK** (11 colores,
+matriz regular, roster con color — Lycaon azul, Rina rosa — y los dos idiomas completos) ·
+`um publish check` **PASS (556 archivos, 0 fallos, 0 avisos)** · desplegado en Prism `1.21.1` y
+`%appdata%\.minecraft\mods\`.
+
+---
+
+## [3.8.2] — 2026-10-06
+
+### 🔇 La música de Ricardo Milos se corta cuando muere (garantizado)
+Pedías que la música parase al morir el jefe, así que el corte ya no depende de un solo aviso: ahora
+hay **tres capas**, y cualquiera de ellas basta.
+
+| Capa | Cuándo actúa |
+|---|---|
+| `RicardoMilosEntity.stopTheme()` en `die()` | Al morir: manda `ClientboundStopSoundPacket` (id + `MUSIC`) a todos los jugadores del nivel |
+| Lo mismo en `remove(RemovalReason)` | Cubre muertes/eliminaciones que no pasan por `die()` (despawn, `/kill` raro, descarga de chunk) |
+| **`client/audio/BossThemeWatch` (nuevo)** | Cada 10 ticks el cliente comprueba si queda algún jefe **vivo y ya herido** a ≤64 bloques; si no queda ninguno, corta el tema por su id con `SoundManager.stop(id, MUSIC)` |
+
+La señal del cliente es **la vida** (`getHealth() < getMaxHealth()`): el jefe solo consigue objetivo
+después de que alguien le pegue, así que "herido" = "pelea en curso", y la vida de un mob está
+sincronizada con el cliente — no hace falta ni un paquete nuevo. Esto también corta la música si te
+alejas a media pelea o si lo mata otro.
+
+Y al revés: si **no hay ningún jugador** dentro del alcance audible (64 bloques), el servidor
+**rearma** el tema, así que si vuelves a la pelea la música arranca otra vez en vez de quedarse muda.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.8.2.jar`** · `um publish check` **PASS (0 fallos, 0 avisos)** ·
+desplegado en Prism `1.21.1` y `%appdata%\.minecraft\mods\`.
+
+---
+
+## [3.8.1] — 2026-10-06
+
+### ❄️ Yidhari con el arte nuevo (y la pieza intacta)
+Actualizaste su skin (`chicas/yidhari/skin.png`, 64×64) y **la pieza del pecho no se ha tocado**: sigue
+siendo la **grande 3×3**, UV `(0,121)`, pivote vanilla 3.79, el mismo cubo `8×3×3`. Lo único que se
+hizo fue volver a pasar el pipeline para que el arte nuevo llegue al mod:
+
+```powershell
+python tools/skin_processor.py --id yidhari --skin "chicas/yidhari/skin.png"   # skin + medallón
+python research/bust/extend_skin_128.py yidhari                                # 64x64 -> 64x128
+python research/bust/tube_v5_sizes.py                                          # repinta la pieza
+```
+
+Lo que cambió de verdad en tu skin: **243 píxeles de la mitad de abajo** (y 30..61, piernas/botas y
+zona inferior). La **cabeza, el torso y los brazos están idénticos**, así que el medallón del token y
+la ventana del pecho (filas 22-25) salen exactamente iguales que antes — de ahí que la pieza se vea
+como estaba, que es justo lo que pediste.
+
+También se actualizó la ruta del original en `compare_originals.py` y `restore_originals.py`: el
+archivo viejo (`Yidhari-Murphy-…-planetminecraft-com.png`) ya no está, ahora es `yidhari\skin.png`.
+
+### 👑 Ricardo Milos con su skin de verdad
+Instalada la skin que dejaste en `bosses/ricardo milos/` (la del meme, 64×64) en
+`textures/entity/ricardo_milos.png`, convertida a **RGBA** (venía en PNG indexado) y comprobada cara
+por cara: **las 36 caras de las 6 cajas están pintadas** (nada invisible desde ningún lado). El
+modelo sigue siendo el de jugador **ancho** (`ModelLayers.PLAYER`), que es el que le pega.
+
+El generador del placeholder (`research/mobs/make_mob_skins.py`) ahora **no pisa** una skin ya
+instalada: avisa y se para salvo que le pases `--force`.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.8.1.jar`** · `validate_v5.py` **12/12** (Yidhari 3×3,
+114/114 celdas, 0 choques) · `compare_originals.py` **0 píxeles dañados** en las 12 skins (Yidhari
+comparada contra su arte nuevo) · `um publish check` **PASS (550 archivos, 0 fallos, 0 avisos)** ·
+desplegado en Prism `1.21.1` y `%appdata%\.minecraft\mods\`.
+
+> 📁 `bosses/<mob>/` es desde ahora la carpeta de originales de los mobs, igual que `chicas/` lo es
+> para las waifus: ahí vive el arte de verdad, y el mod solo tiene la copia instalada.
+
+---
+
+## [3.8.0] — 2026-10-06
+
+### 🎵 Música de pelea para Ricardo Milos
+Cuando el jefe **entra en combate** (o sea, cuando consigue un objetivo: en la práctica, cuando una
+waifu le pega) suena su tema; si se queda sin pelea 20 s, se rearma para la siguiente, y **al morir
+se corta** (paquete de parar sonido, no se queda sonando de fondo).
+
+| Dato | Valor |
+|---|---|
+| Pista | *Ricardo Milos – basshunter dota* (la del enlace que pasaste) |
+| Archivo | `assets/gachawaifus/sounds/boss/ricardo_milos.ogg` (**OGG Vorbis, mono, 44.1 kHz**, 3:15, 1,8 MB) |
+| Id | `gachawaifus:boss/ricardo_milos` (`sounds.json` + `ModSounds.RICARDO_MILOS_THEME`) |
+| Alcance | volumen 4 → el juego atenúa linealmente hasta `max(volumen,1) × 16 = **64 bloques**` |
+| Disparo | `aiStep` del jefe al tener objetivo; `ClientboundStopSoundPacket` al morir |
+
+**Respuesta a tu duda del formato:** el **mp3 no sirve**. Minecraft solo reproduce **OGG Vorbis**, y
+para que el sonido se pueda situar en el mundo (que se oiga más fuerte de cerca) tiene que ser
+**mono**: un estéreo se oye al mismo volumen en toda la zona. Para no repetir el trabajo hay un
+script nuevo, `tools/add_music.py`, que convierte cualquier audio:
+```powershell
+python tools/add_music.py "C:/ruta/cancion.mp3" boss/mi_tema
+```
+Deja el `.ogg` en su sitio, guarda copia del original en `musica/` e imprime el bloque exacto que hay
+que pegar en `sounds.json`.
+
+⚠️ **`sounds.json5` era un archivo muerto:** Minecraft (y NeoForge 21.1) **no** leen JSON5, así que
+las tres entradas de Burnice que había ahí nunca sonaron. Ahora el manifiesto es `sounds.json` de
+verdad (con las tres entradas de Burnice conservadas y la música nueva). De paso quedó anotado en
+`AGENTS.md` y en el manual de colores.
+
+### 🎯 Indicador de color para cada enemigo
+El sistema de colores ya pintaba el color encima de los mobs, pero se leía como texto suelto. Ahora:
+
+- **Etiqueta flotante con cuadradito** (`ColorTagLayer`): `██ Morado` — el color entra por los ojos
+  sin tener que leer el nombre. Interruptor `ColorSettings.LABEL_SWATCH`.
+- **Indicador en la mirilla** (`EnemyColorHud`, nuevo): al apuntar a un enemigo sale justo debajo de
+  la mirilla un cuadro con **su color** y **lo que le hace tu waifu activa**: `▲ Fuerte` (+33 %),
+  `▼ Débil` (−33 %) o `— Neutro`; si no tienes waifu cerca, lo dice. Es una capa de GUI registrada
+  sobre la mirilla vanilla (`RegisterGuiLayersEvent.registerAbove(VanillaGuiLayers.CROSSHAIR, …)`),
+  todo calculado en el cliente (color del mob por UUID, color tuyo por tu waifu más cercana): no
+  añade ni un paquete de red. Interruptor `ColorSettings.AIM_INDICATOR`.
+- Claves nuevas en los dos idiomas: `gachawaifus.color.aim_strong/weak/neutral/no_waifu` (86 claves
+  en `en_us` y `es_es`, idénticas).
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.8.0.jar`** · `validate_v5.py` **12/12** · paridad de
+idiomas 86/86 · `um publish check` **PASS (549 archivos, 0 fallos, 0 avisos)** · desplegado en Prism
+`1.21.1` y `%appdata%\.minecraft\mods\`.
+
+> ℹ️ *Basshunter – DotA* es música con derechos: mientras el mod sea privado no hay problema, pero si
+> algún día lo publicas, cambia el `.ogg` por una pista libre (el resto del sistema no cambia).
+
+---
+
+## [3.7.0] — 2026-10-06
+
+### ❄️ Yidhari Murphy, terminada (y compilando)
+El código que había dejado a medias la IA local **no compilaba**: cinco errores, todos de piezas
+que faltaban.
+
+| Error | Arreglo |
+|---|---|
+| `YidhariTokenItem`: `import net.minecraft.world.item.TooltipContext` | Esa clase **no existe en 1.21.1**; el tipo `TooltipContext` que pide el método es el anidado `Item.TooltipContext` (como en `GachaTerminalItem`) |
+| `YidhariTokenItem`: imports **después** de la clase | Movidos arriba |
+| `ModEntities` usaba `YidhariEntity` sin importarla | Import añadido |
+| `ModItems` usaba `YidhariTokenItem` sin importarla | Import añadido |
+| `GachaWaifusMod` usaba `YidhariEntity`/`YidhariRenderer` sin importarlas | Imports añadidos y registro simplificado |
+
+Y le faltaba todo el arte: ahora tiene **skin** (su original de `chicas/yidhari/`, pasado a 64×128
+con el nuevo `research/bust/extend_skin_128.py`), **medallón de token** (`tools/skin_processor.py`)
+y la **pieza del pecho grande** (sección 3×3, UV `(0,121)`, capa `WaifuBustLayers.TUBE_BIG`).
+En inglés faltaban sus dos claves de idioma (el nombre y el token salían en crudo): añadidas, y la
+invocación ya usa `message.gachawaifus.yidhari_summoned` en vez de un literal.
+
+### 👑 Ricardo Milos — el jefe de recompensa (mob nuevo)
+Un enemigo **neutral** que suelta **10 tiradas** (Bolitas Rosas) al morir, pensado para que no lo
+puedas tumbar tú solo:
+
+| Regla | Cómo está hecho |
+|---|---|
+| **Neutral** | Solo lleva `HurtByTargetGoal`: no busca a nadie, devuelve el golpe a quien le pegue. Las waifus sí lo ven como `Enemy` y empiezan ellas la pelea |
+| **El jugador casi no le hace daño** | Todo daño cuyo atacante sea un jugador se multiplica por **0,2** (un 80 % menos) y suelta el aviso *"Tu arma apenas le hace cosquillas"*. Con 500 de vida y 10 de armadura, sin waifus no se tumba |
+| **Fuerte** | 500 de vida, 10 de armadura + 4 de dureza, 14 de daño, 0,75 de resistencia a empujones y **Sobrecarga Etérea**: telegrafía un anillo en el suelo 1,5 s y estalla (18 de daño, lentitud y empujón en 7 bloques) |
+| **Recompensa** | Las 10 Bolitas Rosas van al dueño de la waifu que dio el golpe de gracia (o al jugador que lo remató); si no hay nadie cerca, caen al suelo |
+
+Es de categoría `MONSTER`, no desaparece por alejarse (`setPersistenceRequired`) y tiene **huevo de
+invocación** en el menú creativo (violeta oscuro + brillo magenta). Además **aparece rara vez en el
+Overworld** por su modificador de bioma `data/gachawaifus/neoforge/biome_modifier/add_ricardo_milos.json`
+(peso 4, de uno en uno; como es neutral, encontrártelo no es peligroso). Su skin es un **placeholder**
+generado por `research/mobs/make_mob_skins.py`: el arte definitivo se decide más adelante y solo hay
+que sustituir `textures/entity/ricardo_milos.png` — no se toca código.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR **`gachawaifus-3.7.0.jar`** · `validate_v5.py` **12/12** (12 waifus, 6
+normales + 6 grandes, 0 choques de UV, todas las celdas pintadas) · `compare_originals.py` **0
+píxeles dañados en las 12 skins** · desplegado en Prism `1.21.1` y `%appdata%\.minecraft\mods\`.
+
+---
+
 ## [3.6.2] — 2026-10-06
 
 ### 📏 La punta ahora se mueve en CUADROS (y se nota)

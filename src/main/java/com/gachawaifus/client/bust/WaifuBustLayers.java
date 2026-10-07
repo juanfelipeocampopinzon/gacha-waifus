@@ -14,7 +14,7 @@ import net.minecraft.util.Mth;
 
 /**
  * La pieza del pecho para las waifus que usan el modelo de jugador vanilla
- * (Astra, Yuzuha, Promeia y Remielle): un tubo de seccion cuadrada girado 45 grados, del
+ * (Astra, Yuzuha, Promeia, Remielle, Kurumi y Yidhari): un tubo de seccion cuadrada girado 45 grados, del
  * ancho del torso, pegado a la cara delantera del pecho.
  *
  * <p>Es una sola pieza por waifu y sale de su propia skin: el desplegado UV de la caja se
@@ -62,12 +62,12 @@ public final class WaifuBustLayers {
     private WaifuBustLayers() {
     }
 
-    /** Pieza normal: 8x2x2 (Astra, Yuzuha, Promeia). */
+    /** Pieza normal: 8x2x2 (Yuzuha, Promeia). */
     public static LayerDefinition create() {
         return build(PIVOT_Y_NORMAL, 2.0F);
     }
 
-    /** Pieza grande: 8x3x3 (Remielle). */
+    /** Pieza grande: 8x3x3 (Astra, Remielle, Kurumi, Yidhari). */
     public static LayerDefinition createBig() {
         return build(PIVOT_Y_BIG, 3.0F);
     }

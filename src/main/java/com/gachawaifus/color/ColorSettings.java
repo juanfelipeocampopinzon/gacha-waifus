@@ -21,6 +21,12 @@ public final class ColorSettings {
     /** Etiqueta flotante con el color encima del mob (cliente, ≤24 bloques). */
     public static final boolean FLOATING_LABEL = true;
 
+    /** Cuadradito de color delante del nombre en la etiqueta flotante (se ve el color de un vistazo). */
+    public static final boolean LABEL_SWATCH = true;
+
+    /** Indicador bajo la mirilla: color del enemigo al que apuntas y si tu waifu le pega fuerte o flojo. */
+    public static final boolean AIM_INDICATOR = true;
+
     /** Avisos en la barra de acción al pegar fuerte/flojo y al recibir un golpe con color. */
     public static final boolean MESSAGES = true;
 

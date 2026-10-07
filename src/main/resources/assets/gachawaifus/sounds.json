@@ -1,4 +1,15 @@
 {
+  "boss/ricardo_milos": {
+    "subtitle": "gachawaifus.subtitle.boss_ricardo_milos",
+    "sounds": [
+      {
+        "name": "gachawaifus:boss/ricardo_milos",
+        "stream": true,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
   "entity/burnice/attack": {
     "subtitle": "Burnice slashes with a blade of fire!",
     "sounds": [

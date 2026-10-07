@@ -25,6 +25,7 @@ public final class WaifuRoster {
 
     public static final Entry MIYABI = new Entry("miyabi", () -> ModEntities.MIYABI.get(), () -> ModItems.MIYABI_TOKEN.get(), "Hoshimi Miyabi");
     public static final Entry YE_SHUNGUANG = new Entry("ye_shunguang", () -> ModEntities.YE_SHUNGUANG.get(), () -> ModItems.YE_SHUNGUANG_TOKEN.get(), "Ye Shunguang");
+    public static final Entry KOLEDA = new Entry("koleda", () -> ModEntities.KOLEDA.get(), () -> ModItems.KOLEDA_TOKEN.get(), "Koleda");
     public static final Entry NICOLE = new Entry("nicole_demara", () -> ModEntities.NICOLE_DEMARA.get(), () -> ModItems.NICOLE_DEMARA_TOKEN.get(), "Nicole Demara");
     public static final Entry ASTRA_YAO = new Entry("astra_yao", () -> ModEntities.ASTRA_YAO.get(), () -> ModItems.ASTRA_YAO_TOKEN.get(), "Astra Yao");
     public static final Entry ELLEN_JOE = new Entry("ellen_joe", () -> ModEntities.ELLEN_JOE.get(), () -> ModItems.ELLEN_JOE_TOKEN.get(), "Ellen Joe");
@@ -34,9 +35,12 @@ public final class WaifuRoster {
     public static final Entry PROMEIA = new Entry("promeia", () -> ModEntities.PROMEIA.get(), () -> ModItems.PROMEIA_TOKEN.get(), "Promeia");
     public static final Entry REMIELLE = new Entry("remielle", () -> ModEntities.REMIELLE.get(), () -> ModItems.REMIELLE_TOKEN.get(), "Remielle");
     public static final Entry TOKISAKI_KURUMI = new Entry("tokisaki_kurumi", () -> ModEntities.TOKISAKI_KURUMI.get(), () -> ModItems.TOKISAKI_KURUMI_TOKEN.get(), "Tokisaki Kurumi");
+    public static final Entry YIDHARI = new Entry("yidhari", () -> ModEntities.YIDHARI.get(), () -> ModItems.YIDHARI_TOKEN.get(), "Yidhari Murphy");
+    public static final Entry RINA = new Entry("rina", () -> ModEntities.RINA_ENTITY.get(), () -> ModItems.RINA_TOKEN.get(), "Rina");
+    public static final Entry VON_LYCAON = new Entry("von_lycaon", () -> ModEntities.VON_LYCAON.get(), () -> ModItems.VON_LYCAON_TOKEN.get(), "Von Lycaon");
 
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON);
 
     private WaifuRoster() {
     }

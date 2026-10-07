@@ -13,6 +13,10 @@ import com.gachawaifus.entity.NicoleDemaraEntity;
 import com.gachawaifus.entity.UkinamiYuzuhaEntity;
 import com.gachawaifus.entity.RemielleEntity;
 import com.gachawaifus.entity.TokisakiKurumiEntity;
+import com.gachawaifus.entity.RicardoMilosEntity;
+import com.gachawaifus.entity.VonLycaonEntity;
+import com.gachawaifus.entity.YidhariEntity;
+import com.gachawaifus.entity.RinaEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -36,6 +40,13 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(10)
                             .build("ellen_joe"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.KoledaEntity>> KOLEDA =
+            ENTITY_TYPES.register("koleda", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.KoledaEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(10)
+                            .build("koleda"));
 
     /** Hoshimi Miyabi — "La Dama de la Luz" (Zenless Zone Zero) */
     public static final DeferredHolder<EntityType<?>, EntityType<MiyabiMisiramaEntity>> MIYABI =
@@ -102,6 +113,14 @@ public class ModEntities {
                             .clientTrackingRange(12)
                             .build("promeia"));
 
+    /** Yidhari Murphy — "Spook Shack" (Ice / Attack) */
+    public static final DeferredHolder<EntityType<?>, EntityType<YidhariEntity>> YIDHARI =
+            ENTITY_TYPES.register("yidhari", () ->
+                    EntityType.Builder.of(YidhariEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("yidhari"));
+
     /** Remielle — "Void Hunter" (Éter / Anomaly DPS) */
     public static final DeferredHolder<EntityType<?>, EntityType<RemielleEntity>> REMIELLE =
             ENTITY_TYPES.register("remielle", () ->
@@ -117,4 +136,34 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("tokisaki_kurumi"));
+
+    /**
+     * Ricardo Milos — jefe de recompensa (neutral): al morir suelta 10 tiradas.
+     *
+     * <p>Es de categoría {@link MobCategory#MONSTER} e implementa {@code Enemy}, que es justo lo
+     * que buscan las waifus en su {@code NearestAttackableTargetGoal}: ellas empiezan la pelea y él
+     * solo devuelve el golpe. Al jugador le cuesta un 80 % más de daño hacerle cosquillas.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<RicardoMilosEntity>> RICARDO_MILOS =
+            ENTITY_TYPES.register("ricardo_milos", () ->
+                    EntityType.Builder.of(RicardoMilosEntity::new, MobCategory.MONSTER)
+                            .sized(0.8F, 2.1F)
+                            .clientTrackingRange(12)
+                            .build("ricardo_milos"));
+
+    /** Von Lycaon — "Victoria Housekeeping" (Ice / Stun) */
+    public static final DeferredHolder<EntityType<?>, EntityType<VonLycaonEntity>> VON_LYCAON =
+            ENTITY_TYPES.register("von_lycaon", () ->
+                    EntityType.Builder.of(VonLycaonEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("von_lycaon"));
+
+    /** Rina — "Victoria Housekeeping Co." (Electric / Defense) */
+    public static final DeferredHolder<EntityType<?>, EntityType<RinaEntity>> RINA_ENTITY =
+            ENTITY_TYPES.register("rina", () ->
+                    EntityType.Builder.of(RinaEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("rina"));
 }

@@ -12,7 +12,7 @@ import java.util.Map;
  *
  * <p>Con 11 waifus y 11 colores los colores quedan todos usados: a partir de la siguiente waifu
  * lo normal es <b>repetir</b> el color que mejor le pegue al personaje. Lo que sí conviene
- * repartir son los <b>roles</b> (Attack, Support, Anomaly, Stun, Defense).
+* repartir son los <b>roles</b> (Attack, Support, Anomaly, Stun, Defense).
  */
 public final class WaifuColors {
 
@@ -31,6 +31,10 @@ public final class WaifuColors {
         put("promeia", WaifuColor.BLANCO);         // paleta pálida/glacial
         put("remielle", WaifuColor.NEGRO);         // cazadora del vacío
         put("tokisaki_kurumi", WaifuColor.ROJO);   // vestido negro con rojos, ojos rojo/ámbar
+        put("koleda", WaifuColor.ROJO);                // cabello y efectos de fuego
+        put("yidhari", WaifuColor.AZUL);   // color primario de su elemento de Hielo
+        put("von_lycaon", WaifuColor.AZUL);   // color primario de su elemento de Hielo
+        put("rina", WaifuColor.ROSA);
     }
 
     private WaifuColors() {

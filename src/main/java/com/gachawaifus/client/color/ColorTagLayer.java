@@ -10,6 +10,9 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.network.chat.Style;
+import net.minecraft.network.chat.TextColor;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
@@ -55,13 +58,17 @@ public class ColorTagLayer<T extends LivingEntity, M extends net.minecraft.clien
         WaifuColor color = ColorCombat.colorOf(entity);
         if (color == null) return;
 
-        Component label = color.displayName();
+        int argb = argb(color);
+        // Cuadradito de color delante del nombre: el color se ve de un vistazo aunque no se lea.
+        MutableComponent label = Component.empty();
+        if (ColorSettings.LABEL_SWATCH) {
+            label.append(Component.literal("\u2588\u2588")
+                    .withStyle(Style.EMPTY.withColor(TextColor.fromRgb(argb & 0xFFFFFF))));
+            label.append(Component.literal(" "));
+        }
+        label.append(color.displayName());
+
         Font font = minecraft.font;
-        float[] rgb = ColorCombat.visibleRgb(color);
-        int argb = 0xFF000000
-                | (Math.round(rgb[0] * 255.0F) << 16)
-                | (Math.round(rgb[1] * 255.0F) << 8)
-                | Math.round(rgb[2] * 255.0F);
 
         pose.pushPose();
         pose.translate(0.0D, entity.getBbHeight() + HEIGHT_OFFSET, 0.0D);
@@ -71,5 +78,14 @@ public class ColorTagLayer<T extends LivingEntity, M extends net.minecraft.clien
         font.drawInBatch(label, -font.width(label) / 2.0F, 0.0F, argb, true, matrix, buffer,
                 Font.DisplayMode.NORMAL, BACKGROUND, packedLight);
         pose.popPose();
+    }
+
+    /** El color del mob como ARGB opaco, ya aclarado si es tan oscuro que no se vería. */
+    private static int argb(WaifuColor color) {
+        float[] rgb = ColorCombat.visibleRgb(color);
+        return 0xFF000000
+                | (Math.round(rgb[0] * 255.0F) << 16)
+                | (Math.round(rgb[1] * 255.0F) << 8)
+                | Math.round(rgb[2] * 255.0F);
     }
 }

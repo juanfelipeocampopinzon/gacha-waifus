@@ -9,7 +9,7 @@ import net.minecraft.world.entity.LivingEntity;
 
 /**
  * Modelo de jugador slim con la pieza del pecho para las waifus sin GeckoLib
- * (Astra, Yuzuha, Promeia, Remielle y Kurumi).
+ * (Astra, Yuzuha, Promeia, Remielle, Kurumi y Yidhari).
  *
  * <p>La fisica se aplica igual que en los modelos geo: la peticion viene en CUADROS y aqui se
  * convierte a escala con la mitad de la diagonal del rombo (el lado se recibe en el constructor,
