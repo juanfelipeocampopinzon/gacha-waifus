@@ -158,9 +158,9 @@ public class GachaTerminalItem extends Item {
         if (player.getRandom().nextBoolean() && !WaifuRoster.owns(player, featured)) {
             return featured;
         }
-        // 50/50 perdido (o la destacada ya es tuya): cae otra que no tengas, AL AZAR, y la próxima
-        // 5★ queda garantizada.
-        WaifuRoster.Entry consolation = WaifuRoster.randomUnowned(player, featured);
+        // 50/50 perdido (o la destacada ya es tuya): cae otra del POOL FIJO de 7 que no tengas,
+        // AL AZAR, y la próxima 5★ queda garantizada.
+        WaifuRoster.Entry consolation = WaifuRoster.randomStandardUnowned(player, featured);
         if (consolation != null) {
             state.guaranteed = true;
             return consolation;

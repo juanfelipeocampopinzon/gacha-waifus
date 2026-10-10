@@ -34,6 +34,17 @@ public class ModSounds {
             SOUND_EVENTS.register("boss/ricardo_milos",
                     () -> SoundEvent.createVariableRangeEvent(RICARDO_MILOS_THEME_ID));
 
+    /**
+     * Grito de ataque de <b>Fernanfloo</b>: el "¡CHORIZO!" de su escena (segundos 5-7 del video).
+     * Suena cada vez que golpea a alguien.
+     */
+    public static final ResourceLocation FERNANFLOO_ATTACK_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/fernanfloo/attack");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> FERNANFLOO_ATTACK =
+            SOUND_EVENTS.register("entity/fernanfloo/attack",
+                    () -> SoundEvent.createVariableRangeEvent(FERNANFLOO_ATTACK_ID));
+
     private ModSounds() {
     }
 }

@@ -8,19 +8,27 @@ import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
+import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
 
 public abstract class AbstractWaifuEntity extends TamableAnimal {
 
@@ -57,7 +65,58 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         super.tick();
         if (this.level().isClientSide) {
             BustPhysics.tick(this);
+        } else {
+            this.updateWanderRestriction();
         }
+    }
+
+    // ---------------------------------------------------------------------
+    // Radio de deambulación alrededor del dueño (WanderConfig → config/gachawaifus-common.toml)
+    // ---------------------------------------------------------------------
+
+    /**
+     * Cambia el {@code FollowOwnerGoal} vanilla de la waifu por {@link WaifuFollowOwnerGoal}, que
+     * lee el radio en vivo. Lo llama {@link WanderGoalsHandler} cuando la entidad entra al mundo
+     * (cada waifu registra sus goals en su propio {@code registerGoals()}, así que se reemplazan
+     * después de la construcción en lugar de editar los 63 ficheros).
+     *
+     * <p>La deambulación no se sustituye: se usa {@link #restrictTo}. Los goals de paseo de vanilla
+     * descartan los puntos que caen fuera de la restricción del mob, así que basta con centrar esa
+     * restricción en el dueño para que paseen dentro del disco configurado — y cada waifu conserva
+     * su velocidad de paseo (algunas van a 0.6/0.7/0.8 a propósito).
+     */
+    public void applyWanderGoals() {
+        for (WrappedGoal wrapped : new ArrayList<>(this.goalSelector.getAvailableGoals())) {
+            Goal goal = wrapped.getGoal();
+            if (goal instanceof FollowOwnerGoal) {
+                this.goalSelector.removeGoal(goal);
+                this.goalSelector.addGoal(wrapped.getPriority(), new WaifuFollowOwnerGoal(this, 1.35D));
+            }
+        }
+    }
+
+    /** El área de paseo es un círculo de {@link WanderConfig#range()} bloques alrededor del dueño. */
+    private void updateWanderRestriction() {
+        LivingEntity owner = this.getOwner();
+        if (owner == null || this.isOrderedToSit()) {
+            this.clearRestriction();
+            return;
+        }
+        this.restrictTo(owner.blockPosition(), WanderConfig.range());
+    }
+
+    /**
+     * Vanilla salta al dueño a los 12 bloques (144 de distancia al cuadrado). Con un radio grande
+     * eso la teletransportaría antes de pasear, así que el umbral sigue al configuración.
+     */
+    @Override
+    public boolean shouldTryTeleportToOwner() {
+        LivingEntity owner = this.getOwner();
+        if (owner == null) {
+            return false;
+        }
+        double limit = (double) WanderConfig.range() + 16.0D;
+        return this.distanceToSqr(owner) >= limit * limit;
     }
 
     @Override
@@ -69,6 +128,94 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Override
     public AgeableMob getBreedOffspring(ServerLevel level, AgeableMob otherParent) {
         return null; // No crían
+    }
+
+    // ---------------------------------------------------------------------
+    // Modo de combate: Pasivo / Neutro / Agresivo (Shift + clic, mano vacía)
+    // ---------------------------------------------------------------------
+
+    /** Modo de combate; por defecto Agresivo (el comportamiento clásico del mod). */
+    private WaifuMode waifuMode = WaifuMode.AGRESIVO;
+
+    /** Modo actual de la waifu. */
+    public WaifuMode waifuMode() {
+        return this.waifuMode;
+    }
+
+    /** Shift + clic con mano vacía (solo el dueño): pasa al siguiente modo y avisa. */
+    private void cycleWaifuMode(Player player) {
+        this.waifuMode = this.waifuMode.next();
+        this.setTarget(null); // al cambiar de modo se suelta el objetivo actual
+        player.displayClientMessage(Component.literal(
+                "§d[GachaWaifus] §f" + this.getDisplayName().getString() + " §7→ modo "
+                        + this.waifuMode.colorCode() + this.waifuMode.plainName()
+                        + "§7 · Shift + clic para cambiarlo."), true);
+        this.level().playSound(null, this.blockPosition(),
+                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.4F);
+    }
+
+    /**
+     * Filtro central de objetivos según el modo. Al interceptar {@code setTarget} se controla de
+     * golpe a las 19 waifus: sus kits (en {@code aiStep}) solo se disparan con objetivo, y los
+     * target goals (agresivos, represalia, defender al dueño) pasan por aquí.
+     *
+     * <ul>
+     *   <li>PASIVO: no acepta ningún objetivo → nunca ataca.</li>
+     *   <li>NEUTRO: solo a quien le haya golpeado a él/a su dueño y lo que el dueño tenga en la
+     *       mira; jamás a la vista (rechaza el NearestAttackableTargetGoal).</li>
+     *   <li>AGRESIVO: todo, como hasta ahora.</li>
+     * </ul>
+     */
+    @Override
+    public void setTarget(@Nullable LivingEntity target) {
+        if (target != null && !this.acceptsTarget(target)) {
+            target = null;
+        }
+        super.setTarget(target);
+    }
+
+    private boolean acceptsTarget(LivingEntity target) {
+        return switch (this.waifuMode) {
+            case AGRESIVO -> true;
+            case PASIVO -> false;
+            case NEUTRO -> target == this.getTarget()
+                    || target == this.getLastHurtByMob()
+                    || (this.getOwner() != null
+                            && (target == this.getOwner().getLastHurtByMob()
+                                    || target == this.getOwner().getLastHurtMob()));
+        };
+    }
+
+    @Override
+    public InteractionResult mobInteract(Player player, InteractionHand hand) {
+        if (hand == InteractionHand.MAIN_HAND
+                && player.isShiftKeyDown()
+                && player.getMainHandItem().isEmpty()
+                && this.isOwnedBy(player)) {
+            if (!this.level().isClientSide) {
+                this.cycleWaifuMode(player);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        return super.mobInteract(player, hand);
+    }
+
+    @Override
+    public void addAdditionalSaveData(CompoundTag tag) {
+        super.addAdditionalSaveData(tag);
+        tag.putByte("WaifuMode", (byte) this.waifuMode.ordinal());
+    }
+
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (tag.contains("WaifuMode")) {
+            int ordinal = tag.getByte("WaifuMode");
+            WaifuMode[] modes = WaifuMode.values();
+            if (ordinal >= 0 && ordinal < modes.length) {
+                this.waifuMode = modes[ordinal];
+            }
+        }
     }
 
     /**

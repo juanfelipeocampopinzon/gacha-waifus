@@ -99,6 +99,9 @@ public class RicardoMilosEntity extends Monster {
         super(entityType, level);
         this.xpReward = 100;
         this.setPersistenceRequired();   // un jefe no desaparece por alejarse
+        // §4 = rojo oscuro (libre, combina con la bandana); visible también de lejos vía renderer.
+        this.setCustomName(Component.literal("§4Ricardo Milos"));
+        this.setCustomNameVisible(true);
     }
 
     public static AttributeSupplier.Builder createAttributes() {

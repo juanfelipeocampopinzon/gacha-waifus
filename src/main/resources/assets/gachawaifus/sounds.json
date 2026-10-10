@@ -39,5 +39,15 @@
         "pitch": 1.2
       }
     ]
+  },
+  "entity/fernanfloo/attack": {
+    "subtitle": "gachawaifus.subtitle.fernanfloo_attack",
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/fernanfloo/attack",
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
   }
 }

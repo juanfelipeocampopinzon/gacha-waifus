@@ -20,6 +20,8 @@ public class GachaSavedData extends SavedData {
     public static class PlayerState {
         public int pity;
         public boolean guaranteed;
+        /** Pity del banner PERMANENTE (StandardTerminalItem): independiente de la destacada. */
+        public int standardPity;
     }
 
     private final Map<UUID, PlayerState> players = new HashMap<>();
@@ -45,6 +47,7 @@ public class GachaSavedData extends SavedData {
             PlayerState state = new PlayerState();
             state.pity = st.getInt("pity");
             state.guaranteed = st.getBoolean("guaranteed");
+            state.standardPity = st.getInt("standard_pity");
             data.players.put(UUID.fromString(key), state);
         }
         return data;
@@ -57,6 +60,7 @@ public class GachaSavedData extends SavedData {
             CompoundTag st = new CompoundTag();
             st.putInt("pity", e.getValue().pity);
             st.putBoolean("guaranteed", e.getValue().guaranteed);
+            st.putInt("standard_pity", e.getValue().standardPity);
             playersTag.put(e.getKey().toString(), st);
         }
         tag.put("players", playersTag);

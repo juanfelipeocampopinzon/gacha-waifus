@@ -4,6 +4,189 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [4.9.2] — 2026-10-10
+
+> Nota: entre 4.3.0 y 4.9.2 se acumularon varias versiones sin apuntar aquí (jefes Doctor House /
+> Wilson / Fernanfloo, terminal estándar, bloque de máquina gacha, sonidos). Esta entrada documenta
+> lo de 4.9.2; el resto se puede reconstruir por `git diff 24df866..HEAD`.
+
+### 🎨 Piezas de pecho, pestaña creativa, Cápsula por páginas y configs nuevas
+- **Zhu Yuan e Yi Xuan con pieza grande**: convertidas a `WaifuBustPlayerModel` + `TUBE_BIG` (3.0F) y
+  sus skins pasadas a 64×128. La pieza no se dibuja a mano: `research/bust/tube_v5_sizes.py` la
+  genera muestreando las filas del torso y pintando el desplegado en (0,121);
+  `validate_v5.py` → *TODO OK: 45 waifus con su pieza*.
+- **Claret** entra por ahora **sin pieza** (skin 64×64, `PlayerModel` slim), a la espera de su arte.
+- **Pestaña creativa ordenada**: `ModCreativeTabs` ya no lista 86 items a mano — recorre
+  `WaifuRoster.ROTATION` (los tokens quedan en el orden real del gacha) y después van jefes,
+  bolitas, terminales, máquina y cápsula.
+- **Cápsula Waifu paginada** (`WaifuStorageMenu` + `WaifuStorageScreen`): rejilla de 27 por página,
+  lista continua (primero las vivas, luego las caídas), páginas que crecen con la colección, cambio
+  de página con « » o con la rueda del ratón. El estado de página viaja al cliente por
+  `ContainerData`, así que sigue siendo autoritativo del servidor. Se quitó el tope de 27+9.
+  La 4ª fila de casillas (vacía) se forra como barra de navegación para que los botones no parezcan
+  flotando sobre la rejilla; los botones se grisan cuando no hay más páginas. **Parche visual**: la
+  GUI propia de la cápsula sigue pendiente.
+- **Radio de deambulación configurable** (`wander.range`, 4–64, por defecto 16): las waifus pasean
+  dentro de un disco alrededor del dueño y solo teletransportan al superarlo.
+  - `WaifuFollowOwnerGoal` sustituye al vanilla (cuyas distancias son `final` y no releían la config)
+    y lee el radio en vivo; `AbstractWaifuEntity#tick` centra la restricción del mob en el dueño con
+    `restrictTo()`, que es lo que ya respetan los goals de paseo de vanilla → cada waifu **conserva
+    su velocidad de paseo** (0.6/0.7/0.8/1.0).
+  - Se aplica desde `WanderGoalsHandler` (`EntityJoinLevelEvent`) para no tocar los 63
+    `registerGoals()`.
+- **La etiqueta de color ya no es un wallhack**: `ColorTagLayer` tira un rayo desde el ojo del
+  jugador hasta el punto donde se pinta el cuadradito y, si hay un bloque en medio, no la dibuja.
+- **Fix de arranque — conflicto de configs**: registrar dos `ModConfigSpec` COMMON del mismo mod
+  (`TeamConfig` y `WanderConfig`) reventaba al cargar con *"Detected config file conflict on
+  gachawaifus-common.toml"*. NeoForge admite **un spec por tipo y mod**: la sección `wander` se
+  construye ahora dentro de `TeamConfig.SPEC` vía `WanderConfig.appendTo(builder)`.
+
+---
+
+## [4.3.0] — 2026-10-08
+
+### ⚙️ Botón "Config" del menú Mods + límite de equipo configurable + 3 modos de combate
+- **Botón Config activado:** `GachaWaifusMod` registra `IConfigScreenFactory` (pantalla
+  `ConfigurationScreen` de NeoForge, solo en cliente) — antes salía desactivado porque nadie
+  registraba la fábrica. Ahora **Mods → Gacha Waifus → Config** abre la configuración del mod
+  (etiqueta de color y límite de equipo, con traducciones en `en_us`/`es_es`).
+- **Límite de waifus en el equipo** (nueva config COMMON, `config/gachawaifus-common.toml`):
+  | Opción | Por defecto | Rango |
+  |---|---|---|
+  | `team.limit` | `0` (ilimitado) | 0–64 waifus invocadas por jugador |
+  - Se comprueba al invocar: en los **19 tokens** (evento `RightClickBlock`, cancelado antes de
+    `useOn`, sin repetir código en cada token) y en la **Cápsula** (`summon()`/`revive()`).
+  - Recuento = waifus vivas del jugador en todas las dimensiones; guardar con Shift + clic en la
+    Cápsula libera sitio. Aviso en la barra de acción: `§c[GachaWaifus] Equipo completo: ...`.
+- **3 modos de combate por waifu:** **Pasivo** (§a) · **Neutro** (§e) · **Agresivo** (§c, por
+  defecto). Se cambian con **Shift + clic (mano vacía) sobre la waifu** y persisten en su NBT.
+  - Implementado una sola vez en `AbstractWaifuEntity` filtrando `setTarget`: PASIVO no acepta
+    objetivos (kits apagados), NEUTRO solo represalia/defender al dueño (nunca aggro a la vista),
+    AGRESIVO = comportamiento clásico. Fix en Astra Yao y Nicole, que capturaban el clic y no
+    dejaban llegar el Shift.
+
+---
+
+## [4.2.0] — 2026-10-08
+
+### 🏷️ Etiqueta de color: arreglo de posición + solo el cuadradito + configuración en el menú
+- **Bug corregido:** la etiqueta del color salía **debajo** del mob (y mal escalada en los jefes
+  Ricardo Milos / Doctor House / Fernanfloo). Ahora se dibuja **sobre la cabeza** en todos los
+  seres vivos, con el mismo tamaño que un nametag (se deshace la rotación y escala del pose del
+  renderer dentro de `ColorTagLayer`).
+- **Solo el cuadradito:** la etiqueta ya no lleva el nombre del color en texto, únicamente `██`
+  con el color RGB del mob: el color se ve de un vistazo sin leer nada.
+- **Configuración de cliente** (nuevo `color/ColorConfig.java`, menú **Mods → Gacha Waifus →
+  Config** o `config/gachawaifus-client.toml`):
+  | Opción | Por defecto | Rango |
+  |---|---|---|
+  | `floating_label.enabled` | `true` | on/off — apaga o enciende la etiqueta |
+  | `floating_label.range` | `64` | 16–256 bloques — más allá no se dibuja |
+- **Descripción del menú de Mods:** `neoforge.mods.toml` ahora describe el mod completo (gacha,
+  combate, colores, jefes) en vez del texto de prototipo.
+
+---
+
+## [4.1.0] — 2026-10-07
+
+### 🎰 Máquina Gacha como bloque (solo diseño, sin lógica aún)
+- **`GachaMachineBlock`** + **`ModBlocks`** (primer bloque del mod): `FACING` horizontal, mira al
+  jugador al colocarla, `MapColor.COLOR_PINK`, sonido de cristal, `noOcclusion()` (cupula y
+  cartel sobresalen del cubo).
+- **Modelo por elementos (17 piezas):** base rosa, cuerpo con marco, pomo giratorio, ranura de
+  monedas, hueco de salida, cupula de cristal translúcido con **4 cápsulas gashapon** dentro y
+  cartel de frutas pixel-art encima (sube hasta y=24, 1.5 bloques).
+- 4 variantes de `blockstate` por rotación, modelo de ítem 3D y **primera loot table** del mod
+  (suelte el bloque). 8 texturas 16×16 placeholder.
+- `lang`: "Gacha Machine" / "Máquina Gacha".
+- *Pendiente:* lógica de tiradas (fase posterior): BlockEntity para la cupula, VoxelShape con
+  rotación y receta.
+
+---
+
+## [4.0.0] — 2026-10-06
+
+### 🔵 Terminal Estándar & Banner Permanente
+Llega el banner permanente al mod para obtener directamente a las 7 waifus estándar sin depender del banner rotativo diario:
+
+| Componente | Detalle |
+|---|---|
+| **Ítem y Registro** | `StandardTerminalItem` registrado como `STANDARD_TERMINAL` en `ModItems`, en pestaña de creativos `ModCreativeTabs` y modelo `models/item/standard_terminal.json`. |
+| **Moneda** | Gasta **Bolitas Azules** (`BLUE_BALL`), 1 por tirada (clic) o 10 tiradas (Shift + clic). |
+| **Pity independiente** | Variable `standardPity` en `GachaSavedData.PlayerState` con guardado/carga NBT (`standard_pity`). No interfiere con la pity ni la garantizada del Terminal Gacha destacado. |
+| **Probabilidades** | 1.6 % base, soft pity a partir de la tirada 50 (+6 % por tirada adicional), hard pity en la tirada 64. |
+| **Pool cerrado** | Solo entrega las 7 waifus estándar del `WaifuRoster.STANDARD_POOL` (Rina, Lycaon, Nicole, Koleda, Grace, Soldier 11, Nekomata) que el jugador no posea. Sin 50/50 ni garantizada. Si ya tiene las 7, el banner avisa y no consume bolitas. |
+| **Consuelo** | Las tiradas que no dan 5★ entregan comida variada (galletas, pan, carne, tarta, manzana dorada encantada). |
+
+### 🔷 Receta de la Bolita Azul
+- Nuevo crafteo `recipe/blue_ball.json`: 1 lingote de hierro en el centro + 4 lapislázuli en cruz (1 hierro + 4 lapis → 1 bolita azul).
+- Textos actualizados en `en_us.json` y `es_es.json` para reflejar el crafteo y su uso en el Terminal Estándar.
+
+---
+
+## [3.10.0] — 2026-10-06
+
+### 🐱 Nekomiya Mana (Nekomata) entra al roster + pieza del pecho para las 5 que faltaban
+Decimonovena waifu (Cunning Hares, ZZZ — RAMA A), gata blanca veloz: Blanco / Attack, nametag §8,
+modelo `WaifuBustLayers.TUBE` (2×2, slim). Stats: HP 95 · Speed 0.34 · ATK 12 · Armor 3.
+
+| Dato | Valor |
+|---|---|
+| Normal | Phantom Double Stab (18 ticks) — melee con partículas CRIT y `PLAYER_ATTACK_CRIT` (pitch 1.4) |
+| Especial | Cat Step Show (240 ticks) — 16 de daño + MOVEMENT_SLOWDOWN 100t, `SWEEP_ATTACK` + `CAT_HISS` |
+| Ultimate | Blade Claw Assault (600 ticks) — mensaje "¿Te gustaron mis garras, nya?", self SPEED 200t y AoE 8 bloques de 30.0F mágico (filtro obligatorio), `SWEEP_ATTACK` + `CAT_HISS` (pitch 0.8) |
+
+Y la pieza del pecho llega a las cinco waifus que aún no la tenían (Lycaon sigue sin, es hombre):
+
+| Waifu | Pieza | Renderer |
+|---|---|---|
+| Koleda Belobog | 2×2 `TUBE` | `WaifuBustPlayerModel(TUBE, true, 2.0F)` |
+| Grace Howard | **Grande 3×3 `TUBE_BIG`** | `WaifuBustPlayerModel(TUBE_BIG, true, 3.0F)` (talla grande, como Rina) |
+| Soldier 11 | 2×2 **`TUBE_WIDE`** (nueva capa) | `WaifuBustPlayerModel(TUBE_WIDE, false, 2.0F)` — conserva la malla ancha de Steve |
+| Tobichi Origami | 2×2 `TUBE` | `WaifuBustPlayerModel(TUBE, true, 2.0F)` |
+| Nekomiya Mana | 2×2 `TUBE` | `WaifuBustPlayerModel(TUBE, true, 2.0F)` |
+
+Skins de las 5 extendidas a 64×128 y desplegado UV pintado en (0,121) con el pipeline habitual
+(`skin_processor.py` solo para las dos que faltaban assets: origami y nekomata; `extend_skin_128.py`,
+`tube_v5_sizes.py`, `validate_v5.py` y `compare_originals.py` para las cinco). Resultado: **18 waifus
+con pieza** (10 normales + 8 grandes), 0 choques de UV y **0 píxeles dañados** frente a las originales.
+
+### 🎰 Pérdida del 50/50: pool fijo de 7 estándar
+Ya no consuela con "cualquiera no poseída": `WaifuRoster.STANDARD_POOL` fija los 7 clásicos
+(Rina, Von Lycaon, Nicole, Koleda, Grace Howard, Soldier 11, Nekomata) y
+`randomStandardUnowned(player, featured)` elige al azar entre los de ese pool que no tengas. Si ya
+los tienes todos, cae al `randomUnowned` de la rotación completa (nunca null mientras quede alguna).
+
+### ⚔️ Tobichi Origami (Date A Live) — completado en esta versión
+Blanco / Defense, modelo slim. Lo que se hizo aquí sobre el primer pase:
+
+| Dato | Valor |
+|---|---|
+| Stats | HP 105 · Speed 0.32 · ATK 9 · Armor 8 |
+| Normal | Corte de Luz (22 ticks) — melee, partículas CRIT |
+| Especial | Escudo de Alas (240 ticks) — 12 de daño + ABSORPTION al objetivo (mismo patrón que Rina) |
+| Ultimate | Mandamiento Divino (700 ticks) — 35 de daño mágico en 8 bloques + REGENERATION al owner. Frase: "¡Que mi luz sea tu escudo!" [INVENTADA] |
+
+- **Fix de build:** `TobichiOrigamiTokenItem` escribía `ToolTipFlag` (T mayúscula); la clase real es
+  `TooltipFlag`. El meta-prompt (`research/prompt`, Regla 13) ya advierte de la grafía exacta.
+- **Fix de runtime:** `TOBICHI_ORIGAMI` no estaba en `registerAttributes` (la entidad crasheaba al
+  invocarse por mapa de atributos vacío). Añadido junto al de `NEKOMATA`.
+- **Assets procesados** (antes pendientes): `textures/entity/tobichi_origami.png` 64×128 con su
+  desplegado, medalla del token y `models/item/tobichi_origami_token.json`.
+
+**Ojo de diseño (no tocado):** la Especial le da ABSORPTION **al enemigo**, no al owner. Es el
+patrón heredado de la PLANTILLA 1 (aplica `[EFECTO_ESP]` sobre `target`), y Rina ya lo tiene igual:
+si se corrige, se corrige para las dos a la vez y en la plantilla.
+
+### 🧪 Verificación
+`BUILD SUCCESSFUL` · JAR `gachawaifus-3.10.0.jar`. Registro completo: `ModEntities`, `ModItems`,
+`GachaWaifusMod` (atributos + renderer + capa `TUBE_WIDE`), `ModCreativeTabs`, `WaifuRoster`
+(`ROTATION` con 19 + `STANDARD_POOL`), `WaifuColors` (BLANCO ×2: Promeia y Nekomata), lang
+en_us/es_es y `models/item/nekomata_token.json`. `validate_v5.py`: 18/18 piezas OK.
+`compare_originals.py`: 19/19 skins con 0 píxeles distintos del original.
+
+---
+
 ## [3.9.0] — 2026-10-06
 
 ### 🐺 Rina (Alexandrina) y Von Lycaon entran al roster

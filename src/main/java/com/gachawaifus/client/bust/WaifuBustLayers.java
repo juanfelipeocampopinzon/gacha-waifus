@@ -58,22 +58,30 @@ public final class WaifuBustLayers {
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust"), "main");
     public static final ModelLayerLocation TUBE_BIG = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust_big"), "main");
+    /** Malla ANCHA (brazos de 4px): Soldier 11, cuyo modelo vanilla es el de Steve. */
+    public static final ModelLayerLocation TUBE_WIDE = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust_wide"), "main");
 
     private WaifuBustLayers() {
     }
 
     /** Pieza normal: 8x2x2 (Yuzuha, Promeia). */
     public static LayerDefinition create() {
-        return build(PIVOT_Y_NORMAL, 2.0F);
+        return build(PIVOT_Y_NORMAL, 2.0F, true);
     }
 
     /** Pieza grande: 8x3x3 (Astra, Remielle, Kurumi, Yidhari). */
     public static LayerDefinition createBig() {
-        return build(PIVOT_Y_BIG, 3.0F);
+        return build(PIVOT_Y_BIG, 3.0F, true);
     }
 
-    private static LayerDefinition build(float pivotY, float section) {
-        MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, true);
+    /** Pieza normal sobre malla ancha: 8x2x2 (Soldier 11). */
+    public static LayerDefinition createWide() {
+        return build(PIVOT_Y_NORMAL, 2.0F, false);
+    }
+
+    private static LayerDefinition build(float pivotY, float section, boolean slim) {
+        MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, slim);
         PartDefinition body = mesh.getRoot().getChild("body");
 
         CubeListBuilder tube = CubeListBuilder.create()

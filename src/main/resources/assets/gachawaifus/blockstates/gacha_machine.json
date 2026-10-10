@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "gachawaifus:block/gacha_machine", "y": 0 },
+    "facing=east": { "model": "gachawaifus:block/gacha_machine", "y": 90 },
+    "facing=south": { "model": "gachawaifus:block/gacha_machine", "y": 180 },
+    "facing=west": { "model": "gachawaifus:block/gacha_machine", "y": 270 }
+  }
+}

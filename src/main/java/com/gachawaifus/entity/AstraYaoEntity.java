@@ -207,7 +207,9 @@ public class AstraYaoEntity extends AbstractWaifuEntity {
         ItemStack itemstack = player.getItemInHand(hand);
 
         if (this.isOwnedBy(player)) {
-            if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND && itemstack.isEmpty()) {
+            // Agachado no: eso lo maneja AbstractWaifuEntity (cambio de modo de combate).
+            if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND && itemstack.isEmpty()
+                    && !player.isShiftKeyDown()) {
                 this.setOrderedToSit(!this.isOrderedToSit());
                 this.jumping = false;
                 this.navigation.stop();

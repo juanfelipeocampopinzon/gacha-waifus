@@ -8,8 +8,19 @@ version="${file.jarVersion}"
 displayName="Gacha Waifus"
 authors="Juan"
 description='''
-Mod de waifus de gachas con combate tipo Zenless Zone Zero (ZZZ) en Minecraft.
-Prototipo: Astra Yao con ataque normal de éter, habilidad especial acústica y ultimate concierto estelar.
+Waifus de gachas (Zenless Zone Zero y otros animes/juegos) como mascotas combatorias en Minecraft.
+
+- Gacha: Terminal Gacha (Bolitas Rosas, banner rotativo con pity y 50/50) y Terminal Estándar
+  (Bolitas Azules crafteables, pool de las 7 waifus estándar).
+- Combate estilo ZZZ: cada waifu tiene 3 habilidades (normal, especial y ultimate), se invoca
+  con su Token y, al caer, la Cápsula Waifu la guarda y la revive con 4 diamantes.
+- Sistema de 11 colores con matriz de daño (±33 %): los mobs hostiles muestran su color con un
+  cuadradito flotante y aura de partículas; /gwcolor lo consulta en juego (menú Mods → Config
+  para ajustar o apagar la etiqueta).
+- Jefes con recompensa y música de pelea propia: Ricardo Milos, Doctor House y Fernanfloo.
+- Waifus de anime y juego con roles Attack / Stun / Anomaly / Support / Defense.
+
+Contenido de fans, no comercial. Java 21 / NeoForge 1.21.1.
 '''
 
 [[dependencies.gachawaifus]]
