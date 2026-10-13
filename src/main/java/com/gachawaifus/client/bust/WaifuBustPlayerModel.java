@@ -2,7 +2,6 @@ package com.gachawaifus.client.bust;
 
 import com.gachawaifus.bust.BustPhysics;
 import com.gachawaifus.entity.AbstractWaifuEntity;
-import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
@@ -23,7 +22,7 @@ import net.minecraft.world.entity.LivingEntity;
  * <p>En el modelo de jugador la Y crece hacia los pies, pero la escala es simetrica respecto al
  * pivote, asi que el signo da igual.
  */
-public class WaifuBustPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
+public class WaifuBustPlayerModel<T extends LivingEntity> extends WaifuPlayerModel<T> {
 
     private static final float HALF_DIAGONAL_FACTOR = 0.70710678F;
 

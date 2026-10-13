@@ -6,6 +6,8 @@ import com.gachawaifus.color.WaifuColor;
 import com.gachawaifus.color.WaifuColors;
 import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -20,8 +22,11 @@ import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.TamableAnimal;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.goal.FollowOwnerGoal;
 import net.minecraft.world.entity.ai.goal.Goal;
+import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -37,6 +42,29 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
 
     protected AbstractWaifuEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
+        this.goalsRegistrados = true;
+    }
+
+    /** {@code false} mientras corre el constructor de {@code Mob}, que es cuando los goals capturan el rango. */
+    private boolean goalsRegistrados;
+
+    /**
+     * El rango con que la waifu busca enemigos es su radio de deambulación. {@code FOLLOW_RANGE}
+     * manda en el área de búsqueda de {@code NearestAttackableTargetGoal} y en hasta dónde puede
+     * estar el objetivo antes de soltarlo, así que la waifu pelea solo con lo que alcanza a cuidar;
+     * el 32/40/48 que cada una pone en {@code createAttributes()} queda anulado a propósito.
+     *
+     * <p>Durante la construcción se devuelve el máximo y no el valor actual: el goal de vanilla se
+     * guarda el rango <b>una sola vez</b> en su {@code TargetingConditions}, así que si lo capturas
+     * de 16, subir el radio después no lo cambiaría nunca. Capturando el máximo, el único límite
+     * que manda es el que se lee aquí, que sí es vivo.
+     */
+    @Override
+    public double getAttributeValue(Holder<Attribute> attribute) {
+        if (attribute.is(Attributes.FOLLOW_RANGE)) {
+            return this.goalsRegistrados ? (double) WanderConfig.range() : (double) WanderConfig.MAX_RANGE;
+        }
+        return super.getAttributeValue(attribute);
     }
 
     /** Estado de los resortes de la pieza del pecho. */
@@ -91,6 +119,11 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             if (goal instanceof FollowOwnerGoal) {
                 this.goalSelector.removeGoal(goal);
                 this.goalSelector.addGoal(wrapped.getPriority(), new WaifuFollowOwnerGoal(this, 1.35D));
+            } else if (goal instanceof SitWhenOrderedToGoal) {
+                // El de vanilla siente a la mascota en cuanto el dueño no está cargado; este solo
+                // obedece la orden del modo Sentada (o de las caricias de Astra y Nicole).
+                this.goalSelector.removeGoal(goal);
+                this.goalSelector.addGoal(wrapped.getPriority(), new WaifuSitGoal(this));
             }
         }
     }
@@ -98,6 +131,12 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     /** El área de paseo es un círculo de {@link WanderConfig#range()} bloques alrededor del dueño. */
     private void updateWanderRestriction() {
         LivingEntity owner = this.getOwner();
+        if (this.waifuMode == WaifuMode.SENTADA) {
+            // Radio 0 alrededor del bloque en el que se sentó: ningún goal de paseo encuentra punto
+            // válido, así que se queda ahí aunque el goal no declare los flags del sentarse vanilla.
+            this.restrictTo(this.seatPos != null ? this.seatPos : this.blockPosition(), 0);
+            return;
+        }
         if (owner == null || this.isOrderedToSit()) {
             this.clearRestriction();
             return;
@@ -137,15 +176,68 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     /** Modo de combate; por defecto Agresivo (el comportamiento clásico del mod). */
     private WaifuMode waifuMode = WaifuMode.AGRESIVO;
 
+    /**
+     * Bloque en el que se sentó (solo con el modo Sentada). No se guarda: al recargar el mundo vale
+     * su posición actual, que es el mismo sitio porque no se ha movido.
+     */
+    @Nullable
+    private BlockPos seatPos;
+
     /** Modo actual de la waifu. */
     public WaifuMode waifuMode() {
         return this.waifuMode;
     }
 
+    /**
+     * Traduce el modo a lo que entiende la IA. {@code SENTADA} usa el sentarse vanilla
+     * ({@link #setOrderedToSit}): con esa orden activa, {@code unableToMoveToOwner()} le cierra el
+     * goal de seguir al dueño, el {@code SitWhenOrderedToGoal} (prioridad 2) bloquea por flags los
+     * goals de paseo, y el flag sincronizado {@code isInSittingPose()} llega al cliente para la pose.
+     */
+    private void applyWaifuMode() {
+        boolean sentada = this.waifuMode == WaifuMode.SENTADA;
+        this.setOrderedToSit(sentada);
+        this.seatPos = sentada ? this.blockPosition().immutable() : null;
+        if (sentada) {
+            this.setTarget(null);
+            this.getNavigation().stop();
+        }
+    }
+
+    /**
+     * La pose de sentada nunca va por delante de la orden. Vanilla tiene dos caminos que sientan a la
+     * mascota sin que nadie se lo pida: {@code SitWhenOrderedToGoal#canUse()} devuelve true en cuanto
+     * el dueño no está cargado (desconectado o en otra dimensión), y al cargar el NBT se relanza el
+     * "Sitting" guardado. Antes de este modo eso no se veía; ahora dejaría a las waifus salvajes y a
+     * las que esperan a su dueño sentadas por defecto.
+     */
+    @Override
+    public void setInSittingPose(boolean sitting) {
+        super.setInSittingPose(sitting && this.isOrderedToSit());
+    }
+
+    /**
+     * Si el modelo de esta waifu ya dobló piernas y torso esta frame. Lo escribe
+     * {@code WaifuPlayerModel} (solo en el cliente) y lo lee {@code WaifuSittingPose} para no
+     * encogerla además: las 6 waifus de GeckoLib animan por JSON, no pasan por ese modelo, y esas sí
+     * necesitan el truco del PoseStack.
+     */
+    private boolean modelSitPose;
+
+    /** Marca que la pose sentada real ya está aplicada en los huesos. */
+    public void markModelSitPose() {
+        this.modelSitPose = true;
+    }
+
+    /** ¿El modelo aplica la pose sentada real, o hay que fingirla desde el PoseStack? */
+    public boolean hasModelSitPose() {
+        return this.modelSitPose;
+    }
+
     /** Shift + clic con mano vacía (solo el dueño): pasa al siguiente modo y avisa. */
     private void cycleWaifuMode(Player player) {
         this.waifuMode = this.waifuMode.next();
-        this.setTarget(null); // al cambiar de modo se suelta el objetivo actual
+        this.applyWaifuMode();
         player.displayClientMessage(Component.literal(
                 "§d[GachaWaifus] §f" + this.getDisplayName().getString() + " §7→ modo "
                         + this.waifuMode.colorCode() + this.waifuMode.plainName()
@@ -164,6 +256,8 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
      *   <li>NEUTRO: solo a quien le haya golpeado a él/a su dueño y lo que el dueño tenga en la
      *       mira; jamás a la vista (rechaza el NearestAttackableTargetGoal).</li>
      *   <li>AGRESIVO: todo, como hasta ahora.</li>
+     *   <li>SENTADA: nada igual que Pasivo, y encima el sentarse vanilla le apaga el paseo y el
+     *       seguimiento: se queda en el bloque donde la dejaste.</li>
      * </ul>
      */
     @Override
@@ -177,7 +271,8 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     private boolean acceptsTarget(LivingEntity target) {
         return switch (this.waifuMode) {
             case AGRESIVO -> true;
-            case PASIVO -> false;
+            // PASIVO no ataca y SENTADA tampoco: descansando no se pelea con nadie.
+            case PASIVO, SENTADA -> false;
             case NEUTRO -> target == this.getTarget()
                     || target == this.getLastHurtByMob()
                     || (this.getOwner() != null
@@ -194,6 +289,14 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                 && this.isOwnedBy(player)) {
             if (!this.level().isClientSide) {
                 this.cycleWaifuMode(player);
+            }
+            return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        // Waifu salvaje (sin dueño, nacida deambulando): el clic derecho intenta reclamarla. El
+        // servidor es quien cobra y decide; el cliente solo consume el clic para no usar el item.
+        if (hand == InteractionHand.MAIN_HAND && WildWaifus.isWild(this)) {
+            if (!this.level().isClientSide) {
+                return WildWaifus.onInteract(this, player);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
@@ -214,6 +317,7 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             WaifuMode[] modes = WaifuMode.values();
             if (ordinal >= 0 && ordinal < modes.length) {
                 this.waifuMode = modes[ordinal];
+                this.applyWaifuMode(); // el modo manda sobre el "Sitting" vanilla: si no coincide, se relanza
             }
         }
     }

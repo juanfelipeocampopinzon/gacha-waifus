@@ -32,5 +32,6 @@ public class YeShunguangModel extends GeoModel<YeShunguangEntity> {
                                     AnimationState<YeShunguangEntity> animationState) {
         BustBones.drive(this.getBone(BustBones.BONE_NAME).orElse(null), animatable,
                 animationState.getPartialTick());
+        WaifuGeoSitPose.apply(this, animatable, animationState.getPartialTick());
     }
 }

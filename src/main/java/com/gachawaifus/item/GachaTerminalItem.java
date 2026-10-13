@@ -29,6 +29,15 @@ public class GachaTerminalItem extends Item {
     private static final int HARD_PITY = 64;
 
     /**
+     * Probabilidad de <b>4★</b> en una tirada que no dio 5★: la vía fácil para completar la
+     * colección, con su propia pity aparte. Se resuelve contra
+     * {@link WaifuRoster#FOUR_STAR}, así que clasificar una waifu nueva es mover su id de ahí.
+     */
+    private static final double FOUR_STAR_RATE = 0.10D;
+    /** Pity dura de la 4★: si llegan 32 tiradas sin ninguna, cae una segura. */
+    private static final int HARD_PITY_FOUR = 32;
+
+    /**
      * Probabilidad de <b>tirada doble</b>: cuando sale un 5★, hay este porcentaje de que caiga
      * ADEMÁS la waifu siguiente de la rotación (dos de golpe). Subirlo o bajarlo aquí.
      */
@@ -94,6 +103,7 @@ public class GachaTerminalItem extends Item {
         List<String> foodNames = new ArrayList<>();
         List<String> wonNames = new ArrayList<>();
         int fiveStars = 0;
+        int fourStars = 0;
         for (int i = 0; i < pulls; i++) {
             int pullNumber = state.pity + 1;
             double chance = BASE_RATE + (pullNumber > SOFT_PITY_START ? SOFT_PITY_STEP * (pullNumber - SOFT_PITY_START) : 0.0D);
@@ -110,6 +120,9 @@ public class GachaTerminalItem extends Item {
                 }
                 fiveStars++;
                 state.pity = 0;
+                // Un 5★ manda sobre la vía fácil: la pity 4★ también se reinicia (no se cobra como
+                // premio doble, simplemente no se acumula por encima de un premio mayor).
+                state.pity4 = 0;
                 giveToken(player, won);
                 wonNames.add(won.name());
                 announceFiveStar(serverLevel, player, won, featured);
@@ -117,7 +130,12 @@ public class GachaTerminalItem extends Item {
                 // Tirada DOBLE: un porcentaje de que caiga TAMBIÉN la siguiente de la rotación.
                 if (player.getRandom().nextFloat() < DOUBLE_CHANCE) {
                     WaifuRoster.Entry bonus = WaifuRoster.next(won);
-                    if (bonus != null) {
+                    if (bonus != null && WaifuRoster.owns(player, bonus)) {
+                        // La siguiente ya es tuya (por ejemplo, la domaste de salvaje): la doble no
+                        // puede entregar duplicados, así que cae otra que falte.
+                        bonus = WaifuRoster.randomUnowned(player, won);
+                    }
+                    if (bonus != null && !WaifuRoster.owns(player, bonus)) {
                         giveToken(player, bonus);
                         wonNames.add(bonus.name());
                         announceDouble(serverLevel, player, bonus);
@@ -125,26 +143,41 @@ public class GachaTerminalItem extends Item {
                 }
             } else {
                 state.pity++;
+                if (state.pity4 + 1 >= HARD_PITY_FOUR || player.getRandom().nextDouble() < FOUR_STAR_RATE) {
+                    WaifuRoster.Entry four = WaifuRoster.randomFourStarUnowned(player);
+                    state.pity4 = 0;
+                    if (four != null) {
+                        fourStars++;
+                        giveToken(player, four);
+                        wonNames.add(four.name());
+                        announceFourStar(serverLevel, player, four);
+                        continue;
+                    }
+                    // Ya tiene todas las 4★: la pity se reinicia igual (si no, cada tirada sería un
+                    // 4★ garantizado que no entrega nada) y la tirada se resuelve como comida.
+                } else {
+                    state.pity4++;
+                }
                 giveFood(player, level.getRandom(), foodNames);
             }
         }
         data.setDirty();
 
         // Resumen SIEMPRE, en x1 y en x10: antes una tirada simple con 5★ no decía nada.
+        String pityLine = "§7Pity 5★ §b" + state.pity + "/" + HARD_PITY
+                + (state.guaranteed ? "§7 · §e¡la próxima 5★ está garantizada!" : "")
+                + "§7 · 4★ §e" + state.pity4 + "/" + HARD_PITY_FOUR + "§f.";
         if (pulls > 1) {
             player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Tirada x10: §d" + fiveStars + "× 5★§7"
+                    "§7[GachaWaifus] Tirada x10: §d" + fiveStars + "× 5★§7, §e" + fourStars + "× 4★§7"
                             + (wonNames.isEmpty() ? "" : " §f(" + String.join("§7, §f", wonNames) + ")§7")
-                            + ", §f" + foodNames.size() + " comida(s)§7. Pity: §b"
-                            + state.pity + "/" + HARD_PITY));
-        } else if (fiveStars == 0) {
+                            + ", §f" + foodNames.size() + " comida(s)§7. " + pityLine));
+        } else if (fiveStars == 0 && fourStars == 0) {
             player.sendSystemMessage(Component.literal(
                     "§7[GachaWaifus] " + featured.name() + " te cocinó: §f" + String.join("§7, §f", foodNames)
-                            + "§7. Pity: §b" + state.pity + "/" + HARD_PITY));
+                            + "§7. " + pityLine));
         } else {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Pity: §b" + state.pity + "/" + HARD_PITY
-                            + (state.guaranteed ? "§7 · §e¡la próxima 5★ está garantizada!" : "")));
+            player.sendSystemMessage(Component.literal("§7[GachaWaifus] " + pityLine));
         }
         return InteractionResultHolder.consume(stack);
     }
@@ -177,6 +210,16 @@ public class GachaTerminalItem extends Item {
         level.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 1.0, player.getZ(), 3, 0.3, 0.5, 0.3, 0.0);
         level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(), 30, 0.6, 0.8, 0.6, 0.1);
         level.playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.4F, 1.8F);
+    }
+
+    /** Aviso de una 4★: celebra menos que un 5★, pero se nota (es la vía fácil del Terminal). */
+    private void announceFourStar(ServerLevel level, Player player, WaifuRoster.Entry won) {
+        player.sendSystemMessage(Component.literal(
+                "§e§l★★★★ §f¡" + won.name() + " §f(4★)§e es tuya!"));
+        level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(),
+                18, 0.4, 0.6, 0.4, 0.06);
+        level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_PLING.value(),
+                SoundSource.PLAYERS, 1.2F, 1.4F);
     }
 
     private void giveToken(Player player, WaifuRoster.Entry entry) {

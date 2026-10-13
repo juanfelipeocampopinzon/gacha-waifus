@@ -2,7 +2,7 @@ package com.gachawaifus.entity.client;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.WilsonEntity;
-import net.minecraft.client.model.PlayerModel;
+import com.gachawaifus.client.bust.WaifuPlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -14,13 +14,13 @@ import net.minecraft.resources.ResourceLocation;
  *
  * <p>Es un minion, no un jefe: su nombre (§8) solo se ve a la distancia normal del nametag.
  */
-public class WilsonRenderer extends LivingEntityRenderer<WilsonEntity, PlayerModel<WilsonEntity>> {
+public class WilsonRenderer extends LivingEntityRenderer<WilsonEntity, WaifuPlayerModel<WilsonEntity>> {
 
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/wilson.png");
 
     public WilsonRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.6F);
+        super(context, new WaifuPlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.6F);
     }
 
     @Override

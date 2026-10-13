@@ -483,4 +483,22 @@ public class ModEntities {
                     EntityType.Builder.of(com.gachawaifus.entity.RoxyEntity::new, MobCategory.CREATURE)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
-                            .build("roxy"));}
+                            .build("roxy"));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.AquaEntity>> AQUA =
+            ENTITY_TYPES.register("aqua", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.AquaEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("aqua"));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.MeguminEntity>> MEGUMIN =
+            ENTITY_TYPES.register("megumin", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.MeguminEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("megumin"));
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.DarknessEntity>> DARKNESS =
+            ENTITY_TYPES.register("darkness", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.DarknessEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("darkness"));}

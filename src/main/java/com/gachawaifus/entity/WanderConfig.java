@@ -20,6 +20,9 @@ public final class WanderConfig {
     /** Radio (en bloques) alrededor del dueño donde la waifu pasea y hasta donde la sigue. */
     public static ModConfigSpec.IntValue RANGE;
 
+    /** Tope del deslizador. Es también el rango que los goals capturan al nacer la entidad. */
+    public static final int MAX_RANGE = 64;
+
     /** Valor usado si la config todavía no está cargada (arranque del servidor). */
     private static final int DEFAULT_RANGE = 16;
 
@@ -29,9 +32,10 @@ public final class WanderConfig {
         RANGE = builder
                 .comment("Radio en bloques alrededor del duenio dentro del cual la waifu pasea sola",
                         "y hasta donde camina para alcanzarlo. Al superarlo, se teletransporta.",
+                        "El mismo radio manda en la deteccion de enemigos: cuida su terreno.",
                         "4 = muy pegada al jugador. 16 = comportamiento clasico del mod.",
                         "64 = casi libre, ideal para caravanas y guardias.")
-                .defineInRange("range", DEFAULT_RANGE, 4, 64);
+                .defineInRange("range", DEFAULT_RANGE, 4, MAX_RANGE);
         builder.pop();
     }
 

@@ -5,6 +5,7 @@ import com.gachawaifus.item.AstraYaoTokenItem;
 import com.gachawaifus.item.ZhuYuanTokenItem;
 import com.gachawaifus.item.BurniceWhiteTokenItem;
 import com.gachawaifus.item.EllenJoeTokenItem;
+import com.gachawaifus.item.GachaBallItem;
 import com.gachawaifus.item.GachaTerminalItem;
 import com.gachawaifus.item.ChorizoItem;
 import com.gachawaifus.item.MiyabiMisiramaTokenItem;
@@ -87,12 +88,12 @@ public class ModItems {
      * <p>Se craftea en cruz: un diamante en el centro y cobre, lapislázuli, hierro y carbón en las
      * cuatro casillas de al lado. Además el sistema de diarias regala una por día.
      */
-    public static final DeferredHolder<Item, Item> PINK_BALL =
-            ITEMS.register("pink_ball", () -> new Item(new Item.Properties().stacksTo(25)));
+    public static final DeferredHolder<Item, GachaBallItem> PINK_BALL =
+            ITEMS.register("pink_ball", () -> new GachaBallItem(new Item.Properties().stacksTo(25)));
 
     /** Bolita Azul — una tirada del banner PERMANENTE (Terminal Estándar). */
-    public static final DeferredHolder<Item, Item> BLUE_BALL =
-            ITEMS.register("blue_ball", () -> new Item(new Item.Properties()));
+    public static final DeferredHolder<Item, GachaBallItem> BLUE_BALL =
+            ITEMS.register("blue_ball", () -> new GachaBallItem(new Item.Properties()));
 
     /**
      * Terminal Estándar — banner permanente: gasta bolitas azules y solo entrega las 7 waifus
@@ -261,4 +262,10 @@ public class ModItems {
     public static final DeferredHolder<Item, Item> CLARET_TOKEN =
             ITEMS.register("claret_token", () -> new com.gachawaifus.item.ClaretTokenItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> ROXY_TOKEN =
-            ITEMS.register("roxy_token", () -> new com.gachawaifus.item.RoxyTokenItem(new Item.Properties().stacksTo(1)));}
+            ITEMS.register("roxy_token", () -> new com.gachawaifus.item.RoxyTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> AQUA_TOKEN =
+            ITEMS.register("aqua_token", () -> new com.gachawaifus.item.AquaTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> MEGUMIN_TOKEN =
+            ITEMS.register("megumin_token", () -> new com.gachawaifus.item.MeguminTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> DARKNESS_TOKEN =
+            ITEMS.register("darkness_token", () -> new com.gachawaifus.item.DarknessTokenItem(new Item.Properties().stacksTo(1)));}

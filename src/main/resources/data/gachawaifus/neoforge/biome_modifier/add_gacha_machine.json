@@ -1,0 +1,8 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": {
+    "type": "neoforge:any"
+  },
+  "features": "gachawaifus:gacha_machine",
+  "step": "surface_structures"
+}

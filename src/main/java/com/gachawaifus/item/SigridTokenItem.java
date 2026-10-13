@@ -66,8 +66,8 @@ public class SigridTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("§7Invoca a §3Sigrid de L'Azur§7 (Azul / Attack)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);
+        tooltipComponents.add(Component.literal("§7Invoca a §3Sigrid de L'Azur§7 (Naranja / Attack)."));
         tooltipComponents.add(Component.literal("§8Frost-Tipped Spear · Scattered Jade · Frozen Heavens"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

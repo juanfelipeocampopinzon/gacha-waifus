@@ -3,6 +3,7 @@ package com.gachawaifus.gacha;
 import com.gachawaifus.entity.AbstractWaifuEntity;
 import com.gachawaifus.registry.ModEntities;
 import com.gachawaifus.registry.ModItems;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
@@ -11,7 +12,9 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Supplier;
 
 /**
@@ -97,8 +100,17 @@ public final class WaifuRoster {
     public static final Entry JANE_DOE = new Entry("jane_doe", () -> ModEntities.JANE_DOE.get(), () -> ModItems.JANE_DOE_TOKEN.get(), "Jane Doe");
     public static final Entry CAESAR = new Entry("caesar", () -> ModEntities.CAESAR.get(), () -> ModItems.CAESAR_TOKEN.get(), "Caesar King");
     public static final Entry LIGHTER = new Entry("lighter", () -> ModEntities.LIGHTER.get(), () -> ModItems.LIGHTER_TOKEN.get(), "Lighter");
+
+    /** Aqua (KonoSuba) — Support (Agua / curación) */
+    public static final Entry AQUA = new Entry("aqua", () -> ModEntities.AQUA.get(), () -> ModItems.AQUA_TOKEN.get(), "Aqua");
+
+    /** Megumin (KonoSuba) — Anomaly (Explosión) */
+    public static final Entry MEGUMIN = new Entry("megumin", () -> ModEntities.MEGUMIN.get(), () -> ModItems.MEGUMIN_TOKEN.get(), "Megumin");
+
+    /** Darkness (KonoSuba) — Defense (Cruzada) */
+    public static final Entry DARKNESS = new Entry("darkness", () -> ModEntities.DARKNESS.get(), () -> ModItems.DARKNESS_TOKEN.get(), "Darkness");
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, PYROIS, NORMA, VELINA, SIGRID, CLARET, ROXY);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, PYROIS, NORMA, VELINA, SIGRID, CLARET, ROXY, AQUA, MEGUMIN, DARKNESS);
 
     /**
      * Pool fijo del 50/50 perdido (el "banner permanente" de ZZZ): el consuelo solo cae de
@@ -107,7 +119,42 @@ public final class WaifuRoster {
      */
     public static final List<Entry> STANDARD_POOL = List.of(RINA, VON_LYCAON, NICOLE, KOLEDA, GRACE_HOWARD, SOLDIER_11, NEKOMATA);
 
+    /**
+     * Las <b>4★</b> del mod: los personajes que en su juego de origen son de rango bajo. Salen del
+     * Terminal Rosa con su propia probabilidad y su propio pity (bastante más fácil que una 5★), así
+     * que esta lista es la vía rápida para completar la colección.
+     *
+     * <p>Vive aquí, en un solo sitio, para que subir o bajar de rango a una waifu sea mover su id de
+     * esta línea. Koleda y Alice subieron a 5★ (en su juego de origen lo son) y Pan Yinhu bajó a
+     * 4★. A propósito NO están {@code anby_demara} ni {@code billy_kid}: en este mod ya existen como
+     * 5★ (Soldier 0 y la versión destacada), y mientras se decide qué hacer con ellos no pueden
+     * aparecer dos veces en el mismo tirón.
+     */
+    public static final Set<String> FOUR_STAR = Set.of(
+            "nicole_demara", "corin_wickes", "lucy", "piper_wheel", "manato", "soukaku",
+            "anton", "ben_bigger", "harumasa", "nekomata", "pan_yinhu");
+
     private WaifuRoster() {
+    }
+
+    /** ¿Es de rango 4★ (la vía fácil del Terminal)? */
+    public static boolean isFourStar(Entry entry) {
+        return FOUR_STAR.contains(entry.id());
+    }
+
+    /**
+     * Una 4★ que al jugador todavía le falte, al azar. {@code null} si ya las tiene todas: el
+     * Terminal lo trata como tirada de comida sin castigar la pity.
+     */
+    @Nullable
+    public static Entry randomFourStarUnowned(Player player) {
+        List<Entry> libres = new java.util.ArrayList<>();
+        for (Entry e : ROTATION) {
+            if (isFourStar(e) && !owns(player, e)) {
+                libres.add(e);
+            }
+        }
+        return libres.isEmpty() ? null : libres.get(player.getRandom().nextInt(libres.size()));
     }
 
     public static Entry featured(ServerLevel level) {
@@ -183,15 +230,58 @@ public final class WaifuRoster {
     }
 
     /**
-     * "Tenerla" = token en el inventario, entidad viva propia cerca, o guardada/caída en la
-     * Cápsula Waifu. Antes la cápsula no contaba, así que guardar una waifu hacía que el gacha la
-     * volviera a dar (duplicado) y una waifu caída parecía no poseída.
+     * Ids de las waifus que el jugador ya tiene, en una sola pasada y solo con lo que está en
+     * memoria: los tokens del inventario, la Cápsula (vivas y caídas), el registro de doma salvaje y
+     * las waifus que se le enseñan. Es lo mismo que {@link #owns} sin repetir el barrido de 128
+     * bloques por cada entrada del roster, que es lo que necesitaban el spawn de salvajes y ahora
+     * {@code /coleccion}.
+     */
+    public static Set<String> ownedIds(Player player, Iterable<AbstractWaifuEntity> visibles) {
+        Set<String> ids = new HashSet<>();
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            Entry token = byToken(player.getInventory().getItem(i).getItem());
+            if (token != null) {
+                ids.add(token.id());
+            }
+        }
+        if (!player.level().isClientSide()) {
+            ids.addAll(GachaSavedData.get(player.level()).state(player.getUUID()).wildClaims);
+            WaifuStorageSavedData capsula = WaifuStorageSavedData.get(player.level());
+            ids.addAll(capsula.get(player.getUUID()));
+            ids.addAll(capsula.getFallen(player.getUUID()));
+            for (AbstractWaifuEntity cerca : visibles) {
+                if (player.getUUID().equals(cerca.getOwnerUUID())) {
+                    ids.add(BuiltInRegistries.ENTITY_TYPE.getKey(cerca.getType()).getPath());
+                }
+            }
+        }
+        return ids;
+    }
+
+    /** {@link #ownedIds(Player, Iterable)} con el barrido de 128 bloques alrededor del jugador. */
+    public static Set<String> ownedIds(Player player) {
+        return ownedIds(player, player.level().getEntitiesOfClass(AbstractWaifuEntity.class,
+                player.getBoundingBox().inflate(128.0D)));
+    }
+
+    /**
+     * "Tenerla" = token en el inventario, entidad viva propia cerca, guardada/caída en la Cápsula
+     * Waifu, o domada una vez de salvaje. Antes la cápsula no contaba, así que guardar una waifu hacía
+     * que el gacha la volviera a dar (duplicado) y una waifu caída parecía no poseída.
+     *
+     * <p>El registro de doma ({@link GachaSavedData.PlayerState#wildClaims}) es el que cierra el
+     * agujero de la waifu salvaje domada: no deja token ni entrada en la cápsula, y su entidad puede
+     * estar paseando fuera de los 128 bloques que mide el chequeo de arriba.
      */
     public static boolean owns(Player player, Entry entry) {
         Item token = entry.token().get();
         net.minecraft.world.entity.player.Inventory inv = player.getInventory();
         for (int i = 0; i < inv.getContainerSize(); i++) {
             if (inv.getItem(i).is(token)) return true;
+        }
+        if (!player.level().isClientSide()
+                && GachaSavedData.get(player.level()).hasWildClaim(player.getUUID(), entry.id())) {
+            return true;
         }
         WaifuStorageSavedData storage = WaifuStorageSavedData.get(player.level());
         if (storage.contains(player.getUUID(), entry.id()) || storage.isFallen(player.getUUID(), entry.id())) {

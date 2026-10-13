@@ -2,7 +2,7 @@ package com.gachawaifus.entity.client;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.VonLycaonEntity;
-import net.minecraft.client.model.PlayerModel;
+import com.gachawaifus.client.bust.WaifuPlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -17,12 +17,12 @@ import net.minecraft.resources.ResourceLocation;
  * se le quisiera añadir, habría que pasar a {@code WaifuBustPlayerModel} y meterlo en la tabla
  * {@code SECTION} del pipeline del pecho.
  */
-public class VonLycaonRenderer extends LivingEntityRenderer<VonLycaonEntity, PlayerModel<VonLycaonEntity>> {
+public class VonLycaonRenderer extends LivingEntityRenderer<VonLycaonEntity, WaifuPlayerModel<VonLycaonEntity>> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/von_lycaon.png");
 
     public VonLycaonRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
+        super(context, new WaifuPlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
     }
 
     @Override

@@ -33,8 +33,9 @@ import java.util.UUID;
 
 /**
  * <b>Fernanfloo</b> — jefe neutral que deambula por el mundo con su chorizo en la mano: no busca
- * pelea, pero cada golpe suyo suena con el "¡CHORIZO!" de su escena. Al morir suelta
- * {@value #BALL_REWARD} Bolitas Rosas (tiradas del banner de eventos).
+ * pelea, pero avisa a grito pelado antes de cada porrazo (el "¡CHORIZO!" suena y el golpe cae al
+ * terminar el audio). Al morir suelta {@value #BALL_REWARD} Bolitas Rosas (tiradas del banner de
+ * eventos).
  *
  * <p>Mismo contrato que {@link DoctorHouseEntity}: neutral ({@link HurtByTargetGoal}), el jugador
  * apenas le hace daño, y la recompensa va al dueño de la waifu que peleó (o al jugador que más
@@ -50,12 +51,20 @@ public class FernanflooEntity extends Monster {
 
     /** Cada cuántos ticks se le recuerda al jugador que sus golpes casi no cuentan. */
     private static final int HIT_MESSAGE_COOLDOWN = 80;
+    /**
+     * Lo que dura el grito en ticks: el {@code attack.ogg} mide 0,617 s (12,3 ticks a 44 100 Hz),
+     * así que 12 es lo que tarda en sonar. Es también el ritmo de ataque: Fernanfloo grita y el
+     * golpe de chorizo cae cuando el grito se apaga. Si se recorta el audio otra vez, se toca aquí.
+     */
+    private static final int SHOUT_TICKS = 12;
     /** Vida del jefe: más frágil que House, pero pega más fuerte. */
     private static final double MAX_HEALTH = 280.0D;
     /** Radio en el que se busca al jugador que se lleva la recompensa si no hubo golpe directo. */
     private static final double REWARD_SEARCH_RANGE = 32.0D;
 
     private int hitMessageCooldown = 0;
+    /** Ticks que faltan para que caiga el golpe: {@code -1} es "aún no se ha lanzado el grito". */
+    private int shoutCountdown = -1;
     /** Jugador que se lleva las Bolitas Rosas (dueño de la última waifu que le hizo daño). */
     @Nullable
     private UUID rewardPlayer;
@@ -84,7 +93,7 @@ public class FernanflooEntity extends Monster {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.2D, true));
+        this.goalSelector.addGoal(2, new ChorizoAttackGoal());
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.6D));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
@@ -110,15 +119,11 @@ public class FernanflooEntity extends Monster {
         return super.hurt(source, amount);
     }
 
-    /** Cada golpe suyo suena con el "¡CHORIZO!" de su escena (segundos 5-7 del video). */
-    @Override
-    public boolean doHurtTarget(Entity target) {
-        boolean hit = super.doHurtTarget(target);
-        if (hit && this.level() instanceof ServerLevel) {
-            this.level().playSound(null, this.blockPosition(), ModSounds.FERNANFLOO_ATTACK.get(),
-                    SoundSource.HOSTILE, 1.0F, 1.0F);
-        }
-        return hit;
+    /** Lanza el "¡CHORIZO!" y arranca la cuenta atrás: el golpe cae cuando el audio se apaga. */
+    private void startShout() {
+        this.shoutCountdown = SHOUT_TICKS;
+        this.level().playSound(null, this.blockPosition(), ModSounds.FERNANFLOO_ATTACK.get(),
+                SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     @Override
@@ -213,5 +218,44 @@ public class FernanflooEntity extends Monster {
             }
         }
         return closest;
+    }
+
+    /**
+     * El ataque de siempre, pero marcado por el grito: en cuanto tiene a alguien a mano suena el
+     * "¡CHORIZO!" y el porrazo cae {@link #SHOUT_TICKS} ticks después, cuando el audio se apaga.
+     * Perseguir y girar hacia la meta los sigue haciendo {@code MeleeAttackGoal}; aquí solo se
+     * sustituye su cadencia de 20 ticks, que era la que coincidía con el golpe.
+     */
+    private class ChorizoAttackGoal extends MeleeAttackGoal {
+
+        ChorizoAttackGoal() {
+            super(FernanflooEntity.this, 1.2D, true);
+        }
+
+        @Override
+        protected void checkAndPerformAttack(LivingEntity target) {
+            if (!FernanflooEntity.this.isWithinMeleeAttackRange(target)
+                    || !FernanflooEntity.this.getSensing().hasLineOfSight(target)) {
+                FernanflooEntity.this.shoutCountdown = -1; // sin línea de tiro no hay grito empezado
+                return;
+            }
+            if (FernanflooEntity.this.shoutCountdown < 0) {
+                FernanflooEntity.this.startShout();
+                return;
+            }
+            FernanflooEntity.this.shoutCountdown--;
+            if (FernanflooEntity.this.shoutCountdown > 0) {
+                return;
+            }
+            FernanflooEntity.this.shoutCountdown = -1;
+            FernanflooEntity.this.swing(InteractionHand.MAIN_HAND);
+            FernanflooEntity.this.doHurtTarget(target);
+        }
+
+        @Override
+        public void stop() {
+            super.stop();
+            FernanflooEntity.this.shoutCountdown = -1;
+        }
     }
 }

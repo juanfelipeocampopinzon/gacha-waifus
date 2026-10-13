@@ -32,5 +32,6 @@ public class AnbyDemaraModel extends GeoModel<AnbyDemaraEntity> {
                                     AnimationState<AnbyDemaraEntity> animationState) {
         BustBones.drive(this.getBone(BustBones.BONE_NAME).orElse(null), animatable,
                 animationState.getPartialTick());
+        WaifuGeoSitPose.apply(this, animatable, animationState.getPartialTick());
     }
 }

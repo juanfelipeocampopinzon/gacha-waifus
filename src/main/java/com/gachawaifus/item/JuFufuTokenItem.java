@@ -66,8 +66,8 @@ public class JuFufuTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.ROJO);
-        tooltipComponents.add(Component.literal("§7Invoca a §4Ju Fufu§7 (Rojo / Stun)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.AMARILLO);
+        tooltipComponents.add(Component.literal("§7Invoca a §4Ju Fufu§7 (Amarillo / Stun)."));
         tooltipComponents.add(Component.literal("§8Tiger Seven Forms - Flaming Claw · Mountain-Descending Savage Tiger · Raging Tiger Explosion"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

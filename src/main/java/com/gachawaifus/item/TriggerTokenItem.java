@@ -66,8 +66,8 @@ public class TriggerTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
-        tooltipComponents.add(Component.literal("§7Invoca a §8Trigger§7 (Gris / Stun)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.AMARILLO);
+        tooltipComponents.add(Component.literal("§7Invoca a §8Trigger§7 (Amarillo / Stun)."));
         tooltipComponents.add(Component.literal("§8Cold-Bore Shot · Flash Burial · Underworld Requiem"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

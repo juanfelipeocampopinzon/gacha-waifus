@@ -2,18 +2,18 @@ package com.gachawaifus.entity.client;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.SethLowellEntity;
-import net.minecraft.client.model.PlayerModel;
+import com.gachawaifus.client.bust.WaifuPlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
 import net.minecraft.resources.ResourceLocation;
 
-public class SethLowellRenderer extends LivingEntityRenderer<SethLowellEntity, PlayerModel<SethLowellEntity>> {
+public class SethLowellRenderer extends LivingEntityRenderer<SethLowellEntity, WaifuPlayerModel<SethLowellEntity>> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/seth_lowell.png");
 
     public SethLowellRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
+        super(context, new WaifuPlayerModel<>(context.bakeLayer(ModelLayers.PLAYER), false), 0.5F);
     }
 
     @Override

@@ -66,8 +66,8 @@ public class AntonTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("§7Invoca a §2Anton Ivanov§7 (Azul / Attack)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
+        tooltipComponents.add(Component.literal("§7Invoca a §2Anton Ivanov§7 (Gris / Attack)."));
         tooltipComponents.add(Component.literal("§8Enthusiastic Drills · Smash the Horizon, Bro! · Go Go Go Go Go!"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

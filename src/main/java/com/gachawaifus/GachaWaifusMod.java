@@ -53,6 +53,7 @@ import com.gachawaifus.entity.ZhuYuanEntity;
 import com.gachawaifus.entity.client.ZhuYuanRenderer;
 import com.gachawaifus.entity.client.QingyiRenderer;
 import com.gachawaifus.entity.client.YixuanRenderer;
+import com.gachawaifus.entity.client.TokisakiKurumiModel;
 import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.client.bust.WaifuBustLayers;
 import com.gachawaifus.registry.ModBlocks;
@@ -120,6 +121,7 @@ public class GachaWaifusMod {
         event.registerLayerDefinition(WaifuBustLayers.TUBE, WaifuBustLayers::create);
         event.registerLayerDefinition(WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
         event.registerLayerDefinition(WaifuBustLayers.TUBE_WIDE, WaifuBustLayers::createWide);
+        event.registerLayerDefinition(TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {
@@ -133,6 +135,8 @@ public class GachaWaifusMod {
         event.put(ModEntities.ASTRA_YAO.get(), AstraYaoEntity.createAttributes().build());
         // ★★★☆☆ — Ellen Joe
         event.put(ModEntities.ELLEN_JOE.get(), EllenJoeEntity.createAttributes().build());
+        // ★★★★★ — Burnice White (Caucasus Analytics / Fire Anomaly)
+        event.put(ModEntities.BURNICE_WHITE.get(), BurniceWhiteEntity.createAttributes().build());
         // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
         event.put(ModEntities.YE_SHUNGUANG.get(), YeShunguangEntity.createAttributes().build());
 
@@ -228,6 +232,9 @@ public class GachaWaifusMod {
         event.put(ModEntities.JANE_DOE.get(), com.gachawaifus.entity.JaneDoeEntity.createAttributes().build());
         event.put(ModEntities.CAESAR.get(), com.gachawaifus.entity.CaesarEntity.createAttributes().build());
         event.put(ModEntities.LIGHTER.get(), com.gachawaifus.entity.LighterEntity.createAttributes().build());
+        event.put(ModEntities.AQUA.get(), com.gachawaifus.entity.AquaEntity.createAttributes().build());
+        event.put(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.MeguminEntity.createAttributes().build());
+        event.put(ModEntities.DARKNESS.get(), com.gachawaifus.entity.DarknessEntity.createAttributes().build());
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -331,5 +338,8 @@ public class GachaWaifusMod {
         event.registerEntityRenderer(ModEntities.CAESAR.get(), com.gachawaifus.entity.client.CaesarRenderer::new);
         event.registerEntityRenderer(ModEntities.LIGHTER.get(), com.gachawaifus.entity.client.LighterRenderer::new);
         event.registerEntityRenderer(ModEntities.ZHU_YUAN.get(), ZhuYuanRenderer::new);
+        event.registerEntityRenderer(ModEntities.AQUA.get(), com.gachawaifus.entity.client.AquaRenderer::new);
+        event.registerEntityRenderer(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.client.MeguminRenderer::new);
+        event.registerEntityRenderer(ModEntities.DARKNESS.get(), com.gachawaifus.entity.client.DarknessRenderer::new);
     }
 }

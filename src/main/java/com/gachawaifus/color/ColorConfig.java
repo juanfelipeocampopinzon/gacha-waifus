@@ -19,6 +19,9 @@ public final class ColorConfig {
     /** A qué distancia (bloques) se muestra la etiqueta; más lejos, no se dibuja. */
     public static final ModConfigSpec.IntValue LABEL_RANGE;
 
+    /** ¿Se muestran los nombres flotantes de las waifus (su nametag de color)? */
+    public static final ModConfigSpec.BooleanValue WAIFU_NAME_TAGS;
+
     static {
         ModConfigSpec.Builder builder = new ModConfigSpec.Builder();
         builder.push("floating_label");
@@ -29,6 +32,13 @@ public final class ColorConfig {
                 .comment("Rango en bloques hasta el que se muestra la etiqueta.",
                         "Por debajo se ve a tamano de nametag; mas alla no se dibuja.")
                 .defineInRange("range", 64, 16, 256);
+        builder.pop();
+        builder.push("nametags");
+        WAIFU_NAME_TAGS = builder
+                .comment("Nombre flotante de las waifus (el texto de color sobre cada una).",
+                        "Apagalo si molesta en las bases con muchas waifus; solo afecta a las waifus,",
+                        "los demas mobs siguen igual.")
+                .define("waifu_name_tags", true);
         builder.pop();
         SPEC = builder.build();
     }

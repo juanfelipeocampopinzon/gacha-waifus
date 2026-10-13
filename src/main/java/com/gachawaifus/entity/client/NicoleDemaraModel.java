@@ -32,5 +32,6 @@ public class NicoleDemaraModel extends GeoModel<NicoleDemaraEntity> {
                                     AnimationState<NicoleDemaraEntity> animationState) {
         BustBones.drive(this.getBone(BustBones.BONE_NAME).orElse(null), animatable,
                 animationState.getPartialTick());
+        WaifuGeoSitPose.apply(this, animatable, animationState.getPartialTick());
     }
 }

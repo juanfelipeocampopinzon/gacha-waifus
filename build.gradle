@@ -40,6 +40,17 @@ neoForge {
 
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 
+// `neoforge.mods.toml` pide la versión con `${file.jarVersion}`: FML la lee del manifest del jar,
+// y sin este atributo el menú Mods mostraba el mod sin versión.
+jar {
+    manifest {
+        attributes([
+                'Implementation-Title': mod_id,
+                'Implementation-Version': mod_version
+        ])
+    }
+}
+
 repositories {
     mavenLocal()
     mavenCentral()

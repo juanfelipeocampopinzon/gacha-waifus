@@ -30,9 +30,9 @@ public final class WaifuColors {
         put("ukinami_yuzuha", WaifuColor.VERDE);    // traje verde-teal
         put("promeia", WaifuColor.BLANCO);         // paleta pálida/glacial
         put("remielle", WaifuColor.NEGRO);         // cazadora del vacío
-        put("tokisaki_kurumi", WaifuColor.ROJO);   // vestido negro con rojos, ojos rojo/ámbar
+        put("tokisaki_kurumi", WaifuColor.ROSA);   // la ladrona enmascarada: rosa en su piel
         put("koleda", WaifuColor.ROJO);                // cabello y efectos de fuego
-        put("grace_howard", WaifuColor.AZUL);      // Azul / Anomaly (Electricidad)
+        put("grace_howard", WaifuColor.NEGRO);   // piel negro+ámbar, sin azul: su mono de mecánica
         put("yidhari", WaifuColor.AZUL);   // color primario de su elemento de Hielo
         put("von_lycaon", WaifuColor.AZUL);   // color primario de su elemento de Hielo
         put("rina", WaifuColor.ROSA);
@@ -42,11 +42,11 @@ public final class WaifuColors {
         put("billy_kid", WaifuColor.GRIS);
         put("yixuan", WaifuColor.VERDE);           // tinta áurica jade de Yunkui
         put("zhu_yuan", WaifuColor.AZUL);          // uniforme del NEPS (Seguridad Pública)
-        put("qingyi", WaifuColor.AZUL);
+        put("qingyi", WaifuColor.VERDE);   // piel verde jade, el azul no le aparece
         put("pyrois", WaifuColor.BLANCO);
         put("norma", WaifuColor.NARANJA);
         put("velina", WaifuColor.VERDE);
-        put("sigrid", WaifuColor.AZUL);
+        put("sigrid", WaifuColor.NARANJA);   // piel naranja al 50 %
         put("claret", WaifuColor.ROJO);
         put("roxy", WaifuColor.GRIS);
         put("orphie", WaifuColor.ROJO);
@@ -54,22 +54,22 @@ public final class WaifuColors {
         put("manato", WaifuColor.NARANJA);
         put("lucia", WaifuColor.MORADO);
         put("banyue", WaifuColor.NARANJA);
-        put("zhao", WaifuColor.BLANCO);
+        put("zhao", WaifuColor.ROSA);   // piel rosa al 52 %
         put("aria", WaifuColor.ROSA);
-        put("sunna", WaifuColor.BLANCO);
+        put("sunna", WaifuColor.AMARILLO);   // piel amarilla, y AMARILLO estaba en 2
         put("cissia", WaifuColor.VERDE);
         put("nangong_yu", WaifuColor.AZUL);
         put("tsukishiro_yanagi", WaifuColor.MORADO);
         put("harumasa", WaifuColor.BLANCO);
         put("evelyn_chevalier", WaifuColor.ROJO);
         put("pulchra", WaifuColor.MARRON);
-        put("trigger", WaifuColor.GRIS);
+        put("trigger", WaifuColor.AMARILLO);   // piel naranja-amarilla sobre gris
         put("hugo_vlad", WaifuColor.NEGRO);
         put("vivian", WaifuColor.MORADO);
-        put("ju_fufu", WaifuColor.ROJO);
+        put("ju_fufu", WaifuColor.AMARILLO);   // ámbar y amarillo se empatan en su piel
         put("pan_yinhu", WaifuColor.MARRON);
         put("alice", WaifuColor.ROSA);
-        put("anton", WaifuColor.AZUL);
+        put("anton", WaifuColor.GRIS);   // piel gris con acentos ámbar
         put("ben_bigger", WaifuColor.NARANJA);
         put("corin_wickes", WaifuColor.GRIS);
         put("lucy", WaifuColor.AMARILLO);
@@ -79,6 +79,9 @@ public final class WaifuColors {
         put("jane_doe", WaifuColor.NEGRO);
         put("caesar", WaifuColor.ROJO);
         put("lighter", WaifuColor.NARANJA);
+        put("aqua", WaifuColor.AZUL);            // pelo y agua de la diosa
+        put("megumin", WaifuColor.MORADO);       // toga y magia púrpura
+        put("darkness", WaifuColor.MARRON);      // melena cobriza de la cruzada
     }
 
     private WaifuColors() {

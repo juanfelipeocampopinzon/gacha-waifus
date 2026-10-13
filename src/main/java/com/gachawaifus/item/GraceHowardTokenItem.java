@@ -73,8 +73,8 @@ public class GraceHowardTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §bGrace Howard§7 (Azul / Anomalía)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);   // §7Color, fuerte y débil
+        tooltipComponents.add(Component.literal("§7Invoca a §bGrace Howard§7 (Negro / Anomalía)."));
         tooltipComponents.add(Component.literal("§8Charged Bolt · Magnetic Field · Overclocked Barrage"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

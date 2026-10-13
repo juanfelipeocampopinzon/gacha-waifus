@@ -4,6 +4,130 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [5.3.1] — 2026-10-12
+
+### 🎌 Kurumi, ya editable desde Blockbench
+- `TokisakiKurumiModel` pasa a ser **clase de modelo propia** con su capa registrada en
+  `GachaWaifusMod` (`LAYER_LOCATION` → `createBodyLayer`). Antes Kurumi usaba
+  `WaifuBustPlayerModel` a secas, y sin un `createBodyLayer()` propio no había dónde volcar lo
+  que se modele en Blockbench.
+- Volcado desde `blockbench/tokisaki_kurumi/tokisaki_kurumi.geo.json`: **4 mechones con giro**
+  (dos sobre la frente a ±15° y dos laterales a ±25°) y **5 piezas nuevas en el brazo derecho**.
+  En la malla de jugador un cubo no puede girar por su cuenta, así que cada mechón es un hueso
+  hijo de `head` con su `PartPose.offsetAndRotation`.
+- **Fix del signo del giro**: se volcó negado y los mechones laterales quedaban flotando a 6 px
+  de la cabeza. Como X e Z son iguales en los dos espacios y solo la Y está reflejada, el signo
+  **se conserva** al pasar de geo a Java.
+- Fuera las **coletas que había dejado la IA anterior** (`left_twintail` / `right_twintail`, sus
+  `ModelPart` y el balanceo de `setupAnim`). El mosquete se queda, aunque hoy **no se ve**: su
+  desplegado `(32,64) (32,70) (32,74)` está sin pintar en la skin.
+- `textures/entity/tokisaki_kurumi.png` reemplazada por la pintada a mano (33 px nuevos y 119
+  retocados, ninguno borrado).
+
+### 🧰 Herramientas del flujo (viven fuera del repo)
+- `research/geo/java_player_to_geo.py` — traduce la malla Java de un personaje a `.geo.json`
+  abrible en Blockbench, y autovalida la base contra `anby_demara.geo.json`.
+- `research/geo/export_editable_pack.py` — monta `paquete-edicion/` y su zip para quien colabore
+  con los modelos: una carpeta por personaje (skin + geo editable + ficha), `GUIA.md` y
+  `LISTA.csv`. Deja claro que **58 de los 65 personajes tienen la geometría en Java**, no en JSON.
+
+---
+
+## [5.3.0] — 2026-10-10
+
+> Nota: 5.0.0, 5.1.0 y 5.2.0 se compiló cada una y se instaló, pero no se apuntaron aquí. Esta
+> entrada las cubre todas juntas (desde 4.9.2) más lo de 5.3.0. Lo exacto de cada jar se puede
+> reconstruir por `git diff e8f1af1..HEAD`.
+
+### 🌍 Waifus salvajes que deambulan por el mundo
+- **`WildWaifuSpawner` + `WildWaifus` + `WildWaifuConfig`**: cada color pasea por un **clima**
+  (`FRIO / TEMPLADO / CALIDO / NETHER / END`), no por elemento. El spawn respeta al jugador: no
+  interrumpe a menos de **28 bloques**, cuenta las salvajes que ya hay en **96** para no llenar la
+  zona, prueba **16 puntos** por tirada y baja hasta **128** bloques buscando hueco pisable (el
+  Nether responde con el techo de bedrock, así que hay 96 bloques de aire que atravesar).
+- **Doma cara y con suerte visible** (`GachaBallItem`, la Bolita Rosa): **1 bolita por intento**,
+  sale **1 de cada 110** y se asegura a los **128** intentos. El sonido de aldeano-diciendo-no de
+  los fallos se quitó porque molestaba.
+- No se puede domar una waifu **que ya tienes**, y domar una salvaje **no rompe el gacha** (la
+  instancia domada deja de contar como salvaje a efectos de la Cápsula y del roster).
+- **`/gwcolor biomas` agrupado por color** (una línea por color: sus climas y 3 biomas de ejemplo),
+  **`/gwcolor aqui`** (el clima donde estás parado y qué puede nacer ahí) y **`/coleccion`**,
+  `/coleccion cinco`, `/coleccion cuatro` para ver qué te falta por rareza.
+
+### ⭐ Rangos 4★ / 5★
+- `WaifuRoster.FOUR_STAR`: las 4★ salen del Terminal Rosa con su propia probabilidad y su
+  **pity de 32**, bastante más fácil que una 5★ — es la vía rápida para completar la colección.
+- Koleda y Alice suben a **5★** (en su juego de origen lo son) y **Pan Yinhu** baja a **4★**.
+
+### 🪑 4º modo: SENTADA, y por fin nadie nace sentada
+- `WaifuMode` gana **SENTADA** junto a AGRESIVO / PASIVO / PASOS: la waifu se queda en el bloque
+  donde se la pone (`seatPos` + `restrictTo(seatPos, 0)`), y `acceptsTarget()` la deja fuera del
+  combate igual que al modo PASIVO.
+- **Fix de la causa raíz**: `SitWhenOrderedToGoal` de vanilla siente a la mascota en cuanto
+  `getOwner() == null`, o sea siempre que el dueño está desconectado o en otra dimensión — por eso
+  "las salvajes salían sentadas". `WaifuSitGoal` lo sustituye de forma centralizada en
+  `applyWanderGoals()` y solo obedece `isOrderedToSit()`, y `setInSittingPose()` queda guardado por
+  `sitting && isOrderedToSit()` para que ningún otro código las siente de rondón.
+- **Pose real** (`WaifuPlayerModel`, nuevo): piernas casi horizontales hacia delante (`xRot -1.52`,
+  abiertas `±0.12`), torso echado al suelo (`-0.62` con respiración), brazos atrás apoyados
+  (`+1.15`, `±0.28`) y cabeza compensada. `WaifuBustPlayerModel` hereda de él, así que las 40 con
+  pieza la tienen (y la pieza sigue el torso inclinado) y los otros 17 renderers de `PlayerModel`
+  pasan a este modelo: **57 de 62**. Las 6 de GeckoLib mantienen el encogimiento de
+  `WaifuSittingPose`, que usa la flag `hasModelSitPose()` para no duplicar el hundimiento.
+
+### 🎨 Rebalance de colores (5.3.0)
+- Estaba **AZUL con 11 waifus y AMARILLO con 2**: montar un equipo de un color casi vacío era
+  imposible aunque la matriz ±33 % sea regular. Ahora **todo entre 5 y 8**
+  (NARANJA 8 · AZUL 7 · ROSA 6 · BLANCO 6 · ROJO/NARANJA/AMARILLO/VERDE/MORADO/MARRON/NEGRO/GRIS 5).
+- Las 9 movidas se eligieron **con su propia skin**, no a ojo: `research/colors/skin_dominant.py`
+  saca el color dominante de las regiones de cabeza y torso (clasificando en HSV, porque el marrón
+  es naranja oscuro y el rosa rojo claro) y solo se movió a las que **no llevaban su color asignado
+  entre los tres dominantes**. Miyabi, Aqua, Zhu Yuan, Yidhari, Von Lycaon, Nangong Yu y Seth
+  Lowell se quedan en AZUL porque su piel sí lo lleva.
+  Grace→NEGRO, Qingyi→VERDE, Anton→GRIS, Sigrid→NARANJA, Sunna y Ju Fufu y Trigger→AMARILLO,
+  Tokisaki Kurumi y Zhao→ROSA.
+- `research/colors/rebalance_colors.py` aplica el plan a **los cuatro sitios donde el color está
+  escrito** y falla si alguno no decía el color esperado (nada de reescrituras a medias):
+  `WaifuColors.java`, el `ColorTooltip.append` de cada token, el **literal del tooltip en Java**
+  (`"(Azul / Attack)"`, 55 ficheros lo llevan escrito a mano sin pasar por el lang) y el
+  `..._token.desc` de los dos idiomas.
+- **Fix del validador**: `PUT_RE` y `ENTRY_RE` de `validate_colors.py` eran `[a-z_]+`, así que
+  **`soldier_11` nunca se validaba** (su id lleva dígitos). Ahora `[a-z0-9_]+` y el censo da 62.
+  El id del token se saca de `ModEntities` (`RINA_ENTITY` se registra como `rina`), y `validate_colors.py`
+  pasa **el color del token, su literal y su desc contra `WaifuColors`**: 62 tokens, 55 literales y
+  48+45 descs contrastados. Ese check es el que faltaba para que un rebalance no se quede a medias.
+
+### 🏷️ La versión, visible en el menú Mods
+- `neoforge.mods.toml` pide la versión con `version="${file.jarVersion}"`, y FML la lee del
+  **manifest del jar** — que se compilaba sin `Implementation-Version`, así que el mod salía en
+  Mods sin número. `build.gradle` lo pone ahora desde `mod_version`, así que el número sale solo al
+  pasar de versión (5.3.0 en el manifest del jar actual).
+
+### 🧹 Limpieza de 5.3.0
+- Borrado `entity/WanderAroundOwnerGoal.java`: llevaba versiones sin que nadie lo instanciara
+  (el paseo con radio lo hace `WaifuFollowOwnerGoal` + `restrictTo()`).
+- **36 `§§` dobles por idioma** en los descs de los tokens: el segundo `§` se comía el código y el
+  nombre salía con basura en vez de coloreado.
+
+### 🪄 Lo demás del tramo 5.0.0 → 5.2.0
+- **3 waifus de KonoSuba** (Aqua, Megumin, Darkness) con entidad, token, renderer, modelo de item,
+  registros, color y los dos idiomas.
+- **Misiones diarias** (`DailyMissions` + `MissionConfig`): 3 misiones, **1 tirada** cada una.
+- **Starter** (`StarterWaifu`): personaje gratuito al primer arranque, para no empezar de cero.
+- **Máquina gacha en el mundo** (`GachaMachineBlock` + `biome_modifier` + `worldgen/`): azules =
+  banner permanente, rosas = promocional, y Shift + clic deja de contar x10 de más. La tirada
+  sigue viviendo en el terminal; el bloque es la parte visual.
+- **Config nueva**: opción de apagar las etiquetas de nombre (`WaifuNameTagHook`) y el rango de
+  detección de enemigos pasa a ser **el mismo radio** que el de deambulación.
+- **Jefes**: caras con fondo transparente, `BossSpawnConfig`/`BossSpawnHandler` con el % de spawn
+  configurable, y **Fernanfloo** con el grito recortado al final y el golpe cayendo justo cuando
+  termina el audio.
+- **Fix de crash**: los atributos de Burnice no estaban registrados.
+- Icono de la Cápsula Waifu a partir de la imagen aportada, y **Claret** con pieza a partir de su
+  skin nueva (64×128, `TUBE`).
+
+---
+
 ## [4.9.2] — 2026-10-10
 
 > Nota: entre 4.3.0 y 4.9.2 se acumularon varias versiones sin apuntar aquí (jefes Doctor House /

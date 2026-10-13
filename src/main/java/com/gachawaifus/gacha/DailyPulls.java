@@ -63,8 +63,10 @@ public final class DailyPulls {
                             "§d[GachaWaifus] §fDestacada de hoy: §d" + featured.name()
                                     + "§f. §7(rota cada día de Minecraft)"));
                     player.sendSystemMessage(Component.literal(
-                            "§7Pity: §b" + state.pity + "§7/64"
+                            "§7Pity 5★: §b" + state.pity + "§7/64"
                                     + (state.guaranteed ? " §7· §e¡la próxima 5★ es la destacada!" : "")));
+                    player.sendSystemMessage(Component.literal(
+                            "§7Pity 4★: §e" + state.pity4 + "§7/32 §7(a la 32 llega una 4★ segura)"));
                     boolean hoy = player.getPersistentData().getLong(KEY_LAST_DAY) >= LocalDate.now().toEpochDay();
                     player.sendSystemMessage(Component.literal(
                             "§7Tirada diaria: " + (hoy ? "§aya recogida hoy" : "§e¡disponible! usa §f/tirada")));

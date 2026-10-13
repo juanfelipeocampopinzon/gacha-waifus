@@ -2,7 +2,7 @@ package com.gachawaifus.entity.client;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.QingyiEntity;
-import net.minecraft.client.model.PlayerModel;
+import com.gachawaifus.client.bust.WaifuPlayerModel;
 import net.minecraft.client.model.geom.ModelLayers;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.LivingEntityRenderer;
@@ -13,12 +13,12 @@ import net.minecraft.resources.ResourceLocation;
  * sin pieza del pecho. Tea Master del Equipo de Investigación: bastón eléctrico
  * y un look de oficinista tranquila.
  */
-public class QingyiRenderer extends LivingEntityRenderer<QingyiEntity, PlayerModel<QingyiEntity>> {
+public class QingyiRenderer extends LivingEntityRenderer<QingyiEntity, WaifuPlayerModel<QingyiEntity>> {
     private static final ResourceLocation TEXTURE =
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/qingyi.png");
 
     public QingyiRenderer(EntityRendererProvider.Context context) {
-        super(context, new PlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true), 0.5F);
+        super(context, new WaifuPlayerModel<>(context.bakeLayer(ModelLayers.PLAYER_SLIM), true), 0.5F);
     }
 
     @Override

@@ -66,8 +66,8 @@ public class SunnaTokenItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
-        ColorTooltip.append(tooltipComponents, WaifuColor.BLANCO);
-        tooltipComponents.add(Component.literal("§7Invoca a §fSunna§7 (Blanco / Support)."));
+        ColorTooltip.append(tooltipComponents, WaifuColor.AMARILLO);
+        tooltipComponents.add(Component.literal("§7Invoca a §fSunna§7 (Amarillo / Support)."));
         tooltipComponents.add(Component.literal("§8Mischief Meteor Hammer · Bubblegum Barrage · Smash It All!"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
