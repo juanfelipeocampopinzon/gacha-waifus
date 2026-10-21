@@ -2,11 +2,13 @@ package com.gachawaifus.entity;
 
 import com.gachawaifus.registry.ModEntities;
 import com.gachawaifus.registry.ModItems;
+import com.gachawaifus.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -128,6 +130,10 @@ public class FernanflooEntity extends Monster {
         if (this.level().isClientSide) {
             return;
         }
+        // Fernanfloo antiguos (guardados en el mundo) aún traen el chorizo en la mano: quedarse sin arma.
+        if (!this.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
+            this.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
+        }
         if (this.summonCooldown > 0) {
             this.summonCooldown--;
             return;
@@ -182,8 +188,9 @@ public class FernanflooEntity extends Monster {
         if (summoned > 0) {
             this.minionsSummoned += summoned;
             this.summonCooldown = SUMMON_COOLDOWN_TICKS;
-            this.level().playSound(null, this.blockPosition(), SoundEvents.WOLF_GROWL,
-                    SoundSource.HOSTILE, 1.0F, 1.3F);
+            // Su grito de siempre: "¡CHORIZO!" cada vez que suelta a los Curlys.
+            this.level().playSound(null, this.blockPosition(), ModSounds.FERNANFLOO_ATTACK.get(),
+                    SoundSource.HOSTILE, 1.0F, 1.0F);
         } else {
             // Sin sitio donde aparecer: se rearma la recarga para no reintentar cada tick.
             this.summonCooldown = 40;

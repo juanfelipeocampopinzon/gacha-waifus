@@ -7,7 +7,6 @@ import com.gachawaifus.item.BurniceWhiteTokenItem;
 import com.gachawaifus.item.EllenJoeTokenItem;
 import com.gachawaifus.item.GachaBallItem;
 import com.gachawaifus.item.GachaTerminalItem;
-import com.gachawaifus.item.ChorizoItem;
 import com.gachawaifus.item.BateBeisbolItem;
 import com.gachawaifus.item.MiyabiMisiramaTokenItem;
 import com.gachawaifus.item.NicoleDemaraTokenItem;
@@ -144,14 +143,7 @@ public class ModItems {
                     ModEntities.WILSON.get(), 0x6E4F35, 0xC8B89A, new Item.Properties()));
 
     /**
-     * Chorizo — el embutido que Fernanfloo lleva en la mano (modelo GeckoLib). Item normal:
-     * se puede sostener o poner en marcos; él lo lleva siempre (drop chance 0).
-     */
-    public static final DeferredHolder<Item, Item> CHORIZO =
-            ITEMS.register("chorizo", () -> new ChorizoItem(new Item.Properties().stacksTo(1)));
-
-    /**
-     * Huevo de invocación de Fernanfloo (el jefe neutral del chorizo). Colores: gorra verde
+     * Huevo de invocación de Fernanfloo (el jefe neutral de los Curlys). Colores: gorra verde
      * con ropa oscura.
      */
     public static final DeferredHolder<Item, Item> FERNANFLOO_SPAWN_EGG =
@@ -159,7 +151,7 @@ public class ModItems {
                     ModEntities.FERNANFLOO.get(), 0x3AA33A, 0x2B2B2B, new Item.Properties()));
 
     /**
-     * Bate de béisbol — el arma de Tung Tung Sahur (modelo GeckoLib, mismo patrón que el chorizo).
+     * Bate de béisbol — el arma de Tung Tung Sahur (modelo GeckoLib).
      */
     public static final DeferredHolder<Item, Item> BATE_BEISBOL =
             ITEMS.register("beisbol_bate", () -> new BateBeisbolItem(new Item.Properties().stacksTo(1)));

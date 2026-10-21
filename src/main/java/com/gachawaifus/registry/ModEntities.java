@@ -191,7 +191,7 @@ public class ModEntities {
                             .build("wilson"));
 
     /**
-     * Fernanfloo — jefe de recompensa (neutral): pega con su chorizo y al morir suelta
+     * Fernanfloo — jefe de recompensa (neutral): invoca perritos Curly y al morir suelta
      * 3 Bolitas Rosas (tiradas del banner de eventos).
      */
     public static final DeferredHolder<EntityType<?>, EntityType<FernanflooEntity>> FERNANFLOO =

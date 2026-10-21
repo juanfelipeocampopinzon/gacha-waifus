@@ -12,8 +12,8 @@ import net.neoforged.neoforge.client.extensions.common.RegisterClientExtensionsE
 import software.bernie.geckolib.renderer.GeoItemRenderer;
 
 /**
- * Registro de cliente del bate: mismo patrón que {@code ChorizoClient} — {@link GeoItemRenderer}
- * en mano (tercera persona incluida) e inventario.
+ * Registro de cliente del bate: {@link GeoItemRenderer} en mano (tercera persona incluida)
+ * e inventario.
  */
 @EventBusSubscriber(modid = GachaWaifusMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BateBeisbolClient {
@@ -29,7 +29,7 @@ public final class BateBeisbolClient {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new GeoItemRenderer<>(new BateBeisbolModel()).withScale(0.0625F, 0.0625F);
+                    this.renderer = new GeoItemRenderer<>(new BateBeisbolModel()).withScale(0.125F, 0.125F);
                 }
                 return this.renderer;
             }

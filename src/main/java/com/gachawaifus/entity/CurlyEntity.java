@@ -8,6 +8,12 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.ai.goal.FloatGoal;
+import net.minecraft.world.entity.ai.goal.LookAtPlayerGoal;
+import net.minecraft.world.entity.ai.goal.MeleeAttackGoal;
+import net.minecraft.world.entity.ai.goal.RandomLookAroundGoal;
+import net.minecraft.world.entity.ai.goal.WaterAvoidingRandomStrollGoal;
+import net.minecraft.world.entity.ai.goal.target.HurtByTargetGoal;
 import net.minecraft.world.entity.animal.Wolf;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -18,9 +24,11 @@ import java.util.UUID;
 /**
  * <b>Curly</b> — el perrito de Fernanfloo: aparece cuando él tiene pelea y copia su objetivo.
  *
- * <p>Es un lobo amansado de fábrica (no huye ni muerde de más), solo existe porque Fernanfloo lo
- * invoca (o alguien con su huevo). Si su dueño desaparece un rato (fuera de carga de chunks), se
- * esfuma con un ¡puf! igual que los Wilson de House.
+ * <p>No está domado (los lobos domados de vanilla se vuelven pasivos sin dueño): es un lobo con
+ * goals propios de ataque que persigue lo que esté persiguiendo Fernanfloo, y contraataca si le
+ * pegan. No tiene IA salvaje de hostilidad: nunca inicia pelea por su cuenta. Solo existe porque
+ * Fernanfloo lo invoca (o alguien con su huevo). Si su amo desaparece un rato (fuera de carga de
+ * chunks), se esfuma con un ¡puf! igual que los Wilson de House.
  */
 public class CurlyEntity extends Wolf {
 
@@ -38,11 +46,20 @@ public class CurlyEntity extends Wolf {
         super(entityType, level);
         this.xpReward = 10;
         this.setPersistenceRequired();
-        // Amansado de nacimiento: sin dueño, pero sin IA de lobo salvaje (no huye, no merodea).
-        this.setTame(true, false);
         // §6 = dorado: el color del pelo de Curly.
         this.setCustomName(Component.literal("§6Curly"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    protected void registerGoals() {
+        // Goals de perro guardián: persigue y muerde (nada de pánico, nada de sentarse).
+        this.goalSelector.addGoal(1, new FloatGoal(this));
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.25D, true));
+        this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.8D));
+        this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 8.0F));
+        this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
+        this.targetSelector.addGoal(1, new HurtByTargetGoal(this));
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -65,7 +82,10 @@ public class CurlyEntity extends Wolf {
     @Override
     public void aiStep() {
         super.aiStep();
-        if (this.level().isClientSide || this.fernanflooId == null) {
+        if (this.level().isClientSide) {
+            return;
+        }
+        if (this.fernanflooId == null) {
             return;
         }
         if (--this.syncCooldown > 0) {

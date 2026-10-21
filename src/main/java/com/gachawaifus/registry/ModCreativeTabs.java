@@ -31,7 +31,9 @@ public class ModCreativeTabs {
                                 output.accept(ModItems.DOCTOR_HOUSE_SPAWN_EGG.get());
                                 output.accept(ModItems.WILSON_SPAWN_EGG.get());
                                 output.accept(ModItems.FERNANFLOO_SPAWN_EGG.get());
-                                output.accept(ModItems.CHORIZO.get());
+                                output.accept(ModItems.CURLY_SPAWN_EGG.get());
+                                output.accept(ModItems.TUNG_TUNG_SAHUR_SPAWN_EGG.get());
+                                output.accept(ModItems.BATE_BEISBOL.get());
                                 // — Utilidades: sistema gacha y cápsula (guardar / invocar / revivir)
                                 output.accept(ModItems.PINK_BALL.get());
                                 output.accept(ModItems.BLUE_BALL.get());

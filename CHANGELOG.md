@@ -4,6 +4,23 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [5.5.0] — 2026-10-20
+
+### 🪧 GeckoLib, jefe nuevo y Fernanfloo rehecho
+- **Migración GeckoLib de los 10 personajes** (alice, caesar, cissia, claret, corin_wickes, darkness,
+  ju_fufu, koleda, lucia, lucy): modelos `*Model` desde los geo de Blockbench + animaciones
+  walk/idle/attack/special/ultimate por personaje (coletas, cola y orejas animadas donde el hueso
+  existe).
+- **Tung Tung Sahur** (jefe neutral, `tung_tung_sahur`): skin original de `bosses/`, bate de béisbol
+  GeckoLib en mano y home run garantizado — cada golpe conecta y lanza al objetivo ~9 bloques por los
+  aire (knockback pisando `DeltaMovement`). Recompensa: 4 Bolitas Azules.
+- **Fernanfloo sin chorizo**: el item `chorizo` se retira por completo (código, recursos y lang); los
+  Fernanfloo viejos pierden el arma al cargar. Ahora invoca **perritos Curly** (hasta 2 vivos, 6 por
+  pelea, con su grito "¡CHORIZO!" de siempre) que persiguen el objetivo del jefe y contraatacan.
+- **Curly** (`curly`): lobo guardian sin domar (los domados de vanilla se vuelven pasivos), IA propia
+  de ataque y sincronización de objetivo con Fernanfloo; se esfuma si el jefe desaparece.
+- Pendiente: rediseño del bate (forma/orientación en mano) para la próxima versión.
+
 ## [5.4.0] — 2026-10-15
 
 ### 🎨 Lo que devolvió el colaborador desde Blockbench, ya en el juego
