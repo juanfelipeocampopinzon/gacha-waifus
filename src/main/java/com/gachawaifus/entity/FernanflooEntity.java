@@ -1,17 +1,15 @@
 package com.gachawaifus.entity;
 
+import com.gachawaifus.registry.ModEntities;
 import com.gachawaifus.registry.ModItems;
-import com.gachawaifus.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -28,19 +26,19 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
 /**
- * <b>Fernanfloo</b> — jefe neutral que deambula por el mundo con su chorizo en la mano: no busca
- * pelea, pero avisa a grito pelado antes de cada porrazo (el "¡CHORIZO!" suena y el golpe cae al
- * terminar el audio). Al morir suelta {@value #BALL_REWARD} Bolitas Rosas (tiradas del banner de
- * eventos).
+ * <b>Fernanfloo</b> — jefe neutral: ya no anda con chorizos, ahora pelea con sus <b>perritos
+ * Curly</b>. No busca pelea, pero cuando alguien la busca invoca hasta dos Curlys a la vez (y
+ * repuestos conforme caen) para que le hagan de guardaespaldas. Al morir suelta
+ * {@value #BALL_REWARD} Bolitas Rosas (tiradas del banner de eventos).
  *
  * <p>Mismo contrato que {@link DoctorHouseEntity}: neutral ({@link HurtByTargetGoal}), el jugador
  * apenas le hace daño, y la recompensa va al dueño de la waifu que peleó (o al jugador que más
- * cerca esté). El chorizo es un item GeckoLib ({@code ChorizoItem}) que se ve en su mano gracias
- * a {@code ItemInHandLayer} en {@code FernanflooRenderer}.
+ * cerca esté). Los Curly se van con él cuando muere, igual que los Wilson de House.
  */
 public class FernanflooEntity extends Monster {
 
@@ -49,22 +47,26 @@ public class FernanflooEntity extends Monster {
     /** Bolitas Rosas (tiradas del banner de eventos) que suelta al morir. */
     public static final int BALL_REWARD = 3;
 
+    /** Curlys vivos que admite a la vez. */
+    private static final int MAX_MINIONS_ALIVE = 2;
+    /** Curlys totales por pelea: pasado este número deja de invocar (anti-granja). */
+    private static final int MAX_MINIONS_SUMMONED = 6;
+    /** Recarga entre invocaciones (200 ticks = 10 s). */
+    private static final int SUMMON_COOLDOWN_TICKS = 200;
+    /** Radio (en bloques) alrededor de Fernanfloo donde aparecen los Curlys. */
+    private static final double SUMMON_RADIUS = 2.5D;
     /** Cada cuántos ticks se le recuerda al jugador que sus golpes casi no cuentan. */
     private static final int HIT_MESSAGE_COOLDOWN = 80;
-    /**
-     * Lo que dura el grito en ticks: el {@code attack.ogg} mide 0,617 s (12,3 ticks a 44 100 Hz),
-     * así que 12 es lo que tarda en sonar. Es también el ritmo de ataque: Fernanfloo grita y el
-     * golpe de chorizo cae cuando el grito se apaga. Si se recorta el audio otra vez, se toca aquí.
-     */
-    private static final int SHOUT_TICKS = 12;
-    /** Vida del jefe: más frágil que House, pero pega más fuerte. */
+    /** Vida del jefe: más frágil que House. */
     private static final double MAX_HEALTH = 280.0D;
     /** Radio en el que se busca al jugador que se lleva la recompensa si no hubo golpe directo. */
     private static final double REWARD_SEARCH_RANGE = 32.0D;
 
     private int hitMessageCooldown = 0;
-    /** Ticks que faltan para que caiga el golpe: {@code -1} es "aún no se ha lanzado el grito". */
-    private int shoutCountdown = -1;
+    private int summonCooldown = 100;
+    private int minionsSummoned = 0;
+    /** Curlys que ha invocado (para despedirlos al morir). */
+    private final List<UUID> minions = new ArrayList<>();
     /** Jugador que se lleva las Bolitas Rosas (dueño de la última waifu que le hizo daño). */
     @Nullable
     private UUID rewardPlayer;
@@ -76,8 +78,6 @@ public class FernanflooEntity extends Monster {
         // §2 = verde oscuro: el color de su gorra.
         this.setCustomName(Component.literal("§2Fernanfloo"));
         this.setCustomNameVisible(true);
-        this.setItemInHand(InteractionHand.MAIN_HAND, new ItemStack(ModItems.CHORIZO.get()));
-        this.setDropChance(EquipmentSlot.MAINHAND, 0.0F);
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -93,7 +93,7 @@ public class FernanflooEntity extends Monster {
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
-        this.goalSelector.addGoal(2, new ChorizoAttackGoal());
+        this.goalSelector.addGoal(2, new MeleeAttackGoal(this, 1.2D, true));
         this.goalSelector.addGoal(6, new WaterAvoidingRandomStrollGoal(this, 0.6D));
         this.goalSelector.addGoal(7, new LookAtPlayerGoal(this, Player.class, 16.0F));
         this.goalSelector.addGoal(8, new RandomLookAroundGoal(this));
@@ -119,19 +119,94 @@ public class FernanflooEntity extends Monster {
         return super.hurt(source, amount);
     }
 
-    /** Lanza el "¡CHORIZO!" y arranca la cuenta atrás: el golpe cae cuando el audio se apaga. */
-    private void startShout() {
-        this.shoutCountdown = SHOUT_TICKS;
-        this.level().playSound(null, this.blockPosition(), ModSounds.FERNANFLOO_ATTACK.get(),
-                SoundSource.HOSTILE, 1.0F, 1.0F);
-    }
-
     @Override
     public void aiStep() {
         super.aiStep();
         if (this.hitMessageCooldown > 0) {
             this.hitMessageCooldown--;
         }
+        if (this.level().isClientSide) {
+            return;
+        }
+        if (this.summonCooldown > 0) {
+            this.summonCooldown--;
+            return;
+        }
+        LivingEntity target = this.getTarget();
+        if (target != null && target.isAlive() && this.canSummon()) {
+            this.summonMinions();
+        }
+    }
+
+    /** ¿Toca invocar? Solo con objetivo vivo, hueco libre, recarga hecha y cupo sin agotar. */
+    private boolean canSummon() {
+        if (this.minionsSummoned >= MAX_MINIONS_SUMMONED || this.aliveMinions() >= MAX_MINIONS_ALIVE) {
+            return false;
+        }
+        return this.summonCooldown <= 0;
+    }
+
+    /** Curlys de la lista que siguen vivos en el mundo. */
+    private int aliveMinions() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return 0;
+        }
+        int alive = 0;
+        for (UUID id : this.minions) {
+            if (serverLevel.getEntity(id) instanceof CurlyEntity curly && curly.isAlive()) {
+                alive++;
+            }
+        }
+        return alive;
+    }
+
+    /** Trae a Curly: hasta llenar el cupo de vivos, con puff de partículas y su ladrido. */
+    private void summonMinions() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        int summoned = 0;
+        while (this.aliveMinions() + summoned < MAX_MINIONS_ALIVE) {
+            CurlyEntity curly = this.findSpawnSpot();
+            if (curly == null) {
+                break;
+            }
+            curly.setFernanflooId(this.getUUID());
+            serverLevel.addFreshEntity(curly);
+            this.minions.add(curly.getUUID());
+            summoned++;
+
+            serverLevel.sendParticles(ParticleTypes.POOF,
+                    curly.getX(), curly.getY() + 0.6D, curly.getZ(), 12, 0.3D, 0.4D, 0.3D, 0.02D);
+        }
+        if (summoned > 0) {
+            this.minionsSummoned += summoned;
+            this.summonCooldown = SUMMON_COOLDOWN_TICKS;
+            this.level().playSound(null, this.blockPosition(), SoundEvents.WOLF_GROWL,
+                    SoundSource.HOSTILE, 1.0F, 1.3F);
+        } else {
+            // Sin sitio donde aparecer: se rearma la recarga para no reintentar cada tick.
+            this.summonCooldown = 40;
+        }
+    }
+
+    /** Busca una posición libre alrededor de Fernanfloo para el nuevo Curly. */
+    @Nullable
+    private CurlyEntity findSpawnSpot() {
+        for (int attempt = 0; attempt < 4; attempt++) {
+            double angle = this.random.nextDouble() * Math.PI * 2.0D;
+            double ox = Math.cos(angle) * SUMMON_RADIUS;
+            double oz = Math.sin(angle) * SUMMON_RADIUS;
+            CurlyEntity curly = ModEntities.CURLY.get().create(this.level());
+            if (curly == null) {
+                return null;
+            }
+            curly.moveTo(this.getX() + ox, this.getY(), this.getZ() + oz, this.getYRot(), 0.0F);
+            if (this.level().noCollision(curly, curly.getBoundingBox())) {
+                return curly;
+            }
+        }
+        return null;
     }
 
     /** Aviso al jugador de que sus golpes apenas cuentan (con anti-spam por entidad). */
@@ -158,9 +233,25 @@ public class FernanflooEntity extends Monster {
     @Override
     public void die(DamageSource source) {
         if (!this.level().isClientSide) {
+            this.dismissMinions();
             this.handOutBalls(source);
         }
         super.die(source);
+    }
+
+    /** Cuando Fernanfloo muere, sus Curlys se van con él: se descartan sin drops. */
+    private void dismissMinions() {
+        if (!(this.level() instanceof ServerLevel serverLevel)) {
+            return;
+        }
+        for (UUID id : this.minions) {
+            if (serverLevel.getEntity(id) instanceof CurlyEntity curly && curly.isAlive()) {
+                serverLevel.sendParticles(ParticleTypes.POOF,
+                        curly.getX(), curly.getY() + 0.6D, curly.getZ(), 12, 0.3D, 0.4D, 0.3D, 0.02D);
+                curly.discard();
+            }
+        }
+        this.minions.clear();
     }
 
     /** Entrega las {@value #BALL_REWARD} Bolitas Rosas y monta la fanfarria de recompensa. */
@@ -218,44 +309,5 @@ public class FernanflooEntity extends Monster {
             }
         }
         return closest;
-    }
-
-    /**
-     * El ataque de siempre, pero marcado por el grito: en cuanto tiene a alguien a mano suena el
-     * "¡CHORIZO!" y el porrazo cae {@link #SHOUT_TICKS} ticks después, cuando el audio se apaga.
-     * Perseguir y girar hacia la meta los sigue haciendo {@code MeleeAttackGoal}; aquí solo se
-     * sustituye su cadencia de 20 ticks, que era la que coincidía con el golpe.
-     */
-    private class ChorizoAttackGoal extends MeleeAttackGoal {
-
-        ChorizoAttackGoal() {
-            super(FernanflooEntity.this, 1.2D, true);
-        }
-
-        @Override
-        protected void checkAndPerformAttack(LivingEntity target) {
-            if (!FernanflooEntity.this.isWithinMeleeAttackRange(target)
-                    || !FernanflooEntity.this.getSensing().hasLineOfSight(target)) {
-                FernanflooEntity.this.shoutCountdown = -1; // sin línea de tiro no hay grito empezado
-                return;
-            }
-            if (FernanflooEntity.this.shoutCountdown < 0) {
-                FernanflooEntity.this.startShout();
-                return;
-            }
-            FernanflooEntity.this.shoutCountdown--;
-            if (FernanflooEntity.this.shoutCountdown > 0) {
-                return;
-            }
-            FernanflooEntity.this.shoutCountdown = -1;
-            FernanflooEntity.this.swing(InteractionHand.MAIN_HAND);
-            FernanflooEntity.this.doHurtTarget(target);
-        }
-
-        @Override
-        public void stop() {
-            super.stop();
-            FernanflooEntity.this.shoutCountdown = -1;
-        }
     }
 }

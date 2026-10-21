@@ -29,7 +29,17 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import java.util.List;
 
-public class AliceEntity extends AbstractWaifuEntity {
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
+
+public class AliceEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     // Cooldowns: los iniciales arrancan "casi listos"; los de uso son los reales.
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
@@ -40,6 +50,26 @@ public class AliceEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§dAlice"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.alice.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.alice.idle"));
+        }));
+
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.alice.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.alice.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.alice.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -88,6 +118,7 @@ public class AliceEntity extends AbstractWaifuEntity {
 
     private void performNormalAttack(LivingEntity target) {
         this.normalAttackCooldown = 22;
+        this.triggerAnim("attack_controller", "attack");
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.SWEEP_ATTACK, target.getX(), target.getY() + 1.0, target.getZ(), 8, 0.3, 0.5, 0.3, 0.1);
@@ -97,6 +128,7 @@ public class AliceEntity extends AbstractWaifuEntity {
 
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 260;
+        this.triggerAnim("attack_controller", "special");
         target.hurt(this.damageSources().mobAttack(this), 15.0F);
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 1));
         if (this.level() instanceof ServerLevel sl) {
@@ -107,6 +139,7 @@ public class AliceEntity extends AbstractWaifuEntity {
 
     private void performUltimate() {
         this.ultimateCooldown = 750;
+        this.triggerAnim("attack_controller", "ultimate");
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
             p.sendSystemMessage(Component.literal("§dAlice §o\"¡Final estelar para el duelo!\""));

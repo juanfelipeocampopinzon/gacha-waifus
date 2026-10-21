@@ -28,6 +28,7 @@ import com.gachawaifus.entity.client.AnbyDemaraRenderer;
 import com.gachawaifus.entity.Soldier11Entity;
 import com.gachawaifus.entity.client.Soldier11Renderer;
 import com.gachawaifus.entity.client.EtherBlastRenderer;
+import com.gachawaifus.entity.client.MusketShotRenderer;
 import com.gachawaifus.entity.client.UkinamiYuzuhaRenderer;
 import com.gachawaifus.entity.client.PromeiaRenderer;
 import com.gachawaifus.entity.RemielleEntity;
@@ -54,6 +55,8 @@ import com.gachawaifus.entity.client.ZhuYuanRenderer;
 import com.gachawaifus.entity.client.QingyiRenderer;
 import com.gachawaifus.entity.client.YixuanRenderer;
 import com.gachawaifus.entity.client.TokisakiKurumiModel;
+import com.gachawaifus.entity.client.RemielleModel;
+import com.gachawaifus.entity.client.JaneDoeModel;
 import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.client.bust.WaifuBustLayers;
 import com.gachawaifus.registry.ModBlocks;
@@ -122,6 +125,8 @@ public class GachaWaifusMod {
         event.registerLayerDefinition(WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
         event.registerLayerDefinition(WaifuBustLayers.TUBE_WIDE, WaifuBustLayers::createWide);
         event.registerLayerDefinition(TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
+        event.registerLayerDefinition(RemielleModel.LAYER_LOCATION, RemielleModel::createBodyLayer);
+        event.registerLayerDefinition(JaneDoeModel.LAYER_LOCATION, JaneDoeModel::createBodyLayer);
     }
 
     private void registerScreens(RegisterMenuScreensEvent event) {
@@ -173,8 +178,13 @@ public class GachaWaifusMod {
         event.put(ModEntities.DOCTOR_HOUSE.get(), DoctorHouseEntity.createAttributes().build());
         event.put(ModEntities.WILSON.get(), WilsonEntity.createAttributes().build());
 
-        // Jefe — Fernanfloo (chorizo en mano, suelta Bolitas Rosas)
+        // Jefe — Fernanfloo (invoca perritos Curly, suelta Bolitas Rosas)
         event.put(ModEntities.FERNANFLOO.get(), FernanflooEntity.createAttributes().build());
+        event.put(ModEntities.CURLY.get(), com.gachawaifus.entity.CurlyEntity.createAttributes().build());
+
+        // Jefe — Tung Tung Sahur (bate de béisbol que lanza lejos, suelta Bolitas Azules)
+        event.put(ModEntities.TUNG_TUNG_SAHUR.get(),
+                com.gachawaifus.entity.TungTungSahurEntity.createAttributes().build());
 
         // Rina — "Victoria Housekeeping Co."
         event.put(ModEntities.RINA_ENTITY.get(), RinaEntity.createAttributes().build());
@@ -254,6 +264,7 @@ public class GachaWaifusMod {
         // ★★★★☆ — Burnice White
         event.registerEntityRenderer(ModEntities.BURNICE_WHITE.get(), BurniceWhiteRenderer::new);
         event.registerEntityRenderer(ModEntities.ETHER_BLAST.get(), EtherBlastRenderer::new);
+        event.registerEntityRenderer(ModEntities.MUSKET_SHOT.get(), MusketShotRenderer::new);
         // ★★★★★ Ukinami Yuzuha — "La Zarigüeya de la Suerte"
         event.registerEntityRenderer(ModEntities.UKINAMI_YUZUHA.get(), UkinamiYuzuhaRenderer::new);
 
@@ -278,13 +289,18 @@ public class GachaWaifusMod {
         event.registerEntityRenderer(ModEntities.DOCTOR_HOUSE.get(), DoctorHouseRenderer::new);
         event.registerEntityRenderer(ModEntities.WILSON.get(), WilsonRenderer::new);
 
-        // Jefe — Fernanfloo (con su chorizo GeckoLib en la mano)
+        // Jefe — Fernanfloo (con sus perritos Curly)
         event.registerEntityRenderer(ModEntities.FERNANFLOO.get(), FernanflooRenderer::new);
+        event.registerEntityRenderer(ModEntities.CURLY.get(), com.gachawaifus.entity.client.CurlyRenderer::new);
+
+        // Jefe — Tung Tung Sahur (con su bate de béisbol GeckoLib en la mano)
+        event.registerEntityRenderer(ModEntities.TUNG_TUNG_SAHUR.get(),
+                com.gachawaifus.entity.client.TungTungSahurRenderer::new);
 
         // Rina
         event.registerEntityRenderer(ModEntities.RINA_ENTITY.get(), RinaRenderer::new);
 
-        // ★★★★★ Koleda Belobog — modelo de jugador slim (sin GeckoLib: no tiene geo ni animaciones)
+        // ★★★★★ Koleda Belobog — GeckoLib (geo/koleda.geo.json + animaciones propias)
         event.registerEntityRenderer(ModEntities.KOLEDA.get(), KoledaRenderer::new);
 
         /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */

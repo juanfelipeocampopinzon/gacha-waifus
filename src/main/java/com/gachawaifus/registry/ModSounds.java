@@ -45,6 +45,17 @@ public class ModSounds {
             SOUND_EVENTS.register("entity/fernanfloo/attack",
                     () -> SoundEvent.createVariableRangeEvent(FERNANFLOO_ATTACK_ID));
 
+    /**
+     * Disparo del <b>mosquete de Tokisaki Kurumi</b>: detonacion sintetizada con ffmpeg (crack de
+     * ruido filtrado + golpe grave de 78 Hz + eco corto), sin samples ajenos.
+     */
+    public static final ResourceLocation MUSKET_SHOT_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/tokisaki_kurumi/musket_shot");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> MUSKET_SHOT =
+            SOUND_EVENTS.register("entity/tokisaki_kurumi/musket_shot",
+                    () -> SoundEvent.createVariableRangeEvent(MUSKET_SHOT_ID));
+
     private ModSounds() {
     }
 }

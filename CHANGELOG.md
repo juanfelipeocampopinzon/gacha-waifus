@@ -4,6 +4,64 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [5.4.0] — 2026-10-15
+
+### 🎨 Lo que devolvió el colaborador desde Blockbench, ya en el juego
+- **Cissia** estrena `CissiaModel` (capa propia `gachawaifus:cissia`). Su geo tenía **18 cubos en un
+  solo hueso `cola`**; aquí se parte en `cola` (arranque + dos tramos), `cola_tip` (dos segmentos
+  del extremo con sus aletas planas) y `hip_frame` (la faja pegada al torso, quieta: si girara
+  abriría costura contra la espalda). Cada cubo conservó su posición absoluta al cambiar de hueso
+  (`P' = P + c`, `cubo' = cubo − c`), así que la malla sigue siendo punto a punto con el geo.
+  Animación tipo péndulo después de `super.setupAnim`: balanceo lateral de 7°, el extremo con medio
+  ciclo de retraso y algo más de recorrido, la zancada atrasa la cola y en el aire se estira hacia
+  atrás (+xRot mueve lo que cuelga hacia +Z).
+- **Claret** estrena `ClaretModel` (capa `gachawaifus:claret`) con lo nuevo de su geo: **dos coletas
+  de 18 px con su lazo** y **las dos capas** (`capa inferior`, `capa superioir`). En el geo las coletas
+  vivían dentro del hueso `head` sin pivote propio, así que cada una ahora gira desde su raíz en la
+  coronilla (`±5.5, -8, 5.5` en head-local) y cada lazo desde la junta con el pelo (`0, 13, 0` dentro
+  de su coleta), con los cubos desplazados lo mismo que el pivote. La capa superior traía el pivote en
+  el origen del modelo (geo `(0,0,0)`, o sea los pies) y se re-pivoteó al hombro `(0, 11, 3)`.
+  Animadas con el mismo compás que Alice: tambaileo de 7° en zRot con medio ciclo de retraso entre
+  lados, la zancada y el salto las atrasan en xRot, el giro de cabeza se las lleva con rezago, y los
+  lazos añaden su propio retraso. **Las capas quedan quietas**: van cosidas al torso.
+- La pieza del pecho de Claret se **repintó desde su skin nueva** (`tube_v5_sizes.py claret`); sin
+  eso la banda seguía llevando los colores del torso viejo. Ojo con `validate_v5.py`: lee la textura
+  **desde el jar**, así que hay que compilar antes de volver a validar.
+- **César** estrena `CaesarModel` (capa `gachawaifus:caesar`): espada colgada del brazo derecho,
+  escudo redondo del izquierdo y los dos pelitos de la sien. El geo traía el pivote de la espada en
+  el origen del modelo (Blockbench lo deja ahí al crear el hueso suelto); se re-pivoteó al puño.
+  Los dos cubos de la hoja y los 23 del escudo van como hijos del brazo, así que el andar de
+  vanilla se los lleva sin escribir animación.
+- **Kurumi: el cubo flotante al apuntar** ya no existe. Era el hueso `rifle` que la IA se había
+  inventado: sus redes UV (`32,64/70/74`) caían encima de las del mosquete pintado a mano
+  (`36,69/42,65/47,66`) porque una red de caja mide `2(w+fondo) × (alto+fondo)` px. Fuera esa
+  geometría; el arma son ahora los cubos que él pintó, fusionados en `right_arm`, y el retroceso
+  es `rightArm.xRot -= attackAnim * 0.35F` sobre el conjunto brazo+arma.
+- **La boca de fuego** se recalculó desde la punta real del cañón pintado (punto del modelo
+  `(−8.714, 1.0, −17.62)` px), no del mosquete inventado: el fogonazo sale ahora ~5 px por detrás
+  y ~4 px más a la izquierda de donde salía, que era donde de verdad termina el cañón.
+- Pieles actualizadas desde `modelos/personajes/…` (solo se copian hacia el repo; las suyas no se
+  tocan): `caesar.png`, `cissia.png` y `claret.png`.
+
+### 🔊 El disparo del mosquete, ahora con sonido de verdad
+- `sounds/entity/tokisaki_kurumi/musket_shot.ogg` reemplazado: recorte de **0,827 s** extraído del
+  vídeo que se indicó (minuto 0:54), monofónico a 48 kHz, `libvorbis -q 5`, pico **0,79** sin
+  recorte. El id ya estaba cableado, así que no cambió ni `sounds.json` ni `ModSounds`.
+- Detalle de la cadena de audio: `alimiter` **nivel automáticamente a 1.02** con su
+  `level` por defecto; hay que escribir `alimiter=limit=X:level=0` para que respete el techo.
+
+### 🧰 Herramientas del flujo (viven fuera del repo)
+- `research/geo/geo_to_java.py` — el camino de vuelta: traduce un `.geo.json` de Blockbench a
+  `CubeListBuilder`/`PartPose`, salta las cajas vanilla, permite `--repivot=hueso:x,y,z` en coords
+  Java absolutas y **recompone las 8 esquinas de cada cubo para probar que la malla no se movió**.
+  Si un cubo del geo tiene su propia rotación avisa (`!! <hueso> tiene rotacion`), porque en la
+  malla de jugador un cubo no puede girar solo: hace falta un hueso `offsetAndRotation`. Y si un cubo
+  viene con **UV por cara** (Blockbench en modo per-face, típico de las mangas retocadas) lo lista y
+  lo salta en vez de romper: `addBox()` solo admite una mancha. Los dos de Claret eran la manga de
+  vanilla, que ya existe en el modelo y ya se pinta con su skin.
+
+---
+
 ## [5.3.1] — 2026-10-12
 
 ### 🎌 Kurumi, ya editable desde Blockbench

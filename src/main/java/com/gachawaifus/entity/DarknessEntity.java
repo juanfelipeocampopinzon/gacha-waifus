@@ -27,10 +27,19 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
 /** Darkness (KonoSuba) — cruzada de la familia Dust: el tanque del grupo, aguanta y protege. */
-public class DarknessEntity extends AbstractWaifuEntity {
+public class DarknessEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
+
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 80;
     private int ultimateCooldown = 260;
@@ -40,6 +49,25 @@ public class DarknessEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§4Darkness"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.darkness.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.darkness.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.darkness.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.darkness.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.darkness.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -89,6 +117,7 @@ public class DarknessEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 26;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -98,6 +127,7 @@ public class DarknessEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 260;
         target.hurt(this.damageSources().mobAttack(this), 13.0F);
         target.knockback(0.8D, this.getX() - target.getX(), this.getZ() - target.getZ());
@@ -109,6 +139,7 @@ public class DarknessEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 800;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {

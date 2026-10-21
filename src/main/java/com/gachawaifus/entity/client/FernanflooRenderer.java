@@ -4,7 +4,6 @@ import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.FernanflooEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.layers.ItemInHandLayer;
 import net.minecraft.resources.ResourceLocation;
 
 /**
@@ -12,8 +11,7 @@ import net.minecraft.resources.ResourceLocation;
  * Ricardo Milos (hitbox 1.6x4.2 en {@code ModEntities} + {@code scale()} 2.0F aquí) — con la
  * skin de {@code bosses/fernanfloo/} convertida a HD y la cara real en la cabeza.
  *
- * <p>Se añade {@link ItemInHandLayer} a mano (los renderers custom del mod no tienen capas
- * por defecto) para que el chorizo GeckoLib de su mano derecha se dibuje.
+ * <p>Ya no lleva ItemInHandLayer: soltó el chorizo y pelea con sus perritos Curly.
  */
 public class FernanflooRenderer extends BossHumanoidRenderer<FernanflooEntity> {
 
@@ -22,7 +20,6 @@ public class FernanflooRenderer extends BossHumanoidRenderer<FernanflooEntity> {
 
     public FernanflooRenderer(EntityRendererProvider.Context context) {
         super(context, 1.6F);
-        this.addLayer(new ItemInHandLayer<>(this, context.getItemInHandRenderer()));
     }
 
     /** Escala visual x2 para que el cuerpo llene la hitbox gigante (mismo tamaño que Ricardo). */

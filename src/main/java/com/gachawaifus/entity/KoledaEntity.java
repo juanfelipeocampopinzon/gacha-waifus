@@ -27,13 +27,19 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
 /**
  * Koleda Belobog — "Belobog Heavy Industries" (Fuego / Stun) de Zenless Zone Zero.
  *
- * <p>Usa el <b>modelo de jugador slim</b> (igual que Von Lycaon y Rina), NO GeckoLib: no tiene
- * {@code .geo.json} ni animaciones propias, así que no se puede apoyar en {@code GeoEntityRenderer}.
+ * <p>Usa <b>GeckoLib</b> con el geo de Blockbench (geo/koleda.geo.json) y animaciones propias.
  *
  * <p>Kit de tres habilidades, con los cooldowns y atributos del manual del proyecto:
  * <ul>
@@ -49,7 +55,8 @@ import java.util.List;
  * <p>Reglas de seguridad del proyecto: en los bucles de daño se excluyen el dueño, ella misma y
  * cualquier {@link AbstractWaifuEntity}; los buffs en área solo caen sobre el dueño y sobre ella.
  */
-public class KoledaEntity extends AbstractWaifuEntity {
+public class KoledaEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     // Cooldowns: los iniciales arrancan "casi listos"; los de uso son los reales.
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
@@ -60,6 +67,25 @@ public class KoledaEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§cKoleda"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.koleda.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.koleda.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.koleda.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.koleda.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.koleda.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -109,6 +135,7 @@ public class KoledaEntity extends AbstractWaifuEntity {
 
     /** Demolition Blast: martillazo corto con chispas. Cooldown 24 ticks. */
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 24;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -120,6 +147,7 @@ public class KoledaEntity extends AbstractWaifuEntity {
 
     /** Explosive Hammer: daño en área, ralentiza y empuja. Cooldown 220 ticks. */
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 220;
         LivingEntity owner = this.getOwner();
         AABB area = this.getBoundingBox().inflate(5.0D);
@@ -153,6 +181,7 @@ public class KoledaEntity extends AbstractWaifuEntity {
 
     /** Furnace Firepower: estallido de 8 bloques. Cooldown 750 ticks. */
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 

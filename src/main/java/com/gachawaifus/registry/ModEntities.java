@@ -5,6 +5,7 @@ import com.gachawaifus.entity.BillyKidEntity;
 import com.gachawaifus.entity.AstraYaoEntity;
 import com.gachawaifus.entity.BurniceWhiteEntity;
 import com.gachawaifus.entity.EtherBlastEntity;
+import com.gachawaifus.entity.MusketShotEntity;
 import com.gachawaifus.entity.MiyabiMisiramaEntity;
 import com.gachawaifus.entity.EllenJoeEntity;
 import com.gachawaifus.entity.YeShunguangEntity;
@@ -18,6 +19,8 @@ import com.gachawaifus.entity.RicardoMilosEntity;
 import com.gachawaifus.entity.DoctorHouseEntity;
 import com.gachawaifus.entity.WilsonEntity;
 import com.gachawaifus.entity.FernanflooEntity;
+import com.gachawaifus.entity.TungTungSahurEntity;
+import com.gachawaifus.entity.CurlyEntity;
 import com.gachawaifus.entity.VonLycaonEntity;
 import com.gachawaifus.entity.YidhariEntity;
 import com.gachawaifus.entity.RinaEntity;
@@ -105,6 +108,15 @@ public class ModEntities {
                             .updateInterval(1)
                             .build("ether_blast"));
 
+    /** Pepita de chispa del mosquete de Kurumi — Proyectil */
+    public static final DeferredHolder<EntityType<?>, EntityType<MusketShotEntity>> MUSKET_SHOT =
+            ENTITY_TYPES.register("musket_shot", () ->
+                    EntityType.Builder.<MusketShotEntity>of(MusketShotEntity::new, MobCategory.MISC)
+                            .sized(0.25F, 0.25F)
+                            .clientTrackingRange(8)
+                            .updateInterval(1)
+                            .build("musket_shot"));
+
     /** ★★★★★ Ukinami Yuzuha — "La Zarigüeya de la Suerte" (Físico / Support) */
     public static final DeferredHolder<EntityType<?>, EntityType<UkinamiYuzuhaEntity>> UKINAMI_YUZUHA =
             ENTITY_TYPES.register("ukinami_yuzuha", () ->
@@ -188,6 +200,25 @@ public class ModEntities {
                             .sized(1.6F, 4.2F)
                             .clientTrackingRange(12)
                             .build("fernanfloo"));
+
+    /**
+     * Tung Tung Sahur — jefe neutral con bate de béisbol: cada golpe manda volando lejos al
+     * objetivo y al morir suelta 4 Bolitas Azules.
+     */
+    public static final DeferredHolder<EntityType<?>, EntityType<TungTungSahurEntity>> TUNG_TUNG_SAHUR =
+            ENTITY_TYPES.register("tung_tung_sahur", () ->
+                    EntityType.Builder.of(TungTungSahurEntity::new, MobCategory.MONSTER)
+                            .sized(1.6F, 4.2F)
+                            .clientTrackingRange(12)
+                            .build("tung_tung_sahur"));
+
+    /** Curly — el perrito de Fernanfloo: solo aparece cuando él lo invoca (o por huevo). */
+    public static final DeferredHolder<EntityType<?>, EntityType<CurlyEntity>> CURLY =
+            ENTITY_TYPES.register("curly", () ->
+                    EntityType.Builder.of(CurlyEntity::new, MobCategory.CREATURE)
+                            .sized(0.75F, 1.05F)
+                            .clientTrackingRange(12)
+                            .build("curly"));
 
     /** Von Lycaon — "Victoria Housekeeping" (Ice / Stun) */
     public static final DeferredHolder<EntityType<?>, EntityType<VonLycaonEntity>> VON_LYCAON =

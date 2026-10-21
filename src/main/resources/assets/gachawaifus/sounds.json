@@ -49,5 +49,15 @@
         "pitch": 1.0
       }
     ]
+  },
+  "entity/tokisaki_kurumi/musket_shot": {
+    "subtitle": "gachawaifus.subtitle.kurumi_musket",
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/tokisaki_kurumi/musket_shot",
+        "volume": 1.4,
+        "pitch": 1.0
+      }
+    ]
   }
 }

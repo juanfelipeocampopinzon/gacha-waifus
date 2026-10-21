@@ -1,10 +1,16 @@
 package com.gachawaifus.entity;
 
+import com.gachawaifus.registry.ModSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -27,9 +33,15 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import java.util.List;
 
 public class TokisakiKurumiEntity extends AbstractWaifuEntity {
+    // getTarget() es solo del servidor: el cliente siempre ve null. El modelo necesita saber si está
+    // apuntando, así que el estado viaja en un dato sincronizado.
+    private static final EntityDataAccessor<Boolean> DATA_MUSKET_AIM =
+            SynchedEntityData.defineId(TokisakiKurumiEntity.class, EntityDataSerializers.BOOLEAN);
+
     // Cooldowns: los iniciales arrancan "casi listos"; los de uso son los reales.
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
@@ -67,33 +79,95 @@ public class TokisakiKurumiEntity extends AbstractWaifuEntity {
     }
 
     @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_MUSKET_AIM, false);
+    }
+
+    /** Si lleva el mosquete enalto apuntando; lo lee el modelo para estirar el brazo. */
+    public boolean isMusketAiming() {
+        return this.entityData.get(DATA_MUSKET_AIM);
+    }
+
+    @Override
     public void aiStep() {
         super.aiStep();
         if (this.normalAttackCooldown > 0) this.normalAttackCooldown--;
         if (this.specialSkillCooldown > 0) this.specialSkillCooldown--;
         if (this.ultimateCooldown > 0) this.ultimateCooldown--;
         LivingEntity target = this.getTarget();
+        // el brazo se levanta en el rango del mosquete (mas alla de los 3 bloques de la culata)
+        if (!this.level().isClientSide) {
+            double dist = target == null ? -1.0D : this.distanceToSqr(target);
+            boolean aiming = target != null && target.isAlive() && !this.isOrderedToSit()
+                    && dist > 9.0D && dist <= 196.0D;
+            if (this.entityData.get(DATA_MUSKET_AIM) != aiming) this.entityData.set(DATA_MUSKET_AIM, aiming);
+        }
         if (target != null && target.isAlive() && !this.isOrderedToSit()) {
             double distSq = this.distanceToSqr(target);
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
-            // 64 = 8 bloques | 36 = 6 bloques | 16 = 4 bloques (usa 256.0D = 16 bloques si es RANGO)
+            // 64 = 8 bloques | 36 = 6 bloques | 196 = 14 bloques con el mosquete (256.0D = 16 si es RANGO)
             if (this.ultimateCooldown <= 0 && distSq <= 64.0D) {
                 performUltimate();
             } else if (this.specialSkillCooldown <= 0 && distSq <= 36.0D) {
                 performSpecialSkill(target);
-            } else if (this.normalAttackCooldown <= 0 && distSq <= 16.0D) {
+            } else if (this.normalAttackCooldown <= 0 && distSq <= 196.0D) {
                 performNormalAttack(target);
             }
         }
     }
 
     private void performNormalAttack(LivingEntity target) {
+        // Dentro de 3 bloques usa la culata; desde mas lejos dispara el mosquete
+        if (this.distanceToSqr(target) > 9.0D) {
+            performMusketShot(target);
+            return;
+        }
         this.normalAttackCooldown = 22;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + 1.0, target.getZ(), 8, 0.3, 0.5, 0.3, 0.1);
         }
         this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 1.2F);
+    }
+
+    // La pepita del mosquete: sale de la boca del cañon, a 0.9 de bloque por delante de la cara
+    private void performMusketShot(LivingEntity target) {
+        this.normalAttackCooldown = 30;
+        this.swing(InteractionHand.MAIN_HAND);
+
+        Vec3 look = this.getLookAngle();
+        // La punta del cañon de su skin: en la malla es el cubo largo del brazo (local -1..0, 12..18,
+        // -2..-1). Con el brazo en cruz (xRot -90) y apartado del costado (zRot 0.18) la matriz de
+        // ModelPart (Rx*Ry*Rz sobre el local, mas el pivote -5,2.5,0) deja la boca en
+        // (-8.72, 1.0, -17.62) absoluto = 1,10 bloque delante, 0,545 al costado derecho y 1,4375 de
+        // alto sobre los pies. El pitch lo absorbe 'look', que ya lleva la inclinacion de la mirada.
+        float yawRad = this.getYRot() * Mth.DEG_TO_RAD;
+        Vec3 side = new Vec3(-Mth.cos(yawRad), 0.0D, -Mth.sin(yawRad));
+        Vec3 muzzle = this.position()
+                .add(0.0D, 1.4375D, 0.0D)
+                .add(look.scale(1.10D))
+                .add(side.scale(0.545D));
+        Vec3 aim = target.getEyePosition().subtract(muzzle).normalize();
+
+        MusketShotEntity shot = new MusketShotEntity(this.level(), this, 7.0F);
+        shot.setPos(muzzle.x, muzzle.y, muzzle.z);
+        // 2.0F es la mitad de bloque por tick: los 200 ticks de EtherBlastEntity eran 100 bloques
+        // de vuelo; aqui 60 ticks x 1 bloque dan ~18 bloques, que es el alcance real del mosquete.
+        shot.shoot(aim.x, aim.y, aim.z, 2.0F, 0.6F);
+        this.level().addFreshEntity(shot);
+
+        if (this.level() instanceof ServerLevel sl) {
+            // solo humo saliendo a presiion del canon: si se sueltan llamas aqui se quedan amontonadas
+            // en la boca y parece que la bala va pegada al arma
+            Vec3 puff = muzzle.add(look.x * 0.25D, look.y * 0.25D, look.z * 0.25D);
+            sl.sendParticles(ParticleTypes.CLOUD, puff.x, puff.y, puff.z, 4, 0.06, 0.06, 0.06, 0.10);
+            sl.sendParticles(ParticleTypes.SMOKE, puff.x, puff.y, puff.z, 3, 0.05, 0.05, 0.05, 0.08);
+            sl.sendParticles(ParticleTypes.ELECTRIC_SPARK, muzzle.x, muzzle.y, muzzle.z, 4, 0.05, 0.05, 0.05, 0.02);
+        }
+        // su disparo propio (crack sintetizado con ffmpeg), con una variacion minima de tono
+        this.level().playSound(null, this.blockPosition(), ModSounds.MUSKET_SHOT.get(),
+                SoundSource.PLAYERS, 1.2F, 0.95F + this.random.nextFloat() * 0.12F);
     }
 
     private void performSpecialSkill(LivingEntity target) {
