@@ -7,6 +7,10 @@ Esta carpeta **es la raíz del mod** (`gachawaifus`): aquí vive el código Java
 build. Si tu directorio de trabajo es esta carpeta, usa rutas como `src/main/java/...` y
 `src/main/resources/...` **sin** prefijo.
 
+> **Leer también `MANUAL_IA.md`** (raíz del repo): manual operativo completo — build/despliegue,
+> receta para agregar waifus GeckoLib, jefes, armas en mano, minions, gotchas de la API 1.21.1 y
+> flujo de git. Los errores que ya se cometieron están documentados ahí para no repetirlos.
+
 ## Build e instalación
 
 ```powershell
