@@ -4,6 +4,28 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.0.1] — 2026-10-24
+
+### 🏏 El bate por fin se ve como un bate (el modelo 3D nunca se dibujaba)
+- **Causa raíz**: `models/item/beisbol_bate.json` apuntaba a `item/handheld`, así que el modelo
+  horneado era un `SimpleBakedModel` con `isCustomRenderer() == false`. `ItemRenderer.render` toma
+  en ese caso la rama de quads vanilla y **nunca llama** a `IClientItemExtensions.getCustomRenderer()`:
+  ni el geo ni el `GeoItemRenderer` se usaban. Lo que se veía en mano era la **textura 64×64 (el
+  atlas de UV) estirada sobre un sprite plano**, de ahí la "columna" marrón gigante. Por eso los
+  cambios de geo/escala de 6.0.0 no se notaron en el juego.
+- **Arreglo**: `"parent": "builtin/entity"` → `BuiltInModel` → `isCustomRenderer() == true` y entra
+  GeckoLib. Como `builtin/entity` no hereda transforms, el JSON define **todos** los contextos:
+  `gui`, `firstperson_righthand/lefthand`, `thirdperson_righthand/lefthand`, `ground`, `fixed` y `head`.
+- **Perfil más de bate**: barril de 4 unidades (antes 5, parecía un mazo) y pomo de 3; textura sin
+  ruido (veta continua suave, cinta a bandas y tapas con anillos en vez de damero).
+- **Agarre**: el origen del ítem cae ahora en el **centro de la cinta** (desplazamiento 5.5, antes
+  2.0, que lo dejaba en la punta del mango), así que la mano agarra el mango en mano, tercera
+  persona e inventario.
+- **Primera persona** medida con un simulador (cámara a 70° de FOV, offsets reales de
+  `ItemInHandRenderer`): el bate entra desde la esquina inferior derecha inclinado 30°, con la punta
+  arriba a la derecha del punto de mira, y ya no tapa la pantalla. Icono recentrado (13,3 × 13,5 px
+  en el slot de 16).
+
 ## [6.0.0] — 2026-10-24
 
 ### 🎴 Pantalla del gacha con dos pestañas + bate nuevo
