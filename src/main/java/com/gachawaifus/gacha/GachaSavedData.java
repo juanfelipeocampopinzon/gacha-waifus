@@ -25,7 +25,7 @@ public class GachaSavedData extends SavedData {
     public static class PlayerState {
         public int pity;
         public boolean guaranteed;
-        /** Pity del banner PERMANENTE (StandardTerminalItem): independiente de la destacada. */
+        /** Pity del banner PERMANENTE (pestaña permanente del Terminal Gacha): independiente de la destacada. */
         public int standardPity;
         /**
          * Pity de la vía <b>4★</b> del Terminal Rosa. Corre aparte de la 5★: una 5★ que cae también

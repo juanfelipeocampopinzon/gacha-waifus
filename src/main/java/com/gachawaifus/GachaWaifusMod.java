@@ -57,6 +57,7 @@ import com.gachawaifus.entity.client.YixuanRenderer;
 import com.gachawaifus.entity.client.TokisakiKurumiModel;
 import com.gachawaifus.entity.client.RemielleModel;
 import com.gachawaifus.entity.client.JaneDoeModel;
+import com.gachawaifus.client.GachaBannerScreen;
 import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.client.bust.WaifuBustLayers;
 import com.gachawaifus.registry.ModBlocks;
@@ -131,6 +132,7 @@ public class GachaWaifusMod {
 
     private void registerScreens(RegisterMenuScreensEvent event) {
         event.register(ModMenuTypes.WAIFU_STORAGE.get(), WaifuStorageScreen::new);
+        event.register(ModMenuTypes.GACHA_BANNER.get(), GachaBannerScreen::new);
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {

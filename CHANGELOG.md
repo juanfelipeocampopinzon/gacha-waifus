@@ -4,6 +4,29 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.0.0] — 2026-10-24
+
+### 🎴 Pantalla del gacha con dos pestañas + bate nuevo
+- **Una sola pantalla para los dos banners**: el Terminal Gacha y la Máquina Gacha abren
+  `GachaBannerScreen` (menú `GachaMenu`) con las pestañas **PROMOCIONAL** y **PERMANENTE**. Dentro:
+  tirar x1 / x10, pity, garantía, bolitas, waifu destacada y los 10 resultados revelándose en orden.
+  - El sorteo vive en `GachaService` (una sola fuente): probabilidades, pity 64, rango 4★ (pity 32),
+    50/50 con consuelo del pool estándar, 15 % de tirada doble y tabla de comida. Los atajos de
+    Shift + clic usan ese mismo código.
+  - La pestaña y la tirada viajan en botones separados por banner (`BUTTON_PULL_1/10` y
+    `..._STANDARD`): cambiar de pestaña y tirar sin esperar la sincronización no gasta las bolitas
+    del banner anterior.
+  - Arreglos de paso: la bolita del offhand ya no se cuenta dos veces y la comida del resultado se
+    entrega copiada (antes `Inventory.add()` vaciaba la pila y se perdía el icono).
+- **Se retira el Terminal Estándar** (`standard_terminal`): código, registro, pestaña de creativos,
+  modelo, textura y claves de lang. El banner permanente se paga desde la pestaña permanente del
+  Terminal Gacha, así que el ítem ya no hacía falta.
+- **Bate de Tung Tung Sahur rehecho** (`beisbol_bate`): geometría con perfil real (pomo, cuello,
+  mango con cinta, transición y barril, 9 cubos) y textura 64×64 pintada por regiones de box UV
+  (veta, cinta y tapas). Antes eran 4 cubos enormes con escala `0.125`, o sea un bate de **~3
+  bloques** que desbordaba el slot; ahora escala `1/24` (1 bloque de alto), el origen del modelo cae
+  en el mango (se agarra por la cinta) y el icono se centra y gira 45° con el transform `gui`.
+
 ## [5.5.0] — 2026-10-20
 
 ### 🪧 GeckoLib, jefe nuevo y Fernanfloo rehecho
@@ -19,7 +42,6 @@ Todas las notas de versión del mod en orden cronológico descendente.
   pelea, con su grito "¡CHORIZO!" de siempre) que persiguen el objetivo del jefe y contraatacan.
 - **Curly** (`curly`): lobo guardian sin domar (los domados de vanilla se vuelven pasivos), IA propia
   de ataque y sincronización de objetivo con Fernanfloo; se esfuma si el jefe desaparece.
-- Pendiente: rediseño del bate (forma/orientación en mano) para la próxima versión.
 
 ## [5.4.0] — 2026-10-15
 

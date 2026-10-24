@@ -38,7 +38,6 @@ public class ModCreativeTabs {
                                 output.accept(ModItems.PINK_BALL.get());
                                 output.accept(ModItems.BLUE_BALL.get());
                                 output.accept(ModItems.GACHA_TERMINAL.get());
-                                output.accept(ModItems.STANDARD_TERMINAL.get());
                                 // — Maquina Gacha (bloque decorativo; la logica de tiradas llega despues)
                                 output.accept(ModBlocks.GACHA_MACHINE_ITEM.get());
                                 output.accept(ModItems.WAIFU_CAPSULE.get());

@@ -29,7 +29,9 @@ public final class BateBeisbolClient {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    this.renderer = new GeoItemRenderer<>(new BateBeisbolModel()).withScale(0.125F, 0.125F);
+                    // El modelo mide 24 unidades de alto (modelo de bloque: 24 u = 1 bloque).
+                    this.renderer = new GeoItemRenderer<>(new BateBeisbolModel())
+                            .withScale(1F / 24F, 1F / 24F);
                 }
                 return this.renderer;
             }

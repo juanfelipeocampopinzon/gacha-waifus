@@ -21,7 +21,6 @@ import com.gachawaifus.item.VonLycaonTokenItem;
 import com.gachawaifus.item.YidhariTokenItem;
 import com.gachawaifus.item.KoledaTokenItem;
 import com.gachawaifus.item.Soldier11TokenItem;
-import com.gachawaifus.item.StandardTerminalItem;
 import com.gachawaifus.item.RinaTokenItem;
 import com.gachawaifus.item.BillyKidTokenItem;
 import com.gachawaifus.item.NekomataTokenItem;
@@ -78,7 +77,7 @@ public class ModItems {
     public static final DeferredHolder<Item, Item> PROMEIA_TOKEN =
             ITEMS.register("promeia_token", () -> new PromeiaTokenItem(new Item.Properties().stacksTo(1)));
 
-    /** Terminal Gacha — máquina de tiradas con bolitas rojas (1 bolita = 1 tirada, Shift = x10) */
+    /** Terminal Gacha — abre la pantalla del gacha (pestañas promocional y permanente) */
     public static final DeferredHolder<Item, Item> GACHA_TERMINAL =
             ITEMS.register("gacha_terminal", () -> new GachaTerminalItem(new Item.Properties().stacksTo(1)));
 
@@ -91,16 +90,9 @@ public class ModItems {
     public static final DeferredHolder<Item, GachaBallItem> PINK_BALL =
             ITEMS.register("pink_ball", () -> new GachaBallItem(new Item.Properties().stacksTo(25)));
 
-    /** Bolita Azul — una tirada del banner PERMANENTE (Terminal Estándar). */
+    /** Bolita Azul — una tirada del banner PERMANENTE (pestaña permanente del Terminal Gacha). */
     public static final DeferredHolder<Item, GachaBallItem> BLUE_BALL =
             ITEMS.register("blue_ball", () -> new GachaBallItem(new Item.Properties()));
-
-    /**
-     * Terminal Estándar — banner permanente: gasta bolitas azules y solo entrega las 7 waifus
-     * estándar ({@link com.gachawaifus.gacha.WaifuRoster#STANDARD_POOL}) que no tengas.
-     */
-    public static final DeferredHolder<Item, Item> STANDARD_TERMINAL =
-            ITEMS.register("standard_terminal", () -> new StandardTerminalItem(new Item.Properties().stacksTo(1)));
 
     /** Cápsula Waifu — cofre portátil: guarda (Shift+clic) e invoca a tus waifus. La colección vive en el mundo. */
     public static final DeferredHolder<Item, Item> WAIFU_CAPSULE =

@@ -1,6 +1,7 @@
 package com.gachawaifus.registry;
 
 import com.gachawaifus.GachaWaifusMod;
+import com.gachawaifus.menu.GachaMenu;
 import com.gachawaifus.menu.WaifuStorageMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -14,4 +15,8 @@ public class ModMenuTypes {
 
     public static final DeferredHolder<MenuType<?>, MenuType<WaifuStorageMenu>> WAIFU_STORAGE =
             MENU_TYPES.register("waifu_storage", () -> new MenuType<>(WaifuStorageMenu::new, FeatureFlags.VANILLA_SET));
+
+    /** Pantalla del gacha: banner promocional + permanente en una sola interfaz. */
+    public static final DeferredHolder<MenuType<?>, MenuType<GachaMenu>> GACHA_BANNER =
+            MENU_TYPES.register("gacha_banner", () -> new MenuType<>(GachaMenu::new, FeatureFlags.VANILLA_SET));
 }
