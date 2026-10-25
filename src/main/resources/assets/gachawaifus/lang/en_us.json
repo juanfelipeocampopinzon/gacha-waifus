@@ -327,5 +327,8 @@
   "gachawaifus.gacha.rates.five": "5★: 1.6 % base, rises from pull 51 and is guaranteed at 64.",
   "gachawaifus.gacha.rates.four": "4★: 10 % per pull and guaranteed at 32. Its own pity.",
   "gachawaifus.gacha.rates.double": "15 % double pull: the next waifu in the rotation drops too.",
-  "gachawaifus.gacha.rates.standard": "Every 5★ is one of the 7 standard waifus you don't own yet."
+  "gachawaifus.gacha.rates.standard": "Every 5★ is one of the 7 standard waifus you don't own yet.",
+  "gachawaifus.gacha.pulling": "PULLING",
+  "gachawaifus.gacha.five.hint": "Click to continue",
+  "gachawaifus.gacha.new": "NEW!"
 }

@@ -63,7 +63,7 @@ public class GachaMenu extends AbstractContainerMenu {
     public static final int DATA_BLUE = 6;
     /** Sube en cada tirada: el cliente lo usa para disparar la animación de revelado. */
     public static final int DATA_SERIAL = 7;
-    /** Índice de la waifu que enseña el banner (en ROTATION si es promocional, en el pool si no). */
+    /** Índice de la waifu que enseña el banner (en PROMO_ROTATION si es promocional, en el pool si no). */
     public static final int DATA_SPOTLIGHT = 8;
     public static final int DATA_LAST_FIVE = 9;
     public static final int DATA_LAST_FOUR = 10;
@@ -75,7 +75,12 @@ public class GachaMenu extends AbstractContainerMenu {
     public static final int DATA_STANDARD_MASK = 14;
     /** 1 si ya tienes a la waifu que enseña el banner activo. */
     public static final int DATA_SPOTLIGHT_OWNED = 15;
-    public static final int DATA_COUNT = 16;
+    /**
+     * Máscara de la última tirada: el bit {@code i} está a 1 si el hueco {@code i} es una waifu que
+     * <b>no tenías</b> antes de tirar. La pantalla lo usa para la cinta de "¡NUEVA!".
+     */
+    public static final int DATA_NEW_MASK = 16;
+    public static final int DATA_COUNT = 17;
 
     /** Huecos donde se pintan los tokens de la última tirada. */
     public static final int RESULT_SLOTS = 10;
@@ -204,7 +209,7 @@ public class GachaMenu extends AbstractContainerMenu {
         // La destacada del banner ACTIVO: índice dentro de la lista que le toca (rotación o pool).
         WaifuRoster.Entry spot = GachaService.spotlight(level, this.banner);
         this.data[DATA_SPOTLIGHT] = this.banner == GachaService.Banner.PROMO
-                ? WaifuRoster.ROTATION.indexOf(spot)
+                ? WaifuRoster.PROMO_ROTATION.indexOf(spot)
                 : WaifuRoster.STANDARD_POOL.indexOf(spot);
     }
 
@@ -269,6 +274,8 @@ public class GachaMenu extends AbstractContainerMenu {
             this.banner = banner;
             this.data[DATA_TAB] = banner == GachaService.Banner.STANDARD ? 1 : 0;
         }
+        // Retrato de la colección ANTES de tirar: así se puede marcar lo que es nuevo.
+        Set<String> before = WaifuRoster.ownedIds(serverPlayer);
         GachaService.Result result = GachaService.pull(serverPlayer, banner, count);
         if (!result.success) {
             // El aviso del motivo ya lo manda GachaService.pull.
@@ -281,7 +288,19 @@ public class GachaMenu extends AbstractContainerMenu {
         this.data[DATA_LAST_FIVE] = result.fiveStars;
         this.data[DATA_LAST_FOUR] = result.fourStars;
         this.data[DATA_LAST_FOOD] = result.food.size();
+        this.data[DATA_NEW_MASK] = newMask(result, before);
         refreshAll(serverPlayer);
+    }
+
+    /** Bit {@code i} = la waifu del hueco {@code i} no estaba en la colección antes de la tirada. */
+    private static int newMask(GachaService.Result result, Set<String> before) {
+        int mask = 0;
+        for (int i = 0; i < result.waifus.size() && i < RESULT_SLOTS; i++) {
+            if (!before.contains(result.waifus.get(i).id())) {
+                mask |= 1 << i;
+            }
+        }
+        return mask;
     }
 
     /** Vuelca el resultado en los 10 huecos visuales: primero las waifus, después la comida. */
@@ -370,7 +389,7 @@ public class GachaMenu extends AbstractContainerMenu {
     @Nullable
     public WaifuRoster.Entry spotlight() {
         List<WaifuRoster.Entry> list = banner() == GachaService.Banner.PROMO
-                ? WaifuRoster.ROTATION : WaifuRoster.STANDARD_POOL;
+                ? WaifuRoster.PROMO_ROTATION : WaifuRoster.STANDARD_POOL;
         int index = this.data[DATA_SPOTLIGHT];
         return index >= 0 && index < list.size() ? list.get(index) : null;
     }
@@ -382,6 +401,24 @@ public class GachaMenu extends AbstractContainerMenu {
     /** ¿El último resultado trajo una 5★? (la pantalla lo usa para el destello). */
     public boolean lastPullHadFive() {
         return lastFive() > 0;
+    }
+
+    /** Máscara de "esta waifu es nueva" de la última tirada (bit por hueco). */
+    public int newMask() {
+        return this.data[DATA_NEW_MASK];
+    }
+
+    /** La pila del hueco {@code index} de resultados; vacía si no hay nada. */
+    public ItemStack resultStack(int index) {
+        return index >= 0 && index < RESULT_SLOTS ? this.results.getItem(index) : ItemStack.EMPTY;
+    }
+
+    /**
+     * ¿El hueco pertenece al resultado de la tirada? La pantalla dibuja animaciones solo en estos:
+     * los del inventario del jugador se pintan normales aunque lleven un token.
+     */
+    public boolean isResultSlot(Slot slot) {
+        return slot.container == this.results;
     }
 
     /* ══ Contrato del menú ═════════════════════════════════════════════════════════════════ */

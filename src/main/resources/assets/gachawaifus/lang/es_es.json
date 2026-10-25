@@ -327,5 +327,8 @@
   "gachawaifus.gacha.rates.five": "5★: 1,6 % base, sube desde la tirada 51 y es segura en la 64.",
   "gachawaifus.gacha.rates.four": "4★: 10 % por tirada y segura en la 32. Pity propia.",
   "gachawaifus.gacha.rates.double": "15 % de tirada doble: cae también la siguiente de la rotación.",
-  "gachawaifus.gacha.rates.standard": "Cada 5★ es una de las 7 estándar que todavía no tengas."
+  "gachawaifus.gacha.rates.standard": "Cada 5★ es una de las 7 estándar que todavía no tengas.",
+  "gachawaifus.gacha.pulling": "TIRANDO",
+  "gachawaifus.gacha.five.hint": "Clic para continuar",
+  "gachawaifus.gacha.new": "¡NUEVA!"
 }

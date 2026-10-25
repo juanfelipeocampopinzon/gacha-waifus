@@ -14,9 +14,24 @@ import software.bernie.geckolib.renderer.GeoItemRenderer;
 /**
  * Registro de cliente del bate: {@link GeoItemRenderer} en mano (tercera persona incluida)
  * e inventario.
+ *
+ * <p><b>Ojo con la escala.</b> GeckoLib ya pasa las unidades del geo a bloques al hornear el
+ * modelo ({@code BakedModelFactory} divide entre 16), así que un geo de 24 unidades mide
+ * <b>1,5 bloques</b>, no 1. {@code withScale} es un multiplicador sobre eso, no una conversión:
+ * para dejar el bate en 1 bloque hay que multiplicar por {@code 16/24 = 2/3}. Con {@code 1/24}
+ * (lo que había antes) el bate medía 1/16 de bloque —un píxel en el inventario— y por eso
+ * parecía invisible.
+ *
+ * <p>El geo está centrado en el origen (convención de los modelos de ítem de GeckoLib: el
+ * {@code preRender} del renderer suma +0,5 y el {@code ItemRenderer} de vanilla resta −0,5), así
+ * que el bate se pinta alrededor del origen del ítem y los transforms del JSON funcionan como los
+ * de un ítem normal.
  */
 @EventBusSubscriber(modid = GachaWaifusMod.MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class BateBeisbolClient {
+
+    /** 24 unidades de geo = 1,5 bloques; ×2/3 = 1 bloque de largo, como un ítem vanilla. */
+    private static final float MODEL_SCALE = 16F / 24F;
 
     private BateBeisbolClient() {
     }
@@ -29,9 +44,8 @@ public final class BateBeisbolClient {
             @Override
             public BlockEntityWithoutLevelRenderer getCustomRenderer() {
                 if (this.renderer == null) {
-                    // El modelo mide 24 unidades de alto (modelo de bloque: 24 u = 1 bloque).
                     this.renderer = new GeoItemRenderer<>(new BateBeisbolModel())
-                            .withScale(1F / 24F, 1F / 24F);
+                            .withScale(MODEL_SCALE, MODEL_SCALE);
                 }
                 return this.renderer;
             }

@@ -4,6 +4,107 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.2.0] — 2026-10-24
+
+### 📖 Cápsula Waifu & Glosario de Colección (Grimorio Gacha)
+- **Nueva interfaz procedural de doble panel (380 × 222 px)**: se retira la textura de cofre vanilla (`generic_54.png`)
+  y se introduce una pantalla estilo libro / terminal gacha (`WaifuStorageScreen`) con estética `#1A1424`,
+  bordes biselados y halos dinámicos adaptados al color de la waifu seleccionada (`WaifuColors`).
+- **Pestaña [ CÁPSULA ]**: vista de waifus vivas almacenadas (`✔`) y caídas en combate (`✖`), con mensaje ilustrado
+  cuando la cápsula está vacía recordando cómo guardar waifus con `Shift + Clic derecho`.
+- **Pestaña [ GLOSARIO ]**: compendio completo de las 62 waifus de `WaifuRoster.ROTATION`, contador de progreso global
+  (`X / 62 Conseguidas (Y%)`), subfiltros (`TODAS`, `OBTENIDAS`, `FALTANTES`) y silueta oscurecida con candado `🔒`
+  en las waifus no desbloqueadas.
+- **Doble visor multimedia**:
+  - `[ 3D VIVO ]`: modelo 3D en tiempo real rotando suavemente con `WaifuPreviewRenderer`, sombra de suelo y fallback a token.
+  - `[ ARTE 128px ]`: marco reservado de **128 × 128 píxeles** con carga automática de `textures/gui/art/<id>.png`
+    y lienzo cuadriculado con mira central y ruta en assets si el arte aún no se ha creado.
+- **Acciones contextuales y atajos**:
+  - Botón verde `[ ✔ INVOCAR AHORA ]` si la waifu está guardada viva en la cápsula.
+  - Botón rojo `[ ❤ REVIVIR (4 💎) ]` si la waifu está caída (con chequeo de diamantes en inventario).
+  - Etiquetas informativas de estado: activa en el mundo, en inventario o bloqueada.
+  - Atajo de doble clic sobre la cuadrícula para invocar o revivir rápidamente.
+- **Sincronización ligera**: `WaifuStorageMenu` utiliza `ContainerData` con máscaras de bits de 96 bits (`isBitSet`/`setBit`)
+  para sincronizar el estado de la colección completa y las acciones con el servidor sin paquetes de red custom.
+
+## [6.1.1] — 2026-10-24
+
+### 🏏 Tung Tung Sahur agarra el bate por el mango
+- **Síntoma**: el bate se veía, pero flotaba a 0,41 bloques del puño (a la altura del codo) y
+  apuntaba hacia abajo-adelante, casi rozando el suelo.
+- **Causa 1 — orden de rotación**: `ItemTransform.apply` usa
+  `new Quaternionf().rotationXYZ(x, y, z)` de JOML, que compone **`Rx · Ry · Rz`** (no
+  `Rz · Ry · Rx`). El generador de 6.1.0 despejaba `t` con el orden invertido, así que la pose
+  real en juego no era la calculada. Ahora el orden es el correcto y se ha comprobado contra JOML
+  de verdad (programa `GripCheck.java`): mismo bbox al milímetro.
+- **Causa 2 — ancla**: en 3.ª persona el pivote era el centro de la caja envolvente del geo, no la
+  mano. Ahora se despeja `t` para que **el punto del mango que agarra la mano** (geo `y = -8`, justo
+  encima del pomo) caiga en el **centro del puño** (`ItemInHandLayer` deja el marco del ítem en la
+  muñeca: el puño está en `(0, -2/16, +1/16)` del marco).
+- **Pose nueva**: `thirdperson_*` rotación `[65, 0, 0]` → bate casi vertical, **barril hacia
+  arriba** y 25° al frente, para que el barril no atraviese el antebrazo. Escala 0,85 sin cambios.
+  Verificado: `dist(agarre, mano) = 0,000` bloques; punta del bate a 1,46 bloques del suelo (sin
+  tocar el suelo ni la cabeza), 0,30 al frente y 0,38 a la derecha.
+- **Mano izquierda**: se guarda el mismo `t` con la X negada y `rotation.y/z` negados, que es lo que
+  `apply(true, …)` vuelve a negar → misma pose espejada.
+- **Resto de contextos** (`gui`, `firstperson_*`, `ground`, `fixed`, `head`): mismas rotaciones y
+  escalas, traslación **recalculada con el orden correcto**. El icono queda 12,92 × 13,12 px con
+  centro (7,82; 8,12) en el slot de 16.
+
+### 🎴 El banner rosa ya no anuncia waifus del pool permanente
+- **Síntoma**: Koleda (y las otras 6 del pool permanente) podían salir como **destacada** del banner
+  promocional.
+- **Causa**: `WaifuRoster.featured()` tomaba de `ROTATION`, que incluye las 7 del `STANDARD_POOL`.
+- **Arreglo**: nueva `WaifuRoster.PROMO_ROTATION` = `ROTATION` menos `STANDARD_POOL` (56 entradas,
+  mismo orden). La usan `featured()`, el índice `DATA_SPOTLIGHT` y `GachaMenu.spotlight()`.
+  `next()` (tirada doble) busca en la lista a la que pertenece la waifu que salió, así que nunca
+  salta de promocional a estándar ni al revés.
+- **Lo que NO cambia**: perder el 50/50 sigue dando el consuelo del `STANDARD_POOL`
+  (`randomStandardUnowned`), que es justo lo que se pidió: pueden salir, pero no como promocionales.
+  Pity 64, rango 4★ con pity 32, 50/50, doble 15 %, probabilidades y precios intactos.
+
+## [6.1.0] — 2026-10-24
+
+### 🏏 El bate deja de ser invisible (escala) y se coloca como un ítem vanilla
+- **Causa raíz**: GeckoLib **ya convierte** las unidades del geo a bloques al hornear
+  (`BakedModelFactory$Builtin.constructCube` hace `origin/16` y `size*0.0625`), así que un geo de
+  24 unidades mide **1,5 bloques**. El `withScale(1F/24F)` de 6.0.1 era un *multiplicador sobre
+  bloques*, no una conversión: dejaba el bate en **1/16 de bloque** (un píxel en el slot), invisible
+  en la práctica.
+- **Arreglo**: `MODEL_SCALE = 16F/24F` (= 2/3 → 1 bloque) y el geo **re-centrado en el origen**
+  (origen de la caja envolvente), con el pivote del hueso en `[0, -6, 0]` (centro de la cinta). Las
+  UVs y los tamaños de los cubos no se tocaron, así que el mapeo box-UV de la textura sigue intacto.
+- **`display` recalculado con la cadena real** (no a ojo):
+  `P(v) = t + R·sca·(−0,5 + Sg·(v + t_geo))`. El `−0,5` de `ItemRenderer` va **después** de
+  `applyTransform` en el `PoseStack`, o sea que se escala y rota con el modelo: el centro del geo
+  cae en `(−1/6, −0,16, −1/6)` bloques del marco del ítem, no en el origen. Los valores salen de
+  despejar `t` para que el punto elegido caiga donde caería el centro de un ítem vanilla.
+  - `gui`, `ground`, `fixed`, `head`: pivote = centro de la caja envolvente.
+  - `thirdperson_*`: pivote = **el agarre** (la mano coge el mango).
+  - `firstperson_*`: pivote = centro, escala 0,75 (con el agarre el barril se metía en la cámara).
+  - `firstperson_lefthand` / `thirdperson_lefthand`: la X se guarda **ya espejada**, porque
+    `ItemTransform.apply` la vuelve a negar en mano izquierda.
+- **Icono verificado por cálculo**: 13,47 × 13,47 px dentro del slot de 16, centro (7,84; 8,16).
+
+### 🎴 Animación de tirada, secuencia de 5★ y marca de "nueva"
+- **Carga** (650 ms): el panel se oscurece, un aro de puntos se cierra sobre el retrato y la bolita
+  late en el centro. Si el servidor no contesta (sin bolitas, banner completo) hay un tope de
+  2,5 s y la pantalla vuelve a reposo sin quedarse colgada.
+- **Revelado**: las cartas salen una a una (85 ms de separación) con un "pop" de 160 ms; durante la
+  carga y hasta que le toca, cada hueco enseña el reverso (el "?").
+- **5★** (2,8 s, se salta con un clic): fondo oscuro, rayos girando, 90 chispas con gravedad,
+  sacudida corta y el "5★" que entra grande y se asienta, con el nombre de la waifu.
+- **4★** (1,1 s): destello corto y el rango, sin cortar el ritmo.
+- **Sonidos vanilla**: clic al tirar, campana al destapar, `BEACON_ACTIVATE` + `PLAYER_LEVELUP`
+  para el 5★ y `AMETHYST_BLOCK_CHIME` para el 4★.
+- **Marcos de rango** en las cartas (oro pulsante para 5★, amarillo para 4★) y **esquina verde de
+  "¡NUEVA!"** cuando la waifu no estaba en la colección antes de tirar. El dato viaja en un bitmask
+  nuevo del menú (`DATA_NEW_MASK`), calculado con `WaifuRoster.ownedIds()` **antes** del `pull`.
+- **Tooltips** de las cartas del resultado: nombre, estrellas, color y la marca de nueva.
+- El contador de pity se pone **oro pulsante** cuando faltan 10 tiradas o menos para el 5★.
+- `renderSlot` solo anima los **huecos del resultado** (`GachaMenu.isResultSlot`): antes el
+  inventario del jugador también se tapaba con el reverso y sus tokens se marcaban con marcos.
+
 ## [6.0.1] — 2026-10-24
 
 ### 🏏 El bate por fin se ve como un bate (el modelo 3D nunca se dibujaba)

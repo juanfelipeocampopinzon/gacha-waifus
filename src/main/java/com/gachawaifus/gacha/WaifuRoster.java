@@ -114,10 +114,27 @@ public final class WaifuRoster {
 
     /**
      * Pool fijo del 50/50 perdido (el "banner permanente" de ZZZ): el consuelo solo cae de
-     * entre estas 7. Las 7 están también en ROTATION, así que la destacada del día puede ser
-     * cualquiera de ellas.
+     * entre estas 7. Están también en {@link #ROTATION} (para poder sacarlas con el gacha), pero
+     * NUNCA son la destacada: para eso está {@link #PROMO_ROTATION}.
      */
     public static final List<Entry> STANDARD_POOL = List.of(RINA, VON_LYCAON, NICOLE, KOLEDA, GRACE_HOWARD, SOLDIER_11, NEKOMATA);
+
+    /**
+     * Rotación del banner <b>promocional</b>: {@link #ROTATION} sin las 7 del {@link #STANDARD_POOL}.
+     *
+     * <p>Las del pool permanente pueden salir en el banner rosa al perder el 50/50 (consuelo), pero
+     * no pueden ser la waifu destacada del día: si la destacada fuera Koleda, el banner estaría
+     * anunciando como promocional a una que ya se regala en el permanente.
+     */
+    public static final List<Entry> PROMO_ROTATION = buildPromoRotation();
+
+    private static List<Entry> buildPromoRotation() {
+        List<Entry> out = new java.util.ArrayList<>();
+        for (Entry e : ROTATION) {
+            if (!STANDARD_POOL.contains(e)) out.add(e);
+        }
+        return List.copyOf(out);
+    }
 
     /**
      * Las <b>4★</b> del mod: los personajes que en su juego de origen son de rango bajo. Salen del
@@ -157,9 +174,10 @@ public final class WaifuRoster {
         return libres.isEmpty() ? null : libres.get(player.getRandom().nextInt(libres.size()));
     }
 
+    /** La destacada del día: solo de la rotación promocional (nunca una del pool permanente). */
     public static Entry featured(ServerLevel level) {
         long day = level.getServer().overworld().getDayTime() / 24000L;
-        return ROTATION.get((int) (Math.floorMod(day, ROTATION.size())));
+        return PROMO_ROTATION.get((int) (Math.floorMod(day, PROMO_ROTATION.size())));
     }
 
     public static Entry byId(String id) {
@@ -172,12 +190,16 @@ public final class WaifuRoster {
     /**
      * La waifu SIGUIENTE en la rotación (dando la vuelta al final). Se usa para la tirada doble:
      * cuando un 5★ sale, hay una probabilidad de que caiga también la siguiente del roster.
+     *
+     * <p>Si la que salió es promocional, la siguiente también lo es; si fue un consuelo del pool
+     * permanente, la siguiente sale de ese mismo pool (nunca se cruzan).
      */
     @Nullable
     public static Entry next(Entry entry) {
-        int i = ROTATION.indexOf(entry);
+        List<Entry> list = PROMO_ROTATION.contains(entry) ? PROMO_ROTATION : STANDARD_POOL;
+        int i = list.indexOf(entry);
         if (i < 0) return null;
-        return ROTATION.get((i + 1) % ROTATION.size());
+        return list.get((i + 1) % list.size());
     }
 
     public static Entry byToken(Item item) {
