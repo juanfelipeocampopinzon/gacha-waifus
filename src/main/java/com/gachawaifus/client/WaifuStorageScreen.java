@@ -10,8 +10,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
@@ -24,28 +26,25 @@ import java.util.List;
 /**
  * Pantalla Grimorio / Compendio de la Cápsula Waifu.
  *
- * <p>Diseñada con estética procedural de alta definición heredada del Terminal Gacha
- * (sin depender de texturas de cofre vanilla que limiten la interfaz):
+ * <p>Diseñada con estética procedural de alta definición y <b>cajas y botones 100% responsivos al texto</b>:
  * <ul>
- *   <li><b>Página Izquierda:</b> Catálogo interactivo con dos vistas (Cápsula activa y Glosario completo),
- *       filtros rápidos, cuadrícula de tokens con badges de estado y paginación.</li>
- *   <li><b>Página Derecha:</b> Ficha técnica detallada, visor 3D en tiempo real (animación y rotación),
- *       marco dedicado para ilustraciones/pixel art de <b>128 × 128 píxeles</b> y botón contextual de acción
- *       (Invocación y Ritual de Resurrección con diamantes).</li>
+ *   <li><b>Pestañas e Índices Dinámicos:</b> El ancho y posición de las pestañas, subfiltros y botones
+ *       se ajustan automáticamente al texto y contadores para evitar cualquier desborde o corte.</li>
+ *   <li><b>Hitboxes Sincronizadas:</b> Los clics del ratón utilizan exactamente el mismo cálculo geométrico
+ *       responsivo que el renderizado gráfico.</li>
+ *   <li><b>Visores Multimedia:</b> Modelo 3D rotando en tiempo real + marco reservado de 128×128 px para pixel art.</li>
+ *   <li><b>Botones Contextuales:</b> Cajas de acción para invocar, revivir y estados que se ensanchan según la etiqueta.</li>
  * </ul>
  */
 public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu> {
 
-    /* ── Geometría (Panel Doble Tipo Libro) ─────────────────────────────────────────────────── */
+    /* ── Geometría Base (Panel Doble Tipo Libro) ────────────────────────────────────────────── */
     private static final int W = 380;
     private static final int H = 222;
     private static final int HEADER_H = 22;
 
-    private static final int TAB_W = 76;
-    private static final int TAB_H = 16;
     private static final int TAB_Y = 4;
-    private static final int TAB_CAPSULE_X = 130;
-    private static final int TAB_GLOSSARY_X = 212;
+    private static final int TAB_H = 16;
     private static final int CLOSE_X = W - 20;
 
     // Cuadrícula izquierda (5 columnas x 4 filas = 20 por página)
@@ -170,6 +169,129 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         return this.activeTab == WaifuStorageMenu.TAB_CAPSULE ? mix(raw, PINK_ACCENT, 0.4F) : mix(raw, BLUE_ACCENT, 0.4F);
     }
 
+    /* ══ Geometría Responsiva al Texto (Cajas Dinámicas) ═════════════════════════════════════ */
+
+    private String capsuleTabLabel() {
+        return "CÁPSULA (" + (this.menu.storedWaifus() + this.menu.fallenWaifus()) + ")";
+    }
+
+    private String glossaryTabLabel() {
+        return "GLOSARIO (" + this.menu.ownedWaifus() + "/" + WaifuRoster.ROTATION.size() + ")";
+    }
+
+    /** [x, y, w, h] responsivo para la pestaña de Cápsula */
+    private int[] getCapsuleTabBounds(int left, int top) {
+        String label = capsuleTabLabel();
+        int w = this.font.width(label) + 16;
+        int x = left + 128;
+        return new int[]{x, top + TAB_Y, w, TAB_H};
+    }
+
+    /** [x, y, w, h] responsivo para la pestaña de Glosario */
+    private int[] getGlossaryTabBounds(int left, int top) {
+        int[] cap = getCapsuleTabBounds(left, top);
+        String label = glossaryTabLabel();
+        int w = this.font.width(label) + 16;
+        int x = cap[0] + cap[2] + 4;
+        return new int[]{x, top + TAB_Y, w, TAB_H};
+    }
+
+    /** [x, y, w, h] responsivo para los subfiltros del glosario (0=TODAS, 1=OBTENIDAS, 2=FALTANTES) */
+    private int[] getSubFilterBounds(int left, int top, int filterIdx) {
+        String f1 = "TODAS";
+        String f2 = "OBTENIDAS";
+        String f3 = "FALTANTES";
+
+        int w1 = this.font.width(f1) + 12;
+        int w2 = this.font.width(f2) + 12;
+        int w3 = this.font.width(f3) + 12;
+
+        int x1 = left + 14;
+        int x2 = x1 + w1 + 4;
+        int x3 = x2 + w2 + 4;
+        int y = top + 27;
+
+        return switch (filterIdx) {
+            case FILTER_OWNED -> new int[]{x2, y, w2, 13};
+            case FILTER_MISSING -> new int[]{x3, y, w3, 13};
+            default -> new int[]{x1, y, w1, 13};
+        };
+    }
+
+    /** [x, y, w, h] responsivo para el botón de alternar vista 3D */
+    private int[] getToggle3DBounds(int left, int top) {
+        String label = "3D VIVO";
+        int w = this.font.width(label) + 12;
+        int x = left + FRAME_X;
+        return new int[]{x, top + 40, w, 12};
+    }
+
+    /** [x, y, w, h] responsivo para el botón de alternar vista Pixel Art */
+    private int[] getToggleArtBounds(int left, int top) {
+        int[] t3d = getToggle3DBounds(left, top);
+        String label = "ARTE 128px";
+        int w = this.font.width(label) + 12;
+        int x = t3d[0] + t3d[2] + 4;
+        return new int[]{x, top + 40, w, 12};
+    }
+
+    private String getActionLabel() {
+        if (this.selectedEntry == null) return "";
+        int rIdx = WaifuRoster.ROTATION.indexOf(this.selectedEntry);
+        if (rIdx < 0) return "";
+
+        boolean isStored = this.menu.isStored(rIdx);
+        boolean isFallen = this.menu.isFallen(rIdx);
+        boolean isActive = this.menu.isActiveInWorld(rIdx);
+        boolean isOwned = this.menu.isOwned(rIdx);
+
+        if (isStored) {
+            return "✔ INVOCAR AHORA";
+        } else if (isFallen) {
+            int diamonds = this.menu.diamondCount();
+            return diamonds >= WaifuStorageMenu.REVIVE_COST
+                    ? "❤ REVIVIR (4 💎)"
+                    : "FALTAN 💎 (" + diamonds + "/4)";
+        } else if (isActive) {
+            return "★ ACTIVA EN EL MUNDO";
+        } else if (isOwned) {
+            return "❖ EN TU INVENTARIO";
+        } else {
+            return "🔒 EN EL GACHA / SALVAJE";
+        }
+    }
+
+    /** [x, y, w, h] responsivo para la caja/botón de acción en la página derecha */
+    private int[] getActionBoxBounds(int left, int top) {
+        String label = getActionLabel();
+        int textW = this.font.width(label);
+        int w = Math.max(FRAME_W, textW + 16);
+        // Ajuste máximo al ancho de la página derecha (172 px)
+        w = Math.min(w, 172);
+
+        // Centrado respecto al área derecha
+        int rightCenterX = (left + 194) + (W - 194) / 2;
+        int x = rightCenterX - w / 2;
+        int y = top + 190;
+        return new int[]{x, y, w, 18};
+    }
+
+    /** [x, y, w, h] para el botón « (página anterior) */
+    private int[] getPrevPageBounds(int left, int top) {
+        int navCenter = left + GRID_START_X + (COLS * (CELL_SIZE + 3) - 3) / 2;
+        int pagePillW = this.font.width("Pág. 99 / 99") + 12;
+        int x = (navCenter - pagePillW / 2) - 24;
+        return new int[]{x, top + 172, 20, 14};
+    }
+
+    /** [x, y, w, h] para el botón » (página siguiente) */
+    private int[] getNextPageBounds(int left, int top) {
+        int navCenter = left + GRID_START_X + (COLS * (CELL_SIZE + 3) - 3) / 2;
+        int pagePillW = this.font.width("Pág. 99 / 99") + 12;
+        int x = (navCenter + pagePillW / 2) + 4;
+        return new int[]{x, top + 172, 20, 14};
+    }
+
     /* ══ Renderizado Principal ═══════════════════════════════════════════════════════════════ */
 
     @Override
@@ -207,7 +329,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         graphics.drawString(this.font, "★", left + 10, top + 7, GOLD, true);
         graphics.drawString(this.font, "CÁPSULA & GLOSARIO", left + 20, top + 7, 0xFFFFFFFF, true);
 
-        // Pestañas Superiores y Cerrar
+        // Pestañas Superiores y Cerrar (Cajas Responsivas)
         drawTabs(graphics, left, top, mouseX, mouseY);
         drawClose(graphics, left, top, mouseX, mouseY);
 
@@ -222,20 +344,20 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         drawRightPage(graphics, left, top, now, accent, mouseX, mouseY);
     }
 
-    /* ── Pestañas Superiores ───────────────────────────────────────────────────────────────── */
+    /* ── Pestañas Superiores Responsivas ───────────────────────────────────────────────────── */
 
     private void drawTabs(GuiGraphics graphics, int left, int top, int mouseX, int mouseY) {
-        drawTab(graphics, left + TAB_CAPSULE_X, top + TAB_Y, TAB_W, TAB_H,
-                "CÁPSULA (" + (this.menu.storedWaifus() + this.menu.fallenWaifus()) + ")",
+        int[] cap = getCapsuleTabBounds(left, top);
+        drawResponsiveTab(graphics, cap[0], cap[1], cap[2], cap[3], capsuleTabLabel(),
                 this.activeTab == WaifuStorageMenu.TAB_CAPSULE, PINK_ACCENT, mouseX, mouseY);
 
-        drawTab(graphics, left + TAB_GLOSSARY_X, top + TAB_Y, TAB_W, TAB_H,
-                "GLOSARIO (" + this.menu.ownedWaifus() + "/" + WaifuRoster.ROTATION.size() + ")",
+        int[] glo = getGlossaryTabBounds(left, top);
+        drawResponsiveTab(graphics, glo[0], glo[1], glo[2], glo[3], glossaryTabLabel(),
                 this.activeTab == WaifuStorageMenu.TAB_GLOSSARY, BLUE_ACCENT, mouseX, mouseY);
     }
 
-    private void drawTab(GuiGraphics graphics, int x, int y, int w, int h, String label,
-                         boolean active, int accent, int mouseX, int mouseY) {
+    private void drawResponsiveTab(GuiGraphics graphics, int x, int y, int w, int h, String label,
+                                  boolean active, int accent, int mouseX, int mouseY) {
         boolean hover = inRect(mouseX, mouseY, x, y, w, h);
         int bg = active ? mix(0xFF261D36, accent, 0.35F) : (hover ? 0xFF1C1628 : 0xFF120E1A);
         graphics.fill(x, y, x + w, y + h, bg);
@@ -260,7 +382,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         graphics.drawString(this.font, "✕", x + 4, y + 3, hover ? RED : TEXT_DIM, false);
     }
 
-    /* ── Página Izquierda: Catálogo y Cuadrícula ───────────────────────────────────────────── */
+    /* ── Página Izquierda: Catálogo y Cuadrícula Responsiva ────────────────────────────────── */
 
     private void drawLeftPage(GuiGraphics graphics, int left, int top, int mouseX, int mouseY) {
         List<WaifuRoster.Entry> entries = getActiveList();
@@ -268,26 +390,44 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         int maxPages = Math.max(1, (total + PER_PAGE - 1) / PER_PAGE);
         this.page = Mth.clamp(this.page, 0, maxPages - 1);
 
-        // Subfiltros del Glosario
+        // Subfiltros del Glosario (Cajas con Ancho Dinámico)
         if (this.activeTab == WaifuStorageMenu.TAB_GLOSSARY) {
-            drawSubFilter(graphics, left + 14, top + 27, 48, 13, "TODAS", this.glossaryFilter == FILTER_ALL, mouseX, mouseY);
-            drawSubFilter(graphics, left + 66, top + 27, 54, 13, "OBTENIDAS", this.glossaryFilter == FILTER_OWNED, mouseX, mouseY);
-            drawSubFilter(graphics, left + 124, top + 27, 54, 13, "FALTANTES", this.glossaryFilter == FILTER_MISSING, mouseX, mouseY);
+            int[] f1 = getSubFilterBounds(left, top, FILTER_ALL);
+            drawSubFilter(graphics, f1[0], f1[1], f1[2], f1[3], "TODAS", this.glossaryFilter == FILTER_ALL, mouseX, mouseY);
+
+            int[] f2 = getSubFilterBounds(left, top, FILTER_OWNED);
+            drawSubFilter(graphics, f2[0], f2[1], f2[2], f2[3], "OBTENIDAS", this.glossaryFilter == FILTER_OWNED, mouseX, mouseY);
+
+            int[] f3 = getSubFilterBounds(left, top, FILTER_MISSING);
+            drawSubFilter(graphics, f3[0], f3[1], f3[2], f3[3], "FALTANTES", this.glossaryFilter == FILTER_MISSING, mouseX, mouseY);
         } else {
-            graphics.drawString(this.font, "§dWAIFUS EN TU CÁPSULA", left + 16, top + 30, TEXT, true);
+            String title = "WAIFUS EN TU CÁPSULA";
+            int tw = this.font.width(title);
+            graphics.drawString(this.font, "§d" + title, left + 16, top + 30, TEXT, true);
         }
 
-        // Si la cápsula está vacía
+        // Si la cápsula está vacía: Tarjeta/Caja Informativa Responsiva
         if (this.activeTab == WaifuStorageMenu.TAB_CAPSULE && total == 0) {
-            int cx = left + 16;
-            int cy = top + 64;
-            graphics.fill(cx, cy, cx + 158, cy + 96, 0x40100C18);
-            frame(graphics, cx, cy, 158, 96, BORDER);
-            graphics.drawString(this.font, "§e★ CÁPSULA VACÍA ★", cx + 22, cy + 12, GOLD, true);
-            graphics.drawString(this.font, "§7Guarda a tu waifu con:", cx + 18, cy + 30, TEXT_DIM, false);
-            graphics.drawString(this.font, "§fShift + Clic derecho", cx + 18, cy + 42, 0xFFFFFF, false);
-            graphics.drawString(this.font, "§7con la cápsula en mano.", cx + 18, cy + 54, TEXT_DIM, false);
-            graphics.drawString(this.font, "§a¡Quedará a salvo aquí!", cx + 18, cy + 72, GREEN, false);
+            String l1 = "★ CÁPSULA VACÍA ★";
+            String l2 = "Guarda a tu waifu con:";
+            String l3 = "Shift + Clic derecho";
+            String l4 = "con la cápsula en mano.";
+            String l5 = "¡Quedará a salvo aquí!";
+
+            int maxTextW = Math.max(this.font.width(l1),
+                    Math.max(this.font.width(l2), Math.max(this.font.width(l3), Math.max(this.font.width(l4), this.font.width(l5)))));
+            int cardW = Math.max(154, maxTextW + 16);
+            int cardX = left + 14 + (168 - cardW) / 2;
+            int cardY = top + 64;
+
+            graphics.fill(cardX, cardY, cardX + cardW, cardY + 96, 0x40100C18);
+            frame(graphics, cardX, cardY, cardW, 96, BORDER);
+
+            graphics.drawString(this.font, "§e" + l1, cardX + (cardW - this.font.width(l1)) / 2, cardY + 12, GOLD, true);
+            graphics.drawString(this.font, "§7" + l2, cardX + (cardW - this.font.width(l2)) / 2, cardY + 30, TEXT_DIM, false);
+            graphics.drawString(this.font, "§f" + l3, cardX + (cardW - this.font.width(l3)) / 2, cardY + 42, 0xFFFFFF, false);
+            graphics.drawString(this.font, "§7" + l4, cardX + (cardW - this.font.width(l4)) / 2, cardY + 54, TEXT_DIM, false);
+            graphics.drawString(this.font, "§a" + l5, cardX + (cardW - this.font.width(l5)) / 2, cardY + 72, GREEN, false);
             return;
         }
 
@@ -348,28 +488,42 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             }
         }
 
-        // Barra inferior de paginación
+        // Barra inferior de paginación responsiva
         int navY = top + 172;
         boolean canPrev = this.page > 0;
         boolean canNext = this.page < maxPages - 1;
 
-        pillButton(graphics, left + 20, navY, 20, 14, "«", canPrev, accentColor(), mouseX, mouseY);
-        pillButton(graphics, left + 148, navY, 20, 14, "»", canNext, accentColor(), mouseX, mouseY);
+        int[] prevBtn = getPrevPageBounds(left, top);
+        int[] nextBtn = getNextPageBounds(left, top);
 
+        pillButton(graphics, prevBtn[0], prevBtn[1], prevBtn[2], prevBtn[3], "«", canPrev, accentColor(), mouseX, mouseY);
+        pillButton(graphics, nextBtn[0], nextBtn[1], nextBtn[2], nextBtn[3], "»", canNext, accentColor(), mouseX, mouseY);
+
+        // Caja responsiva para el indicador de página
         String pageText = "Pág. " + (this.page + 1) + " / " + maxPages;
-        graphics.drawString(this.font, pageText,
-                left + 20 + (148 - 20 - this.font.width(pageText)) / 2 + 10, navY + 3, TEXT, false);
+        int pageTextW = this.font.width(pageText);
+        int pagePillW = pageTextW + 12;
+        int pagePillX = prevBtn[0] + prevBtn[2] + (nextBtn[0] - (prevBtn[0] + prevBtn[2]) - pagePillW) / 2;
 
-        // Resumen
+        graphics.fill(pagePillX, navY, pagePillX + pagePillW, navY + 14, 0x40100C18);
+        frame(graphics, pagePillX, navY, pagePillW, 14, BORDER_DARK);
+        graphics.drawString(this.font, pageText, pagePillX + 6, navY + 3, TEXT, false);
+
+        // Caja de Resumen Responsiva en el pie
         int footY = top + 196;
+        String stats;
         if (this.activeTab == WaifuStorageMenu.TAB_CAPSULE) {
-            String stats = "§a" + this.menu.storedWaifus() + " vivas §7· §c" + this.menu.fallenWaifus() + " caídas";
-            graphics.drawString(this.font, Component.literal(stats), left + 24, footY, 0xFFFFFF, false);
+            stats = "§a" + this.menu.storedWaifus() + " vivas §7· §c" + this.menu.fallenWaifus() + " caídas";
         } else {
             int pct = (this.menu.ownedWaifus() * 100) / Math.max(1, WaifuRoster.ROTATION.size());
-            String stats = "§6" + this.menu.ownedWaifus() + " / " + WaifuRoster.ROTATION.size() + " (" + pct + "%)";
-            graphics.drawString(this.font, Component.literal(stats), left + 24, footY, 0xFFFFFF, false);
+            stats = "§6" + this.menu.ownedWaifus() + " / " + WaifuRoster.ROTATION.size() + " (" + pct + "%)";
         }
+
+        int statsW = this.font.width(stats) + 12;
+        int statsX = left + 14 + (168 - statsW) / 2;
+        graphics.fill(statsX, footY - 2, statsX + statsW, footY + 10, 0x30000000);
+        frame(graphics, statsX, footY - 2, statsW, 12, BORDER_DARK);
+        graphics.drawString(this.font, Component.literal(stats), statsX + 6, footY, 0xFFFFFF, false);
     }
 
     private void drawSubFilter(GuiGraphics graphics, int x, int y, int w, int h, String text,
@@ -382,7 +536,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         graphics.drawString(this.font, text, x + (w - this.font.width(text)) / 2, y + 3, textCol, false);
     }
 
-    /* ── Página Derecha: Ficha y Visores Multimedia ────────────────────────────────────────── */
+    /* ── Página Derecha: Ficha y Visores con Cajas Responsivas ─────────────────────────────── */
 
     private void drawRightPage(GuiGraphics graphics, int left, int top, long now, int accent, int mouseX, int mouseY) {
         if (this.selectedEntry == null) {
@@ -399,26 +553,41 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
 
         WaifuColor waifuColor = WaifuColors.of(entry.id());
 
-        // Cabecera: Nombre e Insignias
+        // Cabecera: Nombre e Insignia de Color Responsiva
         int nameY = top + 26;
+        int nameX = left + 198;
         ChatFormatting nameFormat = waifuColor == null ? ChatFormatting.WHITE : waifuColor.format();
-        graphics.drawString(this.font, Component.literal(entry.name()).withStyle(nameFormat, ChatFormatting.BOLD),
-                left + 198, nameY, 0xFFFFFFFF, true);
 
-        // Insignia de Color
         if (waifuColor != null) {
             String colName = waifuColor.name();
-            int badgeW = this.font.width(colName) + 8;
-            int badgeX = left + W - 18 - badgeW;
-            graphics.fill(badgeX, nameY - 1, badgeX + badgeW, nameY + 9, 0xFF000000 | darken(waifuColor.rgb(), 0.5F));
-            frame(graphics, badgeX, nameY - 1, badgeW, 10, 0xFF000000 | waifuColor.rgb());
-            graphics.drawString(this.font, colName, badgeX + 4, nameY, 0xFFFFFFFF, false);
+            int badgeW = this.font.width(colName) + 10;
+            int badgeX = left + W - 14 - badgeW;
+
+            // Recorte seguro si el nombre es muy largo para no solapar la insignia
+            int maxNameW = badgeX - nameX - 6;
+            String displayName = entry.name();
+            if (this.font.width(displayName) > maxNameW) {
+                displayName = this.font.plainSubstrByWidth(displayName, maxNameW - 8) + "…";
+            }
+
+            graphics.drawString(this.font, Component.literal(displayName).withStyle(nameFormat, ChatFormatting.BOLD),
+                    nameX, nameY, 0xFFFFFFFF, true);
+
+            // Insignia responsiva de Color
+            graphics.fill(badgeX, nameY - 1, badgeX + badgeW, nameY + 10, 0xFF000000 | darken(waifuColor.rgb(), 0.5F));
+            frame(graphics, badgeX, nameY - 1, badgeW, 11, 0xFF000000 | waifuColor.rgb());
+            graphics.drawString(this.font, colName, badgeX + 5, nameY + 1, 0xFFFFFFFF, false);
+        } else {
+            graphics.drawString(this.font, Component.literal(entry.name()).withStyle(nameFormat, ChatFormatting.BOLD),
+                    nameX, nameY, 0xFFFFFFFF, true);
         }
 
-        // Selector de Visor: [ 3D ] vs [ Pixel Art 128px ]
-        int viewTabY = top + 40;
-        drawViewToggle(graphics, left + FRAME_X, viewTabY, 52, 12, "3D VIVO", this.viewMode == VIEW_3D, accent, mouseX, mouseY);
-        drawViewToggle(graphics, left + FRAME_X + 56, viewTabY, 72, 12, "ARTE 128px", this.viewMode == VIEW_PIXEL_ART, accent, mouseX, mouseY);
+        // Selector de Visor Responsivo: [ 3D ] vs [ Pixel Art 128px ]
+        int[] t3d = getToggle3DBounds(left, top);
+        int[] tart = getToggleArtBounds(left, top);
+
+        drawViewToggle(graphics, t3d[0], t3d[1], t3d[2], t3d[3], "3D VIVO", this.viewMode == VIEW_3D, accent, mouseX, mouseY);
+        drawViewToggle(graphics, tart[0], tart[1], tart[2], tart[3], "ARTE 128px", this.viewMode == VIEW_PIXEL_ART, accent, mouseX, mouseY);
 
         // Marco Multimedia 128x128
         int fx = left + FRAME_X;
@@ -438,24 +607,22 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             drawPixelArtViewport(graphics, fx, fy, entry, accent);
         }
 
-        // Botón de Acción / Estado Contextual
-        int actionY = top + 190;
-        int actionW = FRAME_W;
-        int actionX = fx;
+        // Botón de Acción o Caja de Estado Contextual Responsiva
+        int[] act = getActionBoxBounds(left, top);
+        String label = getActionLabel();
 
         if (isStored) {
-            pillButton(graphics, actionX, actionY, actionW, 18, "✔ INVOCAR AHORA", true, GREEN, mouseX, mouseY);
+            pillButton(graphics, act[0], act[1], act[2], act[3], label, true, GREEN, mouseX, mouseY);
         } else if (isFallen) {
             int diamonds = this.menu.diamondCount();
             boolean canRevive = diamonds >= WaifuStorageMenu.REVIVE_COST;
-            String label = canRevive ? "❤ REVIVIR (4 💎)" : "FALTAN 💎 (" + diamonds + "/4)";
-            pillButton(graphics, actionX, actionY, actionW, 18, label, canRevive, RED, mouseX, mouseY);
+            pillButton(graphics, act[0], act[1], act[2], act[3], label, canRevive, RED, mouseX, mouseY);
         } else if (isActive) {
-            drawStatusPill(graphics, actionX, actionY, actionW, 18, "★ ACTIVA EN EL MUNDO", GOLD);
+            drawStatusPill(graphics, act[0], act[1], act[2], act[3], label, GOLD);
         } else if (isOwned) {
-            drawStatusPill(graphics, actionX, actionY, actionW, 18, "❖ EN TU INVENTARIO", BLUE_ACCENT);
+            drawStatusPill(graphics, act[0], act[1], act[2], act[3], label, BLUE_ACCENT);
         } else {
-            drawStatusPill(graphics, actionX, actionY, actionW, 18, "🔒 EN EL GACHA / SALVAJE", TEXT_DIM);
+            drawStatusPill(graphics, act[0], act[1], act[2], act[3], label, TEXT_DIM);
         }
     }
 
@@ -567,7 +734,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         }
     }
 
-    /* ── Manejo de Clics e Interacciones ───────────────────────────────────────────────────── */
+    /* ── Manejo de Clics con Hitboxes Responsivas ──────────────────────────────────────────── */
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
@@ -585,8 +752,9 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             return true;
         }
 
-        // Pestaña Cápsula
-        if (inRect(mouseX, mouseY, left + TAB_CAPSULE_X, top + TAB_Y, TAB_W, TAB_H)) {
+        // Pestaña Cápsula (Hitbox Responsiva)
+        int[] capTab = getCapsuleTabBounds(left, top);
+        if (inRect(mouseX, mouseY, capTab[0], capTab[1], capTab[2], capTab[3])) {
             if (this.activeTab != WaifuStorageMenu.TAB_CAPSULE) {
                 playUi(SoundEvents.UI_BUTTON_CLICK, 1.2F);
                 this.activeTab = WaifuStorageMenu.TAB_CAPSULE;
@@ -597,8 +765,9 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             return true;
         }
 
-        // Pestaña Glosario
-        if (inRect(mouseX, mouseY, left + TAB_GLOSSARY_X, top + TAB_Y, TAB_W, TAB_H)) {
+        // Pestaña Glosario (Hitbox Responsiva)
+        int[] gloTab = getGlossaryTabBounds(left, top);
+        if (inRect(mouseX, mouseY, gloTab[0], gloTab[1], gloTab[2], gloTab[3])) {
             if (this.activeTab != WaifuStorageMenu.TAB_GLOSSARY) {
                 playUi(SoundEvents.UI_BUTTON_CLICK, 1.2F);
                 this.activeTab = WaifuStorageMenu.TAB_GLOSSARY;
@@ -609,21 +778,26 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             return true;
         }
 
-        // Subfiltros del Glosario
+        // Subfiltros del Glosario (Hitboxes Responsivas)
         if (this.activeTab == WaifuStorageMenu.TAB_GLOSSARY) {
-            if (inRect(mouseX, mouseY, left + 14, top + 27, 48, 13)) {
+            int[] f1 = getSubFilterBounds(left, top, FILTER_ALL);
+            if (inRect(mouseX, mouseY, f1[0], f1[1], f1[2], f1[3])) {
                 this.glossaryFilter = FILTER_ALL;
                 this.page = 0;
                 playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
                 return true;
             }
-            if (inRect(mouseX, mouseY, left + 66, top + 27, 54, 13)) {
+
+            int[] f2 = getSubFilterBounds(left, top, FILTER_OWNED);
+            if (inRect(mouseX, mouseY, f2[0], f2[1], f2[2], f2[3])) {
                 this.glossaryFilter = FILTER_OWNED;
                 this.page = 0;
                 playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
                 return true;
             }
-            if (inRect(mouseX, mouseY, left + 124, top + 27, 54, 13)) {
+
+            int[] f3 = getSubFilterBounds(left, top, FILTER_MISSING);
+            if (inRect(mouseX, mouseY, f3[0], f3[1], f3[2], f3[3])) {
                 this.glossaryFilter = FILTER_MISSING;
                 this.page = 0;
                 playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
@@ -631,17 +805,19 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             }
         }
 
-        // Paginación Izquierda
-        int navY = top + 172;
+        // Paginación Izquierda Responsiva
         List<WaifuRoster.Entry> entries = getActiveList();
         int maxPages = Math.max(1, (entries.size() + PER_PAGE - 1) / PER_PAGE);
 
-        if (inRect(mouseX, mouseY, left + 20, navY, 20, 14) && this.page > 0) {
+        int[] prevBtn = getPrevPageBounds(left, top);
+        int[] nextBtn = getNextPageBounds(left, top);
+
+        if (inRect(mouseX, mouseY, prevBtn[0], prevBtn[1], prevBtn[2], prevBtn[3]) && this.page > 0) {
             this.page--;
             playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
             return true;
         }
-        if (inRect(mouseX, mouseY, left + 148, navY, 20, 14) && this.page < maxPages - 1) {
+        if (inRect(mouseX, mouseY, nextBtn[0], nextBtn[1], nextBtn[2], nextBtn[3]) && this.page < maxPages - 1) {
             this.page++;
             playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
             return true;
@@ -677,22 +853,24 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
             }
         }
 
-        // Conmutador de Visor: 3D vs Pixel Art
-        int viewTabY = top + 40;
-        if (inRect(mouseX, mouseY, left + FRAME_X, viewTabY, 52, 12)) {
+        // Conmutador de Visor Responsivo: 3D vs Pixel Art
+        int[] t3d = getToggle3DBounds(left, top);
+        if (inRect(mouseX, mouseY, t3d[0], t3d[1], t3d[2], t3d[3])) {
             this.viewMode = VIEW_3D;
             playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
             return true;
         }
-        if (inRect(mouseX, mouseY, left + FRAME_X + 56, viewTabY, 72, 12)) {
+
+        int[] tart = getToggleArtBounds(left, top);
+        if (inRect(mouseX, mouseY, tart[0], tart[1], tart[2], tart[3])) {
             this.viewMode = VIEW_PIXEL_ART;
             playUi(SoundEvents.UI_BUTTON_CLICK, 1.0F);
             return true;
         }
 
-        // Botón de Acción Principal (Invocar / Revivir)
-        int actionY = top + 190;
-        if (this.selectedEntry != null && inRect(mouseX, mouseY, left + FRAME_X, actionY, FRAME_W, 18)) {
+        // Botón de Acción Principal Responsivo (Invocar / Revivir)
+        int[] act = getActionBoxBounds(left, top);
+        if (this.selectedEntry != null && inRect(mouseX, mouseY, act[0], act[1], act[2], act[3])) {
             triggerContextAction(this.selectedEntry);
             return true;
         }
@@ -742,15 +920,15 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         return super.mouseScrolled(mouseX, mouseY, scrollDirection, scrollAmount);
     }
 
-    /* ── Utilidades de Dibujo ──────────────────────────────────────────────────────────────── */
+    /* ── Utilidades de Dibujo Responsivo ───────────────────────────────────────────────────── */
 
-    private void playUi(net.minecraft.core.Holder<net.minecraft.sounds.SoundEvent> sound, float pitch) {
+    private void playUi(Holder<SoundEvent> sound, float pitch) {
         if (this.minecraft != null) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch));
         }
     }
 
-    private void playUi(net.minecraft.sounds.SoundEvent sound, float pitch) {
+    private void playUi(SoundEvent sound, float pitch) {
         if (this.minecraft != null) {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(sound, pitch));
         }
@@ -760,33 +938,41 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         return mouseX >= x && mouseX < x + w && mouseY >= y && mouseY < y + h;
     }
 
+    /**
+     * Dibuja un botón tipo píldora responsivo. Si el texto excede el ancho mínimo especificado,
+     * la caja se ensancha automáticamente para envolver el texto con margen simétrico.
+     */
     private void pillButton(GuiGraphics graphics, int x, int y, int w, int h, String label,
                             boolean enabled, int accent, int mouseX, int mouseY) {
-        boolean hover = enabled && inRect(mouseX, mouseY, x, y, w, h);
+        int textW = this.font.width(label);
+        int realW = Math.max(w, textW + 12);
+        int realX = x - (realW - w) / 2;
+
+        boolean hover = enabled && inRect(mouseX, mouseY, realX, y, realW, h);
         int base = enabled ? mix(0xFF1D1628, accent, hover ? 0.55F : 0.35F) : 0xFF161020;
-        graphics.fill(x, y, x + w, y + h, base);
-        graphics.fill(x, y, x + w, y + 1, enabled ? 0xFF000000 | lighten(accent, hover ? 0.5F : 0.25F) : 0xFF2A2238);
-        graphics.fill(x, y + h - 1, x + w, y + h, BORDER_DARK);
+        graphics.fill(realX, y, realX + realW, y + h, base);
+        graphics.fill(realX, y, realX + realW, y + 1, enabled ? 0xFF000000 | lighten(accent, hover ? 0.5F : 0.25F) : 0xFF2A2238);
+        graphics.fill(realX, y + h - 1, realX + realW, y + h, BORDER_DARK);
         if (enabled) {
-            graphics.fill(x, y, x + 1, y + h, 0xFF000000 | accent);
-            graphics.fill(x + w - 1, y, x + w, y + h, 0xFF000000 | accent);
+            graphics.fill(realX, y, realX + 1, y + h, 0xFF000000 | accent);
+            graphics.fill(realX + realW - 1, y, realX + realW, y + h, 0xFF000000 | accent);
         }
         int textColor = enabled ? 0xFFFFFFFF : 0xFF6B6180;
-        graphics.drawString(this.font, label, x + (w - this.font.width(label)) / 2, y + (h - 8) / 2 + 1, textColor, enabled);
+        graphics.drawString(this.font, label, realX + (realW - textW) / 2, y + (h - 8) / 2 + 1, textColor, enabled);
     }
 
     private static void frame(GuiGraphics graphics, int x, int y, int w, int h, int color) {
         graphics.fill(x, y, x + w, y + 1, color);
         graphics.fill(x, y + h - 1, x + w, y + h, color);
-        graphics.fill(x, y, x + 1, y + h, color);
-        graphics.fill(x + w - 1, y, x + w, y + h, color);
+        graphics.fill(x, y + 1, x + 1, y + h, color);
+        graphics.fill(x + w - 1, y + 1, x + w, y + h, color);
     }
 
     private static void corner(GuiGraphics graphics, int x, int y, int w, int h, int color, int len) {
         graphics.fill(x, y, x + len, y + 1, color);
-        graphics.fill(x, y, x + 1, y + len, color);
+        graphics.fill(x, y + 1, x + 1, y + len, color);
         graphics.fill(x + w - len, y, x + w, y + 1, color);
-        graphics.fill(x + w - 1, y, x + w, y + len, color);
+        graphics.fill(x + w - 1, y + 1, x + w, y + len, color);
         graphics.fill(x, y + h - 1, x + len, y + h, color);
         graphics.fill(x, y + h - len, x + 1, y + h, color);
         graphics.fill(x + w - len, y + h - 1, x + w, y + h, color);
