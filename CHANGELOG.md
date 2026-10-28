@@ -4,6 +4,33 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.3.0] — 2026-10-27
+
+### 🐱 Norma, Nekomiya Mana y Nangong Yu pasan a GeckoLib
+- **Modelos de Blockbench del humano** (`modelos/personajes/<id>/`) migrados al mod: `geo/norma.geo.json`,
+  `geo/nekomata.geo.json` y `geo/nangong_yu.geo.json` con sus texturas `textures/entity/<id>.png`.
+  Las tres usaban el modelo de jugador con tubo horneado (`WaifuBustPlayerModel`); ahora son
+  `GeoEntityRenderer` con su propio `GeoModel`, igual que las otras 16 waifus de GeckoLib.
+- **Pivotes corregidos al copiar los geo** (error real de Blockbench, ver `MANUAL_IA.md` §3.1): tres huesos
+  colgaban del origen del modelo (`pivot [0,0,0]`), así que giraban alrededor de los pies en vez de su
+  junta: `norma/capa` y `norma/pelo inferioir` y `nangong_yu/ala izquierda` se re-pivotearon a `[0,24,0]`.
+  Los cubos se quedan como están: `origin` de cubo y `pivot` de hueso son coordenadas absolutas del
+  modelo, así que mover el pivote solo cambia el centro de giro, no la malla.
+- **Animaciones básicas** en `animations/<id>.animation.json` (`format_version` 1.8.0) con el set que exige
+  el controlador del proyecto: `idle` (2 s, respiración + vaiven de accesorios), `walk` (0.8 s, zancada de
+  piernas y brazos contrarios), `attack` (0.5 s), `special` (0.9 s) y `ultimate` (1.2 s). Los accesorios de
+  cada personaje se mueven en las tres animaciones en bucle: `capa` y `pelo inferioir` en Norma, las dos
+  `cola` en Nekomiya Mana, las dos `coleta` y las dos `ala` en Nangong Yu.
+  Los nombres de hueso van exactos, typos del geo incluidos; `root` y `breasts` no se animan
+  (el busto lo maneja `BustBones.drive` y la pose sentada `WaifuGeoSitPose`).
+- **Entidades**: `NormaEntity`, `NekomataEntity` y `NangongYuEntity` implementan `GeoEntity` con
+  `AnimatableInstanceCache`, el par de controladores `"movement"` (walk/idle, blend 5) y
+  `"attack_controller"` (blend 2, `PlayState.STOP` + `triggerableAnim` de attack/special/ultimate) y
+  `triggerAnim(...)` como primera línea de cada habilidad.
+- **Sin cambios** de registro, atributos, cooldowns (22/260/750 y 18/240/600), habilidades, textos ni
+  lang: las tres ya estaban registradas en `GachaWaifusMod` y `WaifuRoster`, así que las entidades guardadas
+  en el mundo siguen vivas y solo cambia cómo se ven.
+
 ## [6.2.0] — 2026-10-24
 
 ### 📖 Cápsula Waifu & Glosario de Colección (Grimorio Gacha)

@@ -36,13 +36,17 @@ env JAVA_HOME="…/tools/jdk-21-linux" ./gradlew build \
 2. `CHANGELOG.md`: entrada nueva arriba `## [X.Y.Z] — fecha`, en español, estilo existente.
 3. Build → los dos comandos de despliegue del §1.
 
-## 3. Agregar una waifu GeckoLib (patrón actual, 10 ya migradas)
+## 3. Agregar una waifu GeckoLib (patrón actual, 16 ya migradas en 6.3.0)
 
 Checklist (los 12 puntos de `agents.md` adaptados a GeckoLib):
 
 1. **Geo**: copiar el `.geo.json` de Blockbench a `src/main/resources/assets/gachawaifus/geo/<id>.geo.json`.
-   Revisar pivotes absurdos (los de Blockbench a veces caen en el origen): re-pivotear a la junta
-   anatómica y desplazar los cubos lo mismo (`P' = P + c`, `cubo' = cubo − c`).
+   Revisar pivotes absurdos (los de Blockbench a veces caen en el origen `[0,0,0]`, o sea los pies):
+   **basta con editar el `pivot`** y ponerlo en la junta anatómica. Los `origin` de los cubos y los
+   `pivot` de los huesos son ambos coordenadas **absolutas** del modelo (comprobado contra `koleda`:
+   `head` pivot `[0,24,0]` con cubos en `y 24..32`), así que NO hay que desplazar los cubos.
+   Solo se desplaza `cubo.pivot` cuando ese cubo trae su propia `rotation`.
+   (Error real: la fórmula `cubo' = cubo − c` que estaba aquí habría hundido la malla 24 px.)
 2. **Textura**: `textures/entity/<id>.png`.
 3. **Animaciones**: `animations/<id>.animation.json` con `"format_version": "1.8.0"` y set completo
    `idle / walk / attack / special / ultimate` basado en los **huesos reales del geo**.
@@ -51,7 +55,8 @@ Checklist (los 12 puntos de `agents.md` adaptados a GeckoLib):
    - Rotaciones como mapas `{time: [x,y,z]}`. Si tiene coletas/cola/orejas, animarlas en TODAS las
      animaciones (balanceo con medio ciclo de desfase entre lados).
 4. **Entidad** (`entity/<Nombre>Entity.java`): extiende `AbstractWaifuEntity`, implementa
-   `GeoEntity` con `AnimatableInstanceCache` (helper `GeckoLibIntegration.createInstance(this)`),
+   `GeoEntity` con `AnimatableInstanceCache` (helper real de GeckoLib 4.9.3:
+   `GeckoLibUtil.createInstanceCache(this)`),
    `getAnimationStore`/`registerControllers`: controlador `"movement"` (walk/idle) +
    `"attack_controller"` con `TriggerableAnim` para attack/special/ultimate.
    `triggerAnim(...)` como PRIMERA línea de cada método de habilidad.

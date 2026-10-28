@@ -19,6 +19,13 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
 /**
@@ -26,7 +33,8 @@ import java.util.List;
  * Rápida y frágil: pega rápido, crita y escapa. Kit RAMA A con nombres del canon
  * (Phantom Double Stab / Cat Step Show / Blade Claw Assault) adaptados al español.
  */
-public class NekomataEntity extends AbstractWaifuEntity {
+public class NekomataEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 0;
     private int ultimateCooldown = 0;
@@ -36,6 +44,25 @@ public class NekomataEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§8Nekomiya Mana"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nekomata.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nekomata.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.nekomata.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nekomata.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.nekomata.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -85,6 +112,7 @@ public class NekomataEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 18;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -94,6 +122,7 @@ public class NekomataEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 240;
         target.hurt(this.damageSources().mobAttack(this), 16.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
@@ -104,6 +133,7 @@ public class NekomataEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 600;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
