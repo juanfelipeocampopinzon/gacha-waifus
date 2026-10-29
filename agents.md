@@ -4,20 +4,23 @@
 # Instrucciones para agentes: mod Gacha Waifus
 
 Esta carpeta **es la raíz del mod** (`gachawaifus`): aquí vive el código Java, los recursos y el
-build. Si tu directorio de trabajo es esta carpeta, usa rutas como `src/main/java/...` y
-`src/main/resources/...` **sin** prefijo.
-
-> **Leer también `MANUAL_IA.md`** (raíz del repo): manual operativo completo — build/despliegue,
-> receta para agregar waifus GeckoLib, jefes, armas en mano, minions, gotchas de la API 1.21.1 y
-> flujo de git. Los errores que ya se cometieron están documentados ahí para no repetirlos.
+build multi-loader (NeoForge + Fabric):
+- `common/src/main/java/...` y `common/src/main/resources/...`: código neutral y recursos compartidos (entidades, tokens, renderers, modelos, animaciones y lang van **aquí**).
+- `neoforge/src/main/java/...`: registros de NeoForge (`ModEntities`, `ModItems`, `ModCreativeTabs`, `GachaWaifusMod`).
+- `fabric/src/main/java/...`: adaptadores de Fabric (gestionados por la auditora con `tools/fabric_sync.py`).
 
 ## Build e instalación
 
 ```powershell
+# Solo NeoForge (el jar habitual de pruebas)
+.\gradlew.bat :neoforge:build
+
+# Compilar todo (NeoForge + Fabric)
 .\gradlew.bat build
 ```
 
-- Salida: `build/libs/gachawaifus-<version>.jar`.
+- Salida NeoForge: `neoforge/build/libs/gachawaifus-<version>.jar`.
+- Salida Fabric: `fabric/build/libs/gachawaifus-fabric-<version>-fabric.1.jar`.
 - Para probarlo: copiar ese jar a `%APPDATA%\.minecraft\mods\` (renombrando el anterior a
   `*.jar.bak`, que es la costumbre del proyecto).
 
@@ -116,7 +119,7 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
       y `message.gachawaifus.<id>_summoned` (el mensaje que el token enseña al invocarla).
     - Nametag `setCustomName(...)` con un color LIBRE. Ocupados hoy: §a §b §c §d §e §6 §9 §3 §f §7 §8
       §1 §2. Libres: §0 §4 §5.
-    - Compilar con `.\gradlew.bat build` y pegar la salida literal.
+    - Compilar con `.\gradlew.bat :neoforge:build` y pegar la salida literal.
 7.  **Nada de emojis fuera del rango que dibuja Minecraft** (los ✨/★ se usan ya en el mod; los
     emojis tipo 🔥 salen como cuadro vacío).
 8.  **Antes de construir algo, busca la ruta más corta — y avisa al humano si hay una más fácil.**
