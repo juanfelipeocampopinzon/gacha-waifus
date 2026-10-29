@@ -330,5 +330,15 @@
   "gachawaifus.gacha.rates.standard": "Cada 5★ es una de las 7 estándar que todavía no tengas.",
   "gachawaifus.gacha.pulling": "TIRANDO",
   "gachawaifus.gacha.five.hint": "Clic para continuar",
-  "gachawaifus.gacha.new": "¡NUEVA!"
+  "gachawaifus.gacha.new": "¡NUEVA!",
+  "item.gachawaifus.waifu_beacon": "Baliza de Hogar",
+  "item.gachawaifus.waifu_beacon.desc": "Clic derecho: teletransporta a tu lado a TODAS las waifus invocadas, aunque estén en otra dimensión. Clic derecho sobre una tuya: solo ella viene. Shift + clic en tu waifu: le fija el HOGAR en el bloque que miras. Shift + clic en un bloque: fija el hogar de TODAS las tuyas ahí. Ponla en modo §2En casa (Shift + clic con la mano vacía sobre ella) y custodiará ese sitio en vez de seguirte.",
+  "item.gachawaifus.waifu_guide": "Guía del Invocador",
+  "item.gachawaifus.waifu_guide.desc": "Clic derecho: abre el manual del mod — las bolitas, las tiradas, el gacha, invocar con tokens, la cápsula, los modos de combate, los colores y la Baliza de Hogar. La recibes gratis al entrar por primera vez; /guia la vuelve a abrir.",
+  "gachawaifus.guide.title": "Guía del Invocador",
+  "gachawaifus.guide.page": "Página %s / %s",
+  "gachawaifus.guide.prev": "< Atrás",
+  "gachawaifus.guide.next": "Siguiente >",
+  "gachawaifus.guide.close": "Cerrar",
+  "cmd.gachawaifus.guia.usage": "Abre la Guía del Invocador."
 }

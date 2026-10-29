@@ -1,6 +1,7 @@
 package com.gachawaifus.team;
 
 import com.gachawaifus.entity.BossSpawnConfig;
+import com.gachawaifus.entity.RecallConfig;
 import com.gachawaifus.entity.WanderConfig;
 import com.gachawaifus.entity.WildWaifuConfig;
 import com.gachawaifus.gacha.MissionConfig;
@@ -36,6 +37,7 @@ public final class TeamConfig {
                 .defineInRange("limit", 0, 0, 64);
         builder.pop();
         WanderConfig.appendTo(builder);
+        RecallConfig.appendTo(builder);
         BossSpawnConfig.appendTo(builder);
         MissionConfig.appendTo(builder);
         WildWaifuConfig.appendTo(builder);

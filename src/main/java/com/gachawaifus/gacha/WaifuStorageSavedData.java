@@ -134,10 +134,13 @@ public class WaifuStorageSavedData extends SavedData {
         setDirty();
     }
 
-    /** La waifu vuelve a estar viva y disponible en la cápsula. */
+    /**
+     * La waifu deja de estar caída. NO se devuelve a {@code captured}: quien revive a una waifu la
+     * está invocando al mundo a la vez, y {@code captured} significa "guardada, fuera del mundo".
+     * Meterla ahí dejaba un fantasma en la cápsula (y bloqueaba guardarla de verdad después).
+     */
     public void revive(UUID player, String waifuId) {
         getFallen(player).remove(waifuId);
-        add(player, waifuId);
         setDirty();
     }
 }

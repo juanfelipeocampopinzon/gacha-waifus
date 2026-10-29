@@ -59,6 +59,12 @@ public class GachaSavedData extends SavedData {
         GachaSavedData data = new GachaSavedData();
         CompoundTag playersTag = tag.getCompound("players");
         for (String key : playersTag.getAllKeys()) {
+            UUID player;
+            try {
+                player = UUID.fromString(key);
+            } catch (IllegalArgumentException malformed) {
+                continue; // clave escrita a mano o corrompida: se ignora en vez de tumbar el mundo
+            }
             CompoundTag st = playersTag.getCompound(key);
             PlayerState state = new PlayerState();
             state.pity = st.getInt("pity");
@@ -69,7 +75,7 @@ public class GachaSavedData extends SavedData {
             for (int i = 0; i < claims.size(); i++) {
                 state.wildClaims.add(claims.getString(i));
             }
-            data.players.put(UUID.fromString(key), state);
+            data.players.put(player, state);
         }
         return data;
     }

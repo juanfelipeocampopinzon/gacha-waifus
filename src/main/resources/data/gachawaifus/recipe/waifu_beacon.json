@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "H",
+    "E",
+    "C"
+  ],
+  "key": {
+    "H": {
+      "item": "minecraft:light_weighted_pressure_plate"
+    },
+    "E": {
+      "item": "minecraft:ender_pearl"
+    },
+    "C": {
+      "item": "minecraft:copper_ingot"
+    }
+  },
+  "result": {
+    "count": 1,
+    "id": "gachawaifus:waifu_beacon"
+  }
+}

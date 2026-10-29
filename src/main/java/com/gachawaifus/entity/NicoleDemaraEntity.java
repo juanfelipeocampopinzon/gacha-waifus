@@ -361,7 +361,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             // Agachado no: eso lo maneja AbstractWaifuEntity (cambio de modo de combate).
             if (!this.level().isClientSide && hand == InteractionHand.MAIN_HAND && itemstack.isEmpty()
                     && !player.isShiftKeyDown()) {
-                this.setOrderedToSit(!this.isOrderedToSit());
+                this.toggleSitFromPet();
                 this.jumping = false;
                 this.navigation.stop();
                 return InteractionResult.SUCCESS;

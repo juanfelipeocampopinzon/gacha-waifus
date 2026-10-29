@@ -10,9 +10,14 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
@@ -31,6 +36,7 @@ import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -137,6 +143,19 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             this.restrictTo(this.seatPos != null ? this.seatPos : this.blockPosition(), 0);
             return;
         }
+        if (this.waifuMode == WaifuMode.EN_CASA) {
+            // Guardia: su centro es el hogar, no el dueño. Sin hogar registrado todavía, se comporta
+            // como en Agresivo (sigue al dueño) para no dejarla clavada en un hueco por no haber usado
+            // nunca la Baliza.
+            if (this.hasHome()) {
+                this.restrictTo(this.homePos, WanderConfig.range());
+                return;
+            }
+        } else if (this.homePos == null && owner != null) {
+            // Primer día de la waifu: su hogar provisional es el bloque donde está (donde la invocaste
+            // o donde la domesticaste). La Baliza de Hogar lo cambia cuando el jugador quiera otro.
+            this.setHome(this.blockPosition(), this.level().dimension());
+        }
         if (owner == null || this.isOrderedToSit()) {
             this.clearRestriction();
             return;
@@ -150,12 +169,90 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
      */
     @Override
     public boolean shouldTryTeleportToOwner() {
+        if (this.waifuMode == WaifuMode.EN_CASA && this.hasHome()) {
+            return false; // En casa no se abandona el puesto: quien la mueve es el recall, hacia el hogar
+        }
         LivingEntity owner = this.getOwner();
         if (owner == null) {
             return false;
         }
         double limit = (double) WanderConfig.range() + 16.0D;
         return this.distanceToSqr(owner) >= limit * limit;
+    }
+
+    // ---------------------------------------------------------------------
+    // Hogar: posición + dimensión guardadas en el NBT de la entidad
+    // ---------------------------------------------------------------------
+
+    /**
+     * Bloque del hogar (modo {@link WaifuMode#EN_CASA} y destino del auto-recall). Se pone solo al
+     * invocar la waifu y lo reescribe la Baliza de Hogar.
+     */
+    @Nullable
+    private BlockPos homePos;
+
+    /** Dimensión a la que pertenece {@link #homePos}: sin ella el hogar no es alcanzable. */
+    @Nullable
+    private ResourceKey<Level> homeDimension;
+
+    /** Bloque del hogar, o {@code null} si todavía no se registró. */
+    @Nullable
+    public BlockPos homePos() {
+        return this.homePos;
+    }
+
+    /** Dimensión del hogar. */
+    @Nullable
+    public ResourceKey<Level> homeDimension() {
+        return this.homeDimension;
+    }
+
+    /** ¿Tiene un hogar completo (bloque + dimensión)? */
+    public boolean hasHome() {
+        return this.homePos != null && this.homeDimension != null;
+    }
+
+    /**
+     * Posición que vio el auto-recall en su último barrido. {@code null} = todavía no la ha visto.
+     * No se guarda en el NBT: al recargar el mundo se vuelve a tomar como punto de partida.
+     */
+    @Nullable
+    Vec3 lastScanPos;
+
+    /** Barridos seguidos sin moverse un bloque: es lo que distingue a la que va caminando de la perdida. */
+    int stillScans;
+
+    /** Fija el hogar (solo en el servidor: el item que lo llama ya se encarga de ese chequeo). */
+    public void setHome(@Nullable BlockPos pos, @Nullable ResourceKey<Level> dimension) {
+        this.homePos = pos == null ? null : pos.immutable();
+        this.homeDimension = pos == null ? null : dimension;
+    }
+
+    /**
+     * Se teletransporta al lado del jugador, cambiando de dimensión si hace falta.
+     *
+     * @return {@code true} si efectivamente se movió.
+     */
+    public boolean recallTo(ServerPlayer player) {
+        return WaifuTravel.moveToNear(this, player.serverLevel(), player.position());
+    }
+
+    /**
+     * Vuelve a su hogar, cambiando de dimensión si hace falta. Si la dimensión del hogar no está
+     * cargada en el servidor no se fuerza: devuelve {@code false} y se reintenta en el siguiente scan.
+     */
+    public boolean sendToHome() {
+        if (!this.hasHome()) {
+            return false;
+        }
+        if (!(this.level() instanceof ServerLevel here)) {
+            return false;
+        }
+        ServerLevel target = here.getServer().getLevel(this.homeDimension);
+        if (target == null) {
+            return false;
+        }
+        return WaifuTravel.moveToNear(this, target, Vec3.atCenterOf(this.homePos));
     }
 
     @Override
@@ -183,6 +280,10 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Nullable
     private BlockPos seatPos;
 
+    /** Modo que tenía la waifu antes de que una caricia la sentara, para devolvérselo al levantarla. */
+    @Nullable
+    private WaifuMode modeBeforeSit;
+
     /** Modo actual de la waifu. */
     public WaifuMode waifuMode() {
         return this.waifuMode;
@@ -202,6 +303,11 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             this.setTarget(null);
             this.getNavigation().stop();
         }
+        if (this.waifuMode == WaifuMode.EN_CASA && !this.hasHome()) {
+            // Primera vez de guardia sin haber usado nunca la Baliza: el puesto es el bloque donde
+            // está plantada, que para eso la acabas de invocar ahí.
+            this.setHome(this.blockPosition(), this.level().dimension());
+        }
     }
 
     /**
@@ -214,6 +320,33 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Override
     public void setInSittingPose(boolean sitting) {
         super.setInSittingPose(sitting && this.isOrderedToSit());
+    }
+
+    /**
+     * Cambia el modo sin pasar por el ciclo de Shift + clic. Lo necesitan las caricias de Astra y
+     * Nicole: sentar a una waifu a mano tiene que hacerlo <b>a través</b> de {@link WaifuMode#SENTADA},
+     * porque si no el NBT sigue diciendo Agresivo y al recargar el chunk {@link #applyWaifuMode()} la
+     * levanta sin que nadie se lo haya pedido.
+     */
+    public void setWaifuMode(WaifuMode mode) {
+        if (mode == this.waifuMode) {
+            return;
+        }
+        this.modeBeforeSit = mode == WaifuMode.SENTADA ? this.waifuMode : null;
+        this.waifuMode = mode;
+        this.applyWaifuMode();
+    }
+
+    /**
+     * Sentar o levantar a la waifu con una caricia. Al levantarla devuelve el modo que tenía antes de
+     * que la sentaran, no el del ciclo: si estaba en Neutro, vuelve a Neutro.
+     */
+    public void toggleSitFromPet() {
+        if (this.waifuMode == WaifuMode.SENTADA) {
+            this.setWaifuMode(this.modeBeforeSit == null ? WaifuMode.AGRESIVO : this.modeBeforeSit);
+        } else {
+            this.setWaifuMode(WaifuMode.SENTADA);
+        }
     }
 
     /**
@@ -236,12 +369,16 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
 
     /** Shift + clic con mano vacía (solo el dueño): pasa al siguiente modo y avisa. */
     private void cycleWaifuMode(Player player) {
-        this.waifuMode = this.waifuMode.next();
-        this.applyWaifuMode();
+        this.setWaifuMode(this.waifuMode.next());
         player.displayClientMessage(Component.literal(
                 "§d[GachaWaifus] §f" + this.getDisplayName().getString() + " §7→ modo "
                         + this.waifuMode.colorCode() + this.waifuMode.plainName()
                         + "§7 · Shift + clic para cambiarlo."), true);
+        if (this.waifuMode == WaifuMode.EN_CASA && this.hasHome()) {
+            player.displayClientMessage(Component.literal(
+                    "§7Su hogar es §f" + this.homePos.toShortString() + " §7en §f"
+                            + this.homeDimension.location().getPath() + "§7. La Baliza de Hogar lo cambia."), true);
+        }
         this.level().playSound(null, this.blockPosition(),
                 SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.4F);
     }
@@ -278,6 +415,11 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                     || (this.getOwner() != null
                             && (target == this.getOwner().getLastHurtByMob()
                                     || target == this.getOwner().getLastHurtMob()));
+            // De guardia: solo pelea dentro de su terreno. Sin esto se pondría a atacar al mob que
+            // ve el goal de rango mientras ella sigue plantada junto a la casa.
+            case EN_CASA -> !this.hasHome()
+                    || this.homePos.distSqr(target.blockPosition())
+                            <= (double) (WanderConfig.range() * WanderConfig.range());
         };
     }
 
@@ -307,6 +449,10 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putByte("WaifuMode", (byte) this.waifuMode.ordinal());
+        if (this.homePos != null && this.homeDimension != null) {
+            tag.put("WaifuHome", NbtUtils.writeBlockPos(this.homePos));
+            tag.putString("WaifuHomeDim", this.homeDimension.location().toString());
+        }
     }
 
     @Override
@@ -318,6 +464,18 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             if (ordinal >= 0 && ordinal < modes.length) {
                 this.waifuMode = modes[ordinal];
                 this.applyWaifuMode(); // el modo manda sobre el "Sitting" vanilla: si no coincide, se relanza
+            }
+        }
+        if (tag.contains("WaifuHome")) {
+            BlockPos pos = NbtUtils.readBlockPos(tag, "WaifuHome").orElse(null);
+            String dim = tag.getString("WaifuHomeDim");
+            if (pos != null && !dim.isEmpty()) {
+                try {
+                    this.setHome(pos, ResourceKey.create(Registries.DIMENSION, ResourceLocation.parse(dim)));
+                } catch (RuntimeException ignored) {
+                    // Id de dimensión inválida (un mundo con un mod de dimensiones ya retirado): se
+                    // queda sin hogar antes que romper la carga de la waifu.
+                }
             }
         }
     }

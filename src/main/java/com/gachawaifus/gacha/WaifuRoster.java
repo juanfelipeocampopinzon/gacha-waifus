@@ -165,9 +165,10 @@ public final class WaifuRoster {
      */
     @Nullable
     public static Entry randomFourStarUnowned(Player player) {
+        Set<String> owned = ownedIds(player);
         List<Entry> libres = new java.util.ArrayList<>();
         for (Entry e : ROTATION) {
-            if (isFourStar(e) && !owns(player, e)) {
+            if (isFourStar(e) && !owned.contains(e.id())) {
                 libres.add(e);
             }
         }
@@ -301,13 +302,17 @@ public final class WaifuRoster {
         for (int i = 0; i < inv.getContainerSize(); i++) {
             if (inv.getItem(i).is(token)) return true;
         }
-        if (!player.level().isClientSide()
-                && GachaSavedData.get(player.level()).hasWildClaim(player.getUUID(), entry.id())) {
-            return true;
-        }
-        WaifuStorageSavedData storage = WaifuStorageSavedData.get(player.level());
-        if (storage.contains(player.getUUID(), entry.id()) || storage.isFallen(player.getUUID(), entry.id())) {
-            return true;
+        if (!player.level().isClientSide()) {
+            if (GachaSavedData.get(player.level()).hasWildClaim(player.getUUID(), entry.id())) {
+                return true;
+            }
+            // SavedData solo existe en el servidor: sin este guard, un owns() client-side reventaba
+            // al castear Level a ServerLevel dentro de WaifuStorageSavedData.get().
+            WaifuStorageSavedData storage = WaifuStorageSavedData.get(player.level());
+            if (storage.contains(player.getUUID(), entry.id())
+                    || storage.isFallen(player.getUUID(), entry.id())) {
+                return true;
+            }
         }
         AABB box = player.getBoundingBox().inflate(128.0D);
         List<AbstractWaifuEntity> owned = player.level().getEntitiesOfClass(AbstractWaifuEntity.class, box,

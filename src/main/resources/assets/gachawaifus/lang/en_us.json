@@ -330,5 +330,15 @@
   "gachawaifus.gacha.rates.standard": "Every 5★ is one of the 7 standard waifus you don't own yet.",
   "gachawaifus.gacha.pulling": "PULLING",
   "gachawaifus.gacha.five.hint": "Click to continue",
-  "gachawaifus.gacha.new": "NEW!"
+  "gachawaifus.gacha.new": "NEW!",
+  "item.gachawaifus.waifu_beacon": "Home Beacon",
+  "item.gachawaifus.waifu_beacon.desc": "Right-click: teleports every waifu you have summoned to you, even from another dimension. Right-click one of yours: only she comes. Shift + right-click your waifu: sets HER home to the block you are looking at. Shift + right-click a block: sets the home of ALL yours there. Put a waifu in mode Green En casa (Shift + empty-hand click on her) and she will guard that spot instead of following you.",
+  "item.gachawaifus.waifu_guide": "Summoner's Guide",
+  "item.gachawaifus.waifu_guide.desc": "Right-click: opens the manual of the mod — balls, pulls, the gacha, summoning with tokens, the capsule, combat modes, colors and the home beacon. You get it free the first time you join; /guia reopens it anytime.",
+  "gachawaifus.guide.title": "Summoner's Guide",
+  "gachawaifus.guide.page": "Page %s / %s",
+  "gachawaifus.guide.prev": "< Back",
+  "gachawaifus.guide.next": "Next >",
+  "gachawaifus.guide.close": "Close",
+  "cmd.gachawaifus.guia.usage": "Opens the Summoner's Guide."
 }

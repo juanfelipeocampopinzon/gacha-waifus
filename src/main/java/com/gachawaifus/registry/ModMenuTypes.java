@@ -2,6 +2,7 @@ package com.gachawaifus.registry;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.menu.GachaMenu;
+import com.gachawaifus.menu.GuideMenu;
 import com.gachawaifus.menu.WaifuStorageMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.flag.FeatureFlags;
@@ -19,4 +20,8 @@ public class ModMenuTypes {
     /** Pantalla del gacha: banner promocional + permanente en una sola interfaz. */
     public static final DeferredHolder<MenuType<?>, MenuType<GachaMenu>> GACHA_BANNER =
             MENU_TYPES.register("gacha_banner", () -> new MenuType<>(GachaMenu::new, FeatureFlags.VANILLA_SET));
+
+    /** Guía del Invocador: manual del mod en pantalla de libro (sin huecos, solo texto). */
+    public static final DeferredHolder<MenuType<?>, MenuType<GuideMenu>> WAIFU_GUIDE =
+            MENU_TYPES.register("waifu_guide", () -> new MenuType<>(GuideMenu::new, FeatureFlags.VANILLA_SET));
 }

@@ -252,14 +252,9 @@ public final class GachaService {
             boolean fiveStar = pullNumber >= HARD_PITY || player.getRandom().nextDouble() < chance;
 
             if (fiveStar) {
+                // resolveFiveStar nunca devuelve null: con la colección completa entrega una copia de
+                // repuesto de la destacada, que es el techo diseñado para el banner promocional.
                 WaifuRoster.Entry won = resolveFiveStar(player, featured, state);
-                if (won == null) {
-                    // No queda nada por conseguir: se devuelve la tirada como comida y NO se toca
-                    // la pity (antes se reseteaba a 0 y se quemaba la garantía para nada).
-                    state.pity++;
-                    result.food.add(giveFood(player, level.getRandom(), foodNames));
-                    continue;
-                }
                 result.fiveStars++;
                 result.waifus.add(won);
                 state.pity = 0;

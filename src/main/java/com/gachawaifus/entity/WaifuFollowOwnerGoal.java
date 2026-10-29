@@ -50,6 +50,9 @@ public class WaifuFollowOwnerGoal extends Goal {
 
     @Override
     public boolean canUse() {
+        if (this.anchoredToHome()) {
+            return false;
+        }
         LivingEntity livingentity = this.tamable.getOwner();
         if (livingentity == null) {
             return false;
@@ -63,8 +66,22 @@ public class WaifuFollowOwnerGoal extends Goal {
         }
     }
 
+    /**
+     * De guardia en casa no se sigue a nadie: si no, el goal la arrancaría del puesto en cuanto el
+     * dueño se aleje el radio de paseo. Con {@link WaifuMode#EN_CASA} sin hogar registrado el modo
+     * todavía no tiene a dónde volver, así que sí sigue al dueño.
+     */
+    private boolean anchoredToHome() {
+        return this.tamable instanceof AbstractWaifuEntity waifu
+                && waifu.waifuMode() == WaifuMode.EN_CASA
+                && waifu.hasHome();
+    }
+
     @Override
     public boolean canContinueToUse() {
+        if (this.anchoredToHome()) {
+            return false;
+        }
         if (this.navigation.isDone()) {
             return false;
         }

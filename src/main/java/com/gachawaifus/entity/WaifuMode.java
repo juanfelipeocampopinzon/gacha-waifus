@@ -14,14 +14,20 @@ import net.minecraft.network.chat.Component;
  *   <li>{@link #AGRESIVO}: comportamiento clásico del mod: ataca a los mobs hostiles de cerca.</li>
  *   <li>{@link #SENTADA}: modo descanso — no sigue al dueño, no pasea, no teletransporta y no ataca:
  *       se queda sentada en el bloque donde estaba hasta que se le cambia de modo.</li>
+ *   <li>{@link #EN_CASA}: modo guardia — su centro de operaciones es el hogar (la Baliza de Hogar),
+ *       no el dueño: ahí pasea, ahí pelea y ahí vuelve si se pierde. Regresa al hogar aunque el
+ *       jugador esté en otra dimensión.</li>
  * </ul>
+ *
+ * <p>El orden importa: el NBT guarda el ordinal. Se añaden modos SIEMPRE al final.
  */
 public enum WaifuMode {
 
     PASIVO("Pasivo", "§a"),
     NEUTRO("Neutro", "§e"),
     AGRESIVO("Agresivo", "§c"),
-    SENTADA("Sentada", "§9");
+    SENTADA("Sentada", "§9"),
+    EN_CASA("En casa", "§2");
 
     private final String name;
     private final String color;
@@ -44,7 +50,7 @@ public enum WaifuMode {
         return Component.literal(this.color + this.name);
     }
 
-    /** Siguiente modo del ciclo (Pasivo → Neutro → Agresivo → Sentada → Pasivo …). */
+    /** Siguiente modo del ciclo (Pasivo → Neutro → Agresivo → Sentada → En casa → Pasivo …). */
     public WaifuMode next() {
         WaifuMode[] modes = values();
         return modes[(this.ordinal() + 1) % modes.length];

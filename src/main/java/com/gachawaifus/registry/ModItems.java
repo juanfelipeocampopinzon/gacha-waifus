@@ -15,6 +15,8 @@ import com.gachawaifus.item.AnbyDemaraTokenItem;
 import com.gachawaifus.item.UkinamiYuzuhaTokenItem;
 import com.gachawaifus.item.PromeiaTokenItem;
 import com.gachawaifus.item.WaifuCapsuleItem;
+import com.gachawaifus.item.WaifuBeaconItem;
+import com.gachawaifus.item.WaifuGuideItem;
 import com.gachawaifus.item.RemielleTokenItem;
 import com.gachawaifus.item.TokisakiKurumiTokenItem;
 import com.gachawaifus.item.VonLycaonTokenItem;
@@ -269,4 +271,13 @@ public class ModItems {
     public static final DeferredHolder<Item, Item> MEGUMIN_TOKEN =
             ITEMS.register("megumin_token", () -> new com.gachawaifus.item.MeguminTokenItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> DARKNESS_TOKEN =
-            ITEMS.register("darkness_token", () -> new com.gachawaifus.item.DarknessTokenItem(new Item.Properties().stacksTo(1)));}
+            ITEMS.register("darkness_token", () -> new com.gachawaifus.item.DarknessTokenItem(new Item.Properties().stacksTo(1)));
+
+    /** Baliza de Hogar: mando de recall y asignación de hogar de las waifus. */
+    public static final DeferredHolder<Item, WaifuBeaconItem> WAIFU_BEACON =
+            ITEMS.register("waifu_beacon", () -> new WaifuBeaconItem(new Item.Properties().stacksTo(1)));
+
+    /** Guía del Invocador: manual del mod en pantalla de libro. */
+    public static final DeferredHolder<Item, WaifuGuideItem> WAIFU_GUIDE =
+            ITEMS.register("waifu_guide", () -> new WaifuGuideItem(new Item.Properties().stacksTo(1)));
+}

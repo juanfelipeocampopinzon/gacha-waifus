@@ -1,6 +1,7 @@
 package com.gachawaifus.entity;
 
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -146,6 +147,19 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.targetSelector.addGoal(3, new HurtByTargetGoal(this));
         this.targetSelector.addGoal(4, new NearestAttackableTargetGoal<>(this, Mob.class, 10, true, false,
                 entity -> entity instanceof Enemy));
+    }
+
+    /**
+     * vanilla guarda {@code Invulnerable} en el NBT, pero el contador que lo apaga es de este mod y
+     * no se guarda: si el chunk se recargaba durante el canal de fuego o la ultimate aérea, Burnice
+     * volvía al mundo marcada como intocable y con la cuenta a cero, o sea invulnerable para siempre.
+     */
+    @Override
+    public void readAdditionalSaveData(CompoundTag tag) {
+        super.readAdditionalSaveData(tag);
+        if (this.isInvulnerable() && this.invulnerableTicks <= 0) {
+            this.setInvulnerable(false);
+        }
     }
 
     @Override

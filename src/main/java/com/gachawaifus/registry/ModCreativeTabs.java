@@ -41,6 +41,9 @@ public class ModCreativeTabs {
                                 // — Maquina Gacha (bloque decorativo; la logica de tiradas llega despues)
                                 output.accept(ModBlocks.GACHA_MACHINE_ITEM.get());
                                 output.accept(ModItems.WAIFU_CAPSULE.get());
+                                // — Hogar y guía: baliza de recall + manual del mod
+                                output.accept(ModItems.WAIFU_BEACON.get());
+                                output.accept(ModItems.WAIFU_GUIDE.get());
                             })
                             .build());
 }
