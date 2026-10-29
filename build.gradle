@@ -1,72 +1,17 @@
+// Proyecto raíz: solo agrupa los dos loaders.
+//
+//   ./gradlew build              -> los dos jars
+//   ./gradlew :neoforge:build    -> solo NeoForge
+//   ./gradlew :fabric:build      -> solo Fabric
+//   ./gradlew :neoforge:runClient
+//
+// El código compartido está en common/src/main y no se compila solo: cada subproyecto lo añade
+// como srcDir (ver neoforge/build.gradle y fabric/build.gradle).
+
 plugins {
-    id 'java-library'
-    id 'eclipse'
-    id 'idea'
-    id 'net.neoforged.moddev' version "${moddev_version}"
+    id 'base'
 }
 
-version = mod_version
-group = mod_group_id
-
-base {
-    archivesName = mod_id
-}
-
-java.toolchain.languageVersion = JavaLanguageVersion.of(21)
-
-neoForge {
-    version = neo_version
-
-    validateAccessTransformers = true
-
-    runs {
-        client {
-            client()
-            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
-        }
-        server {
-            server()
-            programArgument '--nogui'
-            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
-        }
-    }
-
-    mods {
-        "${mod_id}" {
-            sourceSet sourceSets.main
-        }
-    }
-}
-
-sourceSets.main.resources { srcDir 'src/generated/resources' }
-
-// `neoforge.mods.toml` pide la versión con `${file.jarVersion}`: FML la lee del manifest del jar,
-// y sin este atributo el menú Mods mostraba el mod sin versión.
-jar {
-    manifest {
-        attributes([
-                'Implementation-Title': mod_id,
-                'Implementation-Version': mod_version
-        ])
-    }
-}
-
-repositories {
-    mavenLocal()
-    mavenCentral()
-    maven {
-        name = 'GeckoLib'
-        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
-        content {
-            includeGroup("software.bernie.geckolib")
-        }
-    }
-}
-
-dependencies {
-    implementation "software.bernie.geckolib:geckolib-neoforge-1.21.1:4.9.3"
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = 'UTF-8'
+tasks.named('build') {
+    dependsOn ':neoforge:build', ':fabric:build'
 }

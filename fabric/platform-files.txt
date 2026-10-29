@@ -1,0 +1,40 @@
+# Archivos que NO se comparten: son la capa de NeoForge (registro diferido, eventos, config,
+# @Mod, Dist, getPersistentData). La version Fabric de cada uno vive en
+# gachawaifus-fabric/src/main/java con el MISMO paquete y clase.
+# El guardia tools/fabric_sync.py --check falla si aparece uno nuevo y no esta aqui.
+com/gachawaifus/block/WaifuHomeBlock.java
+com/gachawaifus/client/audio/BossThemeWatch.java
+com/gachawaifus/client/BateBeisbolClient.java
+com/gachawaifus/client/color/ColorTagLayerHook.java
+com/gachawaifus/client/WaifuNameTagHook.java
+com/gachawaifus/color/ColorConfig.java
+com/gachawaifus/color/ColorEvents.java
+com/gachawaifus/command/CollectionCommand.java
+com/gachawaifus/command/ColorCommand.java
+com/gachawaifus/entity/BossSpawnConfig.java
+com/gachawaifus/entity/BossSpawnHandler.java
+com/gachawaifus/entity/client/WaifuSittingPose.java
+com/gachawaifus/entity/RecallConfig.java
+com/gachawaifus/entity/WaifuRecallHandler.java
+com/gachawaifus/entity/WanderConfig.java
+com/gachawaifus/entity/WanderGoalsHandler.java
+com/gachawaifus/entity/WildWaifuConfig.java
+com/gachawaifus/entity/WildWaifus.java
+com/gachawaifus/entity/WildWaifuSpawner.java
+com/gachawaifus/gacha/DailyMissions.java
+com/gachawaifus/gacha/DailyPulls.java
+com/gachawaifus/gacha/GachaConfig.java
+com/gachawaifus/gacha/GuideGiver.java
+com/gachawaifus/gacha/MissionConfig.java
+com/gachawaifus/gacha/StarterWaifu.java
+com/gachawaifus/GachaWaifusMod.java
+com/gachawaifus/registry/ModBlockEntities.java
+com/gachawaifus/registry/ModBlocks.java
+com/gachawaifus/registry/ModCreativeTabs.java
+com/gachawaifus/registry/ModEntities.java
+com/gachawaifus/registry/ModItems.java
+com/gachawaifus/registry/ModMenuTypes.java
+com/gachawaifus/registry/ModSounds.java
+com/gachawaifus/team/TeamConfig.java
+com/gachawaifus/team/TeamEvents.java
+com/gachawaifus/item/GachaBallItem.java

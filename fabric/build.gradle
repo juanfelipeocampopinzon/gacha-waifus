@@ -1,0 +1,61 @@
+plugins {
+    id 'fabric-loom' version '1.17.21'
+}
+
+// La versión del mod sale del gradle.properties de la raíz: los dos jars nunca se desincronizan.
+def rootProps = new Properties()
+file('../gradle.properties').withInputStream { rootProps.load(it) }
+def modVersion = rootProps.getProperty('mod_version')
+def modId = rootProps.getProperty('mod_id')
+def modGroup = rootProps.getProperty('mod_group_id')
+
+version = "${modVersion}-fabric.1"
+group = modGroup
+
+base {
+    archivesName = "${modId}-fabric"
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+loom {
+    // El código se escribe en mappings de Mojang (los mismos que NeoForge) y Loom lo remapea a
+    // intermediary al empaquetar. Por eso common/ compila tal cual, sin traducir nombres.
+}
+
+repositories {
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup 'software.bernie.geckolib'
+        }
+    }
+}
+
+dependencies {
+    minecraft "com.mojang:minecraft:${minecraft_version}"
+    mappings loom.officialMojangMappings()
+
+    modImplementation "net.fabricmc:fabric-loader:${fabric_loader_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabric_api_version}"
+    modImplementation "software.bernie.geckolib:geckolib-fabric-${minecraft_version}:${geckolib_fabric_version}"
+}
+
+sourceSets.main {
+    // Las mismas 272 clases que compila NeoForge. La frontera es la carpeta: common/ no tiene
+    // ni un `import net.neoforged`, y eso lo vigila tools/fabric_sync.py.
+    java { srcDir '../common/src/main/java' }
+    resources { srcDir '../common/src/main/resources' }
+}
+
+processResources {
+    inputs.property 'version', project.version
+    filesMatching('fabric.mod.json') {
+        expand 'version': project.version
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

@@ -1,0 +1,79 @@
+plugins {
+    id 'java-library'
+    id 'eclipse'
+    id 'idea'
+    id 'net.neoforged.moddev' version "${moddev_version}"
+}
+
+version = mod_version
+group = mod_group_id
+
+base {
+    archivesName = mod_id
+}
+
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
+neoForge {
+    version = neo_version
+
+    validateAccessTransformers = true
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', mod_id
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+sourceSets.main {
+    // Las 272 clases que no saben de loaders.
+    java { srcDir '../common/src/main/java' }
+    resources {
+        srcDir '../common/src/main/resources'
+        srcDir 'src/generated/resources'
+    }
+}
+
+// `neoforge.mods.toml` pide la versión con `${file.jarVersion}`: FML la lee del manifest del jar,
+// y sin este atributo el menú Mods mostraba el mod sin versión.
+jar {
+    manifest {
+        attributes([
+                'Implementation-Title': mod_id,
+                'Implementation-Version': mod_version
+        ])
+    }
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        name = 'GeckoLib'
+        url = 'https://dl.cloudsmith.io/public/geckolib3/geckolib/maven/'
+        content {
+            includeGroup("software.bernie.geckolib")
+        }
+    }
+}
+
+dependencies {
+    implementation "software.bernie.geckolib:geckolib-neoforge-${minecraft_version}:${geckolib_neoforge_version}"
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}

@@ -2,6 +2,7 @@ pluginManagement {
     repositories {
         mavenLocal()
         maven { url = 'https://maven.neoforged.net/releases' }
+        maven { name = 'Fabric'; url = 'https://maven.fabricmc.net/' }
         gradlePluginPortal()
     }
 }
@@ -11,3 +12,9 @@ plugins {
 }
 
 rootProject.name = 'gachawaifus'
+
+// `common/` NO es un subproyecto: es una carpeta de fuentes que cada loader añade como srcDir.
+// Así el código compartido no necesita classpath propio y no hay que mantener dos listas de
+// dependencias sincronizadas.
+include 'neoforge'
+include 'fabric'
