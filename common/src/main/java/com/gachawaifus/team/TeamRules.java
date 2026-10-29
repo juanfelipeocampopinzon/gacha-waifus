@@ -32,7 +32,7 @@ public final class TeamRules {
         }
         int count = 0;
         for (ServerLevel level : server.getAllLevels()) {
-            for (Entity entity : level.getEntities().getAll()) {
+            for (Entity entity : level.getAllEntities()) {
                 if (entity instanceof AbstractWaifuEntity waifu
                         && waifu.isAlive()
                         && player.getUUID().equals(waifu.getOwnerUUID())) {

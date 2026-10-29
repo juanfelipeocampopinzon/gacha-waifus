@@ -44,4 +44,22 @@ public class ModMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<HomeMimicMenu>> HOME_MIMIC =
             MENU_TYPES.register("home_mimic", () -> new MenuType<>(
                     (IContainerFactory<HomeMimicMenu>) HomeMimicMenu::new, FeatureFlags.VANILLA_SET));
+
+    public static void openWaifuMode(net.minecraft.server.level.ServerPlayer player, com.gachawaifus.entity.AbstractWaifuEntity waifu) {
+        int waifuId = waifu.getId();
+        int mode = waifu.waifuMode().ordinal();
+        String home = waifu.hasHome()
+                ? waifu.homePos().toShortString() + " §7("
+                        + waifu.level().dimension().location().getPath() + ")"
+                : "";
+        player.openMenu(new net.minecraft.world.SimpleMenuProvider(
+                        (containerId, inventory, serverPlayer) -> new WaifuModeMenu(containerId, inventory, waifu),
+                        net.minecraft.network.chat.Component.translatable("gachawaifus.mode_screen.title", WaifuModeMenu.plain(waifu.getDisplayName().getString()))),
+                buf -> {
+                    buf.writeVarInt(waifuId);
+                    buf.writeVarInt(mode);
+                    buf.writeBoolean(!home.isEmpty());
+                    buf.writeUtf(home, 64);
+                });
+    }
 }

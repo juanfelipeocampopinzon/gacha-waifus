@@ -70,21 +70,7 @@ public class WaifuModeMenu extends AbstractContainerMenu {
 
     /** Abre el panel sobre la waifu. */
     public static void open(ServerPlayer player, AbstractWaifuEntity waifu) {
-        int waifuId = waifu.getId();
-        int mode = waifu.waifuMode().ordinal();
-        String home = waifu.hasHome()
-                ? waifu.homePos().toShortString() + " §7("
-                        + waifu.level().dimension().location().getPath() + ")"
-                : "";
-        player.openMenu(new SimpleMenuProvider(
-                        (containerId, inventory, serverPlayer) -> new WaifuModeMenu(containerId, inventory, waifu),
-                        Component.translatable("gachawaifus.mode_screen.title", plain(waifu.getDisplayName().getString()))),
-                buf -> {
-                    buf.writeVarInt(waifuId);
-                    buf.writeVarInt(mode);
-                    buf.writeBoolean(!home.isEmpty());
-                    buf.writeUtf(home, 64);
-                });
+        ModMenuTypes.openWaifuMode(player, waifu);
     }
 
     @Override
@@ -134,7 +120,7 @@ public class WaifuModeMenu extends AbstractContainerMenu {
     }
 
     /** Los códigos § de los nametags no los pinta la fuente de la pantalla: se quitan. */
-    private static String plain(String name) {
+    public static String plain(String name) {
         return name.replaceAll("(?i)§.", "");
     }
 }
