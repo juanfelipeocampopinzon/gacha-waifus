@@ -49,6 +49,12 @@ public abstract class BossHumanoidRenderer<T extends Monster>
     private void renderFarNameTag(T entity, Component displayName, PoseStack poseStack,
                                   MultiBufferSource buffer, int packedLight, float partialTick,
                                   double distanceSq) {
+        // Si hay bloques sólidos entre la cámara/jugador y el jefe, no mostrar la etiqueta a través del suelo
+        net.minecraft.client.Minecraft mc = net.minecraft.client.Minecraft.getInstance();
+        if (mc.player != null && !mc.player.hasLineOfSight(entity)) {
+            return;
+        }
+
         Vec3 anchor = entity.getAttachments().getNullable(
                 EntityAttachment.NAME_TAG, 0, entity.getViewYRot(partialTick));
         if (anchor == null) {
@@ -64,10 +70,10 @@ public abstract class BossHumanoidRenderer<T extends Monster>
         Font font = this.getFont();
         float x = (float) (-font.width(displayName) / 2);
         int background = (int) (0.25F * 255.0F) << 24;
-        font.drawInBatch(displayName, x, 0.0F, 553648127, false, matrix, buffer,
-                Font.DisplayMode.SEE_THROUGH, background, packedLight);
+        // Usar Font.DisplayMode.NORMAL para no atravesar el suelo/bloques
+        int light = net.minecraft.client.renderer.LightTexture.FULL_BRIGHT;
         font.drawInBatch(displayName, x, 0.0F, -1, false, matrix, buffer,
-                Font.DisplayMode.NORMAL, 0, packedLight);
+                Font.DisplayMode.NORMAL, background, light);
         poseStack.popPose();
     }
 }
