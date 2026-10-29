@@ -27,9 +27,18 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
-public class RoxyEntity extends AbstractWaifuEntity {
+/** Roxy Ifrita Pryce (Gris / Stun). Modelo de Blockbench con GeckoLib (geo/roxy.geo.json). */
+public class RoxyEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     // Cooldowns: los iniciales arrancan "casi listos"; los de uso son los reales.
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 120;
@@ -40,6 +49,25 @@ public class RoxyEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§8Roxy"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.roxy.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.roxy.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.roxy.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.roxy.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.roxy.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -87,6 +115,7 @@ public class RoxyEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 22;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -96,6 +125,7 @@ public class RoxyEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 260;
         target.hurt(this.damageSources().mobAttack(this), 15.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 2));
@@ -106,9 +136,10 @@ public class RoxyEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
-if (owner instanceof Player p) {
+        if (owner instanceof Player p) {
             p.sendSystemMessage(Component.literal("§8Roxy §o\"Aguardad, y arderéis en calma.\""));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }

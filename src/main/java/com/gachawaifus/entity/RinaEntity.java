@@ -27,9 +27,18 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 import java.util.List;
 
-public class RinaEntity extends AbstractWaifuEntity {
+/** Rina (Alexandrina) (Rosa / Defense). Modelo de Blockbench con GeckoLib (geo/rina.geo.json). */
+public class RinaEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 // Cooldowns: los iniciales arrancan "casi listos"; los de uso son los reales.
 private int normalAttackCooldown = 0;
 private int specialSkillCooldown = 120;
@@ -41,6 +50,25 @@ public RinaEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
     this.setCustomName(Component.literal("§fRina"));
     this.setCustomNameVisible(true);
 }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.rina.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.rina.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.rina.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.rina.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.rina.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
+    }
 
 public static AttributeSupplier.Builder createAttributes() {
     return Mob.createMobAttributes()
@@ -88,6 +116,7 @@ public void aiStep() {
 }
 
 private void performNormalAttack(LivingEntity target) {
+    this.triggerAnim("attack_controller", "attack");
     this.normalAttackCooldown = 22;
     this.doHurtTarget(target);
     if (this.level() instanceof ServerLevel sl) {
@@ -97,6 +126,7 @@ private void performNormalAttack(LivingEntity target) {
 }
 
 private void performSpecialSkill(LivingEntity target) {
+    this.triggerAnim("attack_controller", "special");
     this.specialSkillCooldown = 250;
     target.hurt(this.damageSources().mobAttack(this), 12.0F);
     target.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 300, 1));
@@ -107,6 +137,7 @@ private void performSpecialSkill(LivingEntity target) {
 }
 
 private void performUltimate() {
+    this.triggerAnim("attack_controller", "ultimate");
     this.ultimateCooldown = 800;
     LivingEntity owner = this.getOwner();
     if (owner instanceof Player p) {

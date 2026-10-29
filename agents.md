@@ -63,6 +63,14 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
     `ResourceLocation.fromNamespaceAndPath(...)`), colores en inglés tipo `WaifuColor.YELLOW`
     (los 11 constantes son en español: ROJO NARANJA AMARILLO VERDE AZUL MORADO ROSA MARRON NEGRO
     BLANCO GRIS).
+13. **Nunca llames `setOrderedToSit(...)` ni toques el sentarse vanilla.** Desde la 6.4.0 el sentarse
+    ES un modo (`WaifuMode.SENTADA`): se cambia con `toggleSitFromPet()` o `setWaifuMode(...)`. Si
+    sientas a una waifu por libre, el NBT sigue diciendo `AGRESIVO` y al recargar el chunk
+    `applyWaifuMode()` la levanta sola (pasó en Astra y Nicole).
+14. **Si sobreescribes `mobInteract`, termina SIEMPRE con `return super.mobInteract(player, hand);`**
+    y solo actúas cuando `!player.isShiftKeyDown()` y la mano NO está vacía. La Baliza de Hogar
+    (`WaifuBeaconItem`) y el cambio de modo (Shift + clic mano vacía) viven en la base: un
+    `mobInteract` que devuelva `SUCCESS` en cualquier otro caso se los carga.
 
 > El arte y las texturas PNG los aporta el humano (nunca los generes). Aquí solo se escribe código
 > y, si acaso, los JSON de modelos/lang.
@@ -74,10 +82,20 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
 3.  **Parámetros de Herramientas:** Asegúrate siempre de incluir todos los parámetros requeridos en las llamadas a herramientas (por ejemplo, `start_line` es obligatorio en `read_file_lines`).
 4.  **Una tarea = un fichero o un cambio concreto.** Los refactors de 10+ ficheros de golpe acaban en
     líos; ve paso a paso y compila entre pasos.
-5.  **Para una waifu nueva, copia un patrón existente** (sin GeckoLib; eso es una fase manual
-    posterior). El renderer tiene 4 variantes ya en uso en el mod — elige la que te indiquen:
+5.  **Para una waifu nueva, copia un patrón existente.** El renderer tiene 5 variantes ya en uso en el
+    mod — elige la que te indiquen (si el prompt no dice, es de modelo de jugador):
+    - **GeckoLib** (`GeoEntity` + `GeoEntityRenderer` + `GeoModel`): **22 waifus** así, y las nuevas si
+      el humano aporta el modelo de Blockbench. Copia `NormaEntity` / `NormaModel` / `NormaRenderer`
+      **tal cual**: la entidad añade `implements GeoEntity`, el campo
+      `GeckoLibUtil.createInstanceCache(this)`, `registerControllers` con los dos controladores
+      `"movement"` (blend 5, `walk`/`idle` `thenLoop`) y `"attack_controller"` (blend 2,
+      `PlayState.STOP`), y `this.triggerAnim("attack_controller", "attack"|"special"|"ultimate")` como
+      **primera línea** de cada habilidad. ⛔ **Tú NO escribes `geo/` ni `animations/`**: los .geo.json
+      y los .animation.json los exporta el humano de Blockbench y los coloca la auditora; tú solo das
+      el Java. Si el prompt te pide "el geo", di que no y sigue con los puntos Java.
     - `WaifuBustPlayerModel` con `WaifuBustLayers.TUBE` (2.0F) o `TUBE_BIG` (3.0F): waifus con
-      pieza del pecho (skin 64×128). Ejemplos: Promeia/Yuzuha (TUBE), Rina/Astra (TUBE_BIG).
+      pieza del pecho (skin 64×128). Ejemplos: Promeia/Yuzuha (TUBE), Astra/Remielle (TUBE_BIG).
+      (Rina y Qingyi **ya no** están aquí: migraron a GeckoLib en la 6.5.0.)
     - `PlayerModel(PLAYER_SLIM, true)`: waifus femeninas sin pieza (skin 64×64). Ej: Grace, Koleda.
     - `PlayerModel(PLAYER, false)` (modelo ANCHO, de Steve): personajes masculinos o corpulentos,
       sin pieza. Ej: Von Lycaon, Soldier 11. NO se apuntan en `tube_v5_sizes.py` ni `validate_v5.py`.

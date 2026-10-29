@@ -4,6 +4,128 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.5.0] — 2026-10-28
+
+### 🩶 Roxy, Rina y Qingyi pasan a GeckoLib (modelos del humano)
+- **`geo/roxy.geo.json`, `geo/rina.geo.json`, `geo/qingyi.geo.json`** — exportados de Blockbench por el
+  humano en `modelos/personajes/` y volcados al mod con los arreglos que pedían:
+  - `capa` (roxy) y `izquierda` (qingyi) estaban pivotados en `[0,0,-2]` / `[0,0,0]`: giraban alrededor
+    de los pies. Re-pivotados a `[0,24,0]`, como exige el estándar de huesos accesorios.
+  - Rina tenía un hueso llamado literalmente `pelo inferioir\` (contrafinal escapada en el JSON de
+    Blockbench). Renombrado a `pelo inferioir`, reescribiendo el `parent` de sus hijos.
+- **`animations/{roxy,rina,qingyi}.animation.json`** — las **5 animaciones estándar** del mod
+  (`idle` 2.0 s loop, `walk` 0.8 s loop, `attack` 0.5 s, `special` 0.9 s, `ultimate` 1.2 s), derivadas de
+  `norma.animation.json`. `root` y `breasts` nunca se animan; a cada personaje se le añadió su hueso
+  accesorio (`capa` / `pelo inferioir` / `coletas`) con curva explícita por animación, porque las
+  curvas de norma no los contienen.
+- **Entidades**: las tres ahora `implements GeoEntity` con `AnimatableInstanceCache` (GeckoLibUtil),
+  controladores `movement` (blend 5, `walk`/`idle` en bucle) y `attack_controller` (blend 2,
+  `PlayState.STOP`) y `this.triggerAnim("attack_controller", ...)` como primera línea de cada
+  habilidad. El kit de daño, cooldowns y objetivos **no cambió**.
+- **Renderers**: `{Roxy,Rina,Qingyi}Model.java` nuevos (`GeoModel`, leen geo + textura + animación por
+  `ResourceLocation.fromNamespaceAndPath`) y los tres renderers reescritos como `GeoEntityRenderer`
+  con `shadowRadius = 0.5F` y `shouldShowName` forzado. **No** hubo que tocar `GachaWaifusMod`: las
+  clases de renderer mantienen el nombre.
+- **Sentarse**: sigue procedural con `WaifuGeoSitPose` (baja la raíz 10 unidades, piernas +1.48 rad,
+  brazos 0.75 rad y respiración) — no es un fichero de animación.
+- **Pecho**: `BustBones.drive(...)` desde el `setCustomAnimations` del modelo. Rina y Roxy llevan la
+  sección **3×3** en uv `[0,121]` (pivot `[0,20.21,-2]`), así que la física les funciona; Qingyi no
+  tiene hueso `breasts` (modelo delgado) y el `drive` es un no-op correcto en ella.
+- **Texturas**: `textures/entity/{roxy,rina,qingyi}.png` sustituidas por las nuevas 64×128 de las dos
+  con pieza. Las piejas anteriores del modelo de jugador quedaron respaldadas en
+  `notas no leer/backup_piel_playermodel_2026-10-28/`.
+- **Verificación**: `./gradlew build --offline --no-daemon` con el JDK Linux (`tools/jdk-21-linux`) →
+  **BUILD SUCCESSFUL**, `build/libs/gachawaifus-6.5.0.jar` (3.253.442 B). Listado del jar confirma las
+  9 entradas nuevas (3 `geo/` + 3 `animations/` + 3 `textures/entity/`). Solo los 2 warnings conocidos
+  de `EventBusSubscriber.Bus` deprecado. **Sin desplegar el jar y sin commitear** — eso lo hace el
+  humano.
+
+---
+
+## [6.4.0] — 2026-10-28
+
+### 🧲 Auto-recuerdo: las waifus ya no se pierden
+- **`entity/WaifuTravel.java`** (nuevo, package-private): el salto primitivo de una waifu a un destino,
+  dentro de la misma dimensión o cruzando de ella. Con `changeDimension(DimensionTransition)` conserva
+  el UUID y todo el NBT (hogar, modo y dueño viajan con ella). Busca hueco libre en un anillo de
+  2-3 bloques alrededor del centro (24 intentos, suelo firme, sin lava/agua/hojas, sin colisiones) y
+  cae al propio bloque solo si todo está ocupado. **No** usa el atajo de vanilla
+  `WalkNodeEvaluator.getPathTypeStatic`: su `PathfindingContext` se construye con el `getLevel()` de la
+  entidad y leería/contaminaría la caché de path types del mundo de ORIGEN con datos del de DESTINO.
+- **`entity/WaifuRecallHandler.java`** (nuevo, `@EventBusSubscriber`): barrido del servidor cada
+  100 ticks (5 s) por todas las dimensiones. Una waifu domada se da por perdida si está más lejos de
+  `recall.distance` de su destino **y** lleva dos barridos seguidos sin moverse un bloque — la segunda
+  condición es la que evita jalar a la que todavía va caminando hacia ti. Dueño desconectado → no se
+  actúa. En modo `EN_CASA` con hogar, el destino es el hogar (no el jugador); si no, el jugador.
+  `EntityJoinLevelEvent` ancla el rastro de posición al cargar el chunk, y el ítem expone
+  `recallAll` / `setHome` / `forget` para la Baliza.
+- **El porqué**: `TamableAnimal#getOwner()` resuelve solo dentro del nivel de la propia entidad, así que
+  con el dueño en otra dimensión o desconectado devolvía `null` y el `FollowOwnerGoal` ni arrancaba —
+  la waifu se quedaba plantada en el Overworld para siempre. Es exactamente lo que el usuario veía como
+  «se me perdió». `WaifuFollowOwnerGoal` se ajustó para el mismo caso.
+- **`entity/RecallConfig.java`** (nuevo): sección `recall` (`enabled`, `cross_dimension`, `distance`
+  96 [32-512]) añadida al **único** `ModConfigSpec` del mod por `TeamConfig.appendTo` — dos specs por
+  tipo dan "Detected config file conflict".
+
+### 🗼 Baliza de Hogar (ítem nuevo, crafteable)
+- `item/WaifuBeaconItem.java` + `waifu_beacon` (registro, pestaña creativa, modelo, textura 16×16 y
+  receta: placa de peso ligera / perla de ender / lingote de cobre en columna, `stacksTo(1)`).
+- Clic → trae a **todas** tus waifus invocadas (aun en otra dimensión); clic sobre una → solo ella;
+  Shift + clic sobre una → le fija el hogar en el bloque apuntado; Shift + clic en un bloque → hogar de
+  todas; Shift + clic al aire → hogar a tus pies. El shift + clic sobre entidad está cubierto por las
+  **dos** rutas (`interactLivingEntity` y `use()` + `pick`) a propósito: según cómo el cliente resuelva
+  el raycast, el clic llega por un camino o por el otro.
+- **Hogar en la entidad** (`AbstractWaifuEntity`): `homePos` + `homeDimension`, persistidos como
+  `WaifuHome` (NbtUtils) y `WaifuHomeDim`; id de dimensión inválida se ignora en vez de romper la carga.
+  `WaifuMode.EN_CASA` (ordinal nuevo al final del enum → seguro para los NBT guardados) la pone de
+  guardia: `restrictTo(hogar, wander.range)` y `shouldTryTeleportToOwner()` devuelto a false mientras
+  custodia; sus objetivos solo se disparan dentro del radio del hogar.
+
+### 📖 Guía del Invocador (ítem nuevo + pantalla de libro)
+- **Aparece en la mano al entrar por primera vez** a un mundo (`gacha/GuideGiver`): mano vacía → a la
+  mano; si traías algo → al inventario (y al suelo si estaba lleno). La marca
+  `gachawaifus_guide_given` vive en `getPersistentData()`, que NeoForge copia en `restoreFrom`, así que
+  no se repite ni al morir ni al cambiar de dimensión.
+- `client/GuideScreen.java`: **16 páginas** dibujadas a mano sobre `AbstractContainerScreen` (300×210,
+  sin textura nueva), con paginación por rueda / flechas / clic en la hoja izquierda-derecha / botones
+  `< Atrás` y `Siguiente >`, sonido `BOOK_PAGE_TURN` y la última página recordada entre aperturas.
+  Como `Component.literal` **no** parsea códigos `§` en 1.21.1, el texto de la pantalla lleva su
+  propio renderizador por tramos (`drawMarkedLine` + paleta de 16 colores ACLARADOS para leer sobre el
+  panel oscuro).
+- Cubre: las 3 vías de conseguir waifus, recetas de bolitas, dónde se tira, probabilidades reales
+  (1,6 %, soft pity desde la 51 con +6 %, hard pity 64; 4★ 10 % con pity 32; doble 15 %; permanente sin
+  50/50), tokens y jefes, misiones y límite de equipo, salvajes (1 de 110 por intento, pity 128),
+  cápsula y revivir, los 5 modos de combate, hogar y Baliza, auto-recuerdo, configuración, los 11
+  colores y los 12 comandos del mod.
+- `menu/GuideMenu` (menú sin slots, solo para que el servidor abra la pantalla) + `ModMenuTypes.WAIFU_GUIDE`
+  + receta de la guía (papel / libro / tablones) + `/guia`, que abre el manual aunque no lleves el ítem.
+- Lang: 10 claves nuevas en **ambos** idiomas (331 → 341).
+
+### 🐛 Auditoría (arreglos aparte de lo nuevo)
+- **`WaifuRoster.owns` reventaba en el cliente**: `SavedData.get` castea `Level`→`ServerLevel`, y el
+  bloque de la Cápsula corría aunque `level().isClientSide()`. Ahora todo ese tramo está dentro del
+  guard del servidor.
+- **`randomFourStarUnowned` con `owns()` repetido** (128 bloques × cada entrada del roster): usa
+  `ownedIds()` en una sola pasada.
+- **Miyabi y Burnice quedaban invulnerables al recargar el chunk**: se ponían
+  `setInvulnerable(true)` con un contador propio que no se guarda; al volver a cargar, el contador en 0
+  nunca llamaba a `setInvulnerable(false)`. `readAdditionalSaveData` ahora limpia la bandera si el
+  contador no está corriendo.
+- **`WaifuStorageSavedData.revive` duplicaba la entrada**: marcaba la waifu como viva *y* la volvía a
+  meter en `captured`, así que aparecía dos veces en la Cápsula. El llamador ya la invoca; `revive` solo
+  la saca de `fallen`.
+- **`GachaSavedData.load` tumbaba el mundo** con una clave de jugador corrupta (`UUID.fromString` sin
+  proteger): ahora se ignora esa entrada.
+- **Rama inalcanzable en `GachaService`**: `resolveFiveStar` nunca devuelve `null` (con la colección
+  completa entrega copia de repuesto), así que el `if (won == null)` que sumaba pity y daba comida era
+  código muerto que además falseaba el contador.
+- **Sentar a una waifu con la caricia de Astra o Nicole saltaba el modo**: llamaban a
+  `setOrderedToSit` directo, el NBT seguía diciendo `AGRESIVO` y al recargar el chunk
+  `applyWaifuMode()` la levantaba sola. Pasan por `toggleSitFromPet()` → `setWaifuMode(SENTADA)`, que
+  recuerda el modo anterior y lo devuelve al levantarla.
+- **`recall.enabled = false` no apagaba nada** (faltaba consultar `RecallConfig.enabled()`) y se quitó
+  un método muerto del handler.
+
 ## [6.3.0] — 2026-10-27
 
 ### 🐱 Norma, Nekomiya Mana y Nangong Yu pasan a GeckoLib
