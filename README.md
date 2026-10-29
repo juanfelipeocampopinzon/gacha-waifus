@@ -1,62 +1,105 @@
-# Gacha Waifus Mod (Minecraft 1.21.1 NeoForge)
+# Gacha Waifus Mod (Minecraft 1.21.1 Multi-Loader: NeoForge & Fabric)
 
-Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*.
+Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*, mecánicas de gacha (banners promocional y permanente con pity), sistema de hogar, modos tácticos de comportamiento y animaciones fluidas con **GeckoLib**.
 
-> **Versión:** `2.1.0-beta.1` ⚠️ BETA · **Minecraft:** 1.21.1 · **NeoForge:** 21.1.233
+> **Versión:** `6.6.0` · **Minecraft:** 1.21.1 · **NeoForge:** `21.1.233` · **Fabric:** `0.116.17` · **Java:** 21
 
-Consulta el [CHANGELOG.md](CHANGELOG.md) para las notas de actualización completas.
+---
 
-## 🌟 Prototipo: Astra Yao
-- **Rol:** Soporte Éter / Cantante Idol (Stars of Lyra)
-- **Skin:** Modelo slim/alex personalizado
-- **Ataque Normal:** Disparos de pulsos etéreos a distancia (`gachawaifus:ether_blast`)
-- **Habilidad Especial (EX Special - Vocal Solo):** Onda sónica en área que aturde y daña enemigos mientras otorga Fuerza II y Velocidad II al jugador invocador.
-- **Ultimate (Grand Finale Concert):** Espectáculo sónico masivo en 10 bloques, daño devastador a hostiles, curación completa, absorción y regeneración al jugador.
+## 🌟 Características Principales
 
-## 🔥 Prototipo: Burnice White
-- **Rol:** Daño Fuego / Atrayente (Sons of Calydon)
-- **Skin:** Modelo slim/alex personalizado
-- **Ataque Normal:** Cortada ígnea que pega fuego al objetivo por 3s + partículas de lava y flamas. Cooldown 1s.
-- **Habilidad Especial (Jet Flamethrower):** Embestida con invulnerabilidad temporal (25 ticks), 16 de daño de fuego, Slowness I y Weakness I en abanico. Cooldown 10s.
-- **Ultimate (Burnice Supernova):** Explosión térmica en 10 bloques con 25 de daño de fuego a enemigos, e imbuye al jugador invocador con Resistencia al Fuego y Fuerza II. Cooldown 35s.
+- **Más de 60 Waifus Coleccionables:** Procedentes de ZZZ y otros universos (Miyabi, Ellen Joe, Burnice, Nicole, Anby, Kurumi, Ye Shunguang, Astra Yao, Rina, Lycaon, Koleda, Grace, Soldier 11, etc.).
+- **Kit de Combate de 3 Habilidades:** Ataque Normal, Habilidad Especial y Ultimate por waifu (con animaciones GeckoLib sincronizadas con el ataque).
+- **Sistema de Colores y Roles (Matriz de Daño ±33 %):** 
+  - 11 Colores (Rojo, Naranja, Amarillo, Verde, Azul, Morado, Rosa, Marrón, Negro, Blanco, Gris).
+  - 5 Roles de equipo: *Attack, Stun, Anomaly, Support, Defense*.
+- **Sistema de Gacha Completo:**
+  - Máquina Gacha y Terminal Gacha interactivo.
+  - Pestaña **Promocional** (Bolitas Rosas, rotación diaria, pity 64, 50/50).
+  - Pestaña **Permanente** (Bolitas Azules, pity 64 independiente, entrega directa de waifus estándar no poseídas).
+- **Gestión de Mascotas y Hogar:**
+  - **Bloque de Hogar (`WaifuHomeBlock`):** Establece el punto de base de tus waifus (con soporte para camuflaje/mímica de bloques).
+  - **Panel de Modos (`Shift + Clic derecho`):** Configura el comportamiento en tiempo real (*Pasivo, Neutro, Agresivo, Sentada, En Casa*).
+  - **Baliza Waifu (`WaifuBeaconItem`):** Teletransporte y llamada individual o de escuadrón completo.
+  - **Cápsula Waifu:** Si una waifu es derrotada, queda registrada en la cápsula para poder ser revivida con diamantes.
+- **Caminar y Físicas Vanilla:** Animaciones de caminata adaptativas con cadencia según la velocidad real del suelo y soporte de físicas dinámicas para modelos compatibles.
 
-## ⚔️ Nuevo: Ye Shunguang
-- **Rol:** Investigador Élite / Alto Preceptor (Yunkui Summit)
-- **Elemento:** Ether | **Atributo Especial:** Auric Ink
-- **Skin:** Modelo slim/alex personalizado con colores púrpura/delgado
-- **Ataque Normal (Auric Slash):** Corte con ink que causa daño directo + indirecto mágico, partículas ENCHANTED_HIT y WITCH. Cooldown 25 ticks.
-- **Habilidad Especial (Ink Eruption):** Canalización especial con invulnerabilidad temporal (20 ticks), AoE en 5 bloques con 22 de daño indirecto mágico, debuffs Weakness II y Blindness 10s. Cooldown 250 ticks.
-- **Ultimate (Endless Talisman):** Fase de meditación invulnerable (30 ticks), AoE masivo en 12 bloques con 35 de daño indirecto mágico, buffs al invocador (DAMAGE_BOOST II, SPEED II, ABSORPTION III) y a la propia entidad. Cooldown 750 ticks.
+---
 
-## 📦 Instalación
-1. Colocar `gachawaifus-2.1.0-beta.1.jar` en `%appdata%\.minecraft\mods\`.
-2. Iniciar Minecraft con el perfil de **NeoForge 21.1.x** para **1.21.1**.
-3. Obtener el **Talismán de Invocación de Ye Shunguang** desde la pestaña creativa "Gacha Waifus" o crafteo.
-4. Click derecho en el suelo para invocar a Ye Shunguang en el escenario.
+## 🏗️ Arquitectura del Repositorio (Multi-Loader)
 
-## 🛠️ Desarrollo (Para Modders)
-- **Project Root:** `e:/super proyecto de moding gachas minecraft/gachawaifus`
-- **Compiler / JDK:** OpenJDK 21 LTS
-- **Build Tool:** `./gradlew.bat`
-- **To Compile & Build:**
-  ```powershell
-  cd "E:\super proyecto de moding gachas minecraft\gachawaifus"
-  .\gradlew.bat build
-  ```
-- **Built Jar:** `gachawaifus/build/libs/gachawaifus-2.1.0-beta.1.jar`
+El proyecto utiliza una arquitectura de código compartido en un único repositorio:
 
-## 🎵 Sonidos y Animaciones
-- Convierte audio a `.ogg` (44.1kHz).
-- Coloca en `assets/gachawaifus/sounds/<nombre>/sonido.ogg`.
-- Regístrala en `sounds.json`.
-
-## 💃 Animaciones Fluidas (GeckoLib)
-- Exporta `.geo.json` y `.animation.json` de Blockbench.
-- Implementa `GeoEntity` para animaciones claveframe.
-
-## 🌐 Investigación de Personajes
-Antes de crear una nueva waifu, usa:
-```powershell
-$env:PYTHONIOENCODING="utf-8"
-python "e:/super proyecto de moding gachas minecraft/tools/research_character.py" "Character Name"
+```text
+gachawaifus/
+├── common/             # 270+ clases comunes y TODOS los recursos compartidos:
+│   ├── src/main/java/  # Entidades, renderers, tokens, modelos GeckoLib, IA, gacha, GUI.
+│   └── src/main/resources/ # Texturas, animaciones, geo JSON, sonidos, lang (es_es, en_us).
+├── neoforge/           # Adaptadores y registros para NeoForge 1.21.1:
+│   └── src/main/java/  # DeferredRegister, eventos de bus, networking NeoForge.
+├── fabric/             # Adaptadores para Fabric 1.21.1:
+│   └── src/main/java/  # Callbacks Fabric API, registros vanilla, networking Fabric.
+├── tools/
+│   └── fabric_sync.py  # Script de validación de frontera entre loaders.
+├── gradlew / gradlew.bat
+└── agents.md           # Reglas de desarrollo y API para asistentes de IA.
 ```
+
+---
+
+## 🛠️ Cómo Compilar el Proyecto
+
+### Requisitos
+- **JDK 21** (OpenJDK 21 LTS recomendado).
+- Conexión inicial o entorno Gradle configurado.
+
+### En Windows (PowerShell / CMD)
+```powershell
+cd gachawaifus
+
+# Compilar solo el JAR de NeoForge:
+.\gradlew.bat :neoforge:build
+
+# Compilar solo el JAR de Fabric:
+.\gradlew.bat :fabric:build
+
+# Compilar ambos loaders a la vez:
+.\gradlew.bat build
+```
+
+### En Linux / macOS (Bash)
+```bash
+cd gachawaifus
+J="$(cd ../tools/jdk-21-linux && pwd)" # O tu ruta habitual a JAVA_HOME (JDK 21)
+
+# Compilar solo NeoForge:
+env JAVA_HOME="$J" ./gradlew :neoforge:build -Dorg.gradle.java.home="$J" --offline --no-daemon
+
+# Compilar solo Fabric:
+env JAVA_HOME="$J" ./gradlew :fabric:build -Dorg.gradle.java.home="$J" --offline --no-daemon
+
+# Compilar ambos loaders:
+env JAVA_HOME="$J" ./gradlew build -Dorg.gradle.java.home="$J" --offline --no-daemon
+```
+
+### Jars Generados
+- **NeoForge:** `neoforge/build/libs/gachawaifus-6.6.0.jar`
+- **Fabric:** `fabric/build/libs/gachawaifus-fabric-6.6.0-fabric.1.jar`
+
+---
+
+## 🧪 Cómo Probar en Juego
+
+1. Copia el archivo `.jar` correspondiente a tu carpeta `.minecraft/mods/` (renombra cualquier versión previa a `*.jar.bak`).
+2. **NeoForge:** Ejecuta con **NeoForge 21.1.x** para Minecraft 1.21.1 (requiere GeckoLib 4.9.3 para NeoForge).
+3. **Fabric:** Ejecuta con **Fabric Loader 0.19.x+** para Minecraft 1.21.1 (requiere Fabric API 0.116+ y GeckoLib 4.9.3 para Fabric).
+
+---
+
+## 🤝 Reglas de Integración y Trabajo
+
+Si vas a programar o integrar una nueva waifu:
+- **Crea el código en `common/`:** Entidad, Token y Renderer viven en `common/`.
+- **Registros:** Registra la entidad y token tanto en `neoforge/` como en `fabric/`.
+- **Validación automática:** Ejecuta `python3 tools/fabric_sync.py --check` para verificar que ninguna clase compartida contenga imports directos de una plataforma específica.
+- Consulta detallada en [`agents.md`](agents.md) y [`AGENTS.md`](../AGENTS.md).
