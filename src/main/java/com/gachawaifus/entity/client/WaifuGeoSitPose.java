@@ -24,6 +24,14 @@ public final class WaifuGeoSitPose {
     /** Piernas estiradas hacia adelante: +85° (+1,48 rad en rotación X positiva de GeckoLib). */
     private static final float LEGS_FORWARD = 1.48F;
 
+    /**
+     * Cuánto se separan las caderas al sentarse, en unidades de modelo (1/16 de bloque por pierna).
+     * Las piernas de un geo suelen estar a ±2 de pivote con cubos de 4 de ancho: sus caras internas
+     * se tocan o se solapan, y sentadas ese solape es la costura que mezcla la textura. El lado lo
+     * dice el propio pivote del hueso, así que no hay que saber si la izquierda es +X o -X.
+     */
+    private static final float LEGS_APART_X = 1.0F;
+
     /** Cuánto se separan las puntas de los pies (rotación Y). */
     private static final float LEGS_APART_Y = 0.28F;
 
@@ -50,6 +58,9 @@ public final class WaifuGeoSitPose {
         if (!waifu.isInSittingPose()) {
             // Asegura que al levantarse el hueso raíz vuelva a la altura normal
             model.getBone("root").ifPresent(root -> root.setPosY(0.0F));
+            // y que las caderas recuperen su sitio: el desplazamiento es memoria del hueso
+            model.getBone("left_leg").ifPresent(leg -> leg.setPosX(0.0F));
+            model.getBone("right_leg").ifPresent(leg -> leg.setPosX(0.0F));
             return;
         }
         waifu.markModelSitPose();
@@ -60,13 +71,15 @@ public final class WaifuGeoSitPose {
         // Bajar al suelo (0,625 bloques) con respiración
         model.getBone("root").ifPresent(root -> root.setPosY(ROOT_FLOOR_SINK + breath));
 
-        // Piernas hacia adelante sobre el suelo (rotación X positiva)
+        // Piernas hacia adelante sobre el suelo (rotación X positiva) y caderas abiertas
         model.getBone("left_leg").ifPresent(bone -> {
+            bone.setPosX(Math.signum(bone.getPivotX()) * LEGS_APART_X);
             bone.setRotX(LEGS_FORWARD);
             bone.setRotY(LEGS_APART_Y);
             bone.setRotZ(-LEGS_TILT_Z);
         });
         model.getBone("right_leg").ifPresent(bone -> {
+            bone.setPosX(Math.signum(bone.getPivotX()) * LEGS_APART_X);
             bone.setRotX(LEGS_FORWARD);
             bone.setRotY(-LEGS_APART_Y);
             bone.setRotZ(LEGS_TILT_Z);

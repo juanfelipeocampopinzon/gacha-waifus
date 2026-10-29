@@ -68,9 +68,10 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
     sientas a una waifu por libre, el NBT sigue diciendo `AGRESIVO` y al recargar el chunk
     `applyWaifuMode()` la levanta sola (pasó en Astra y Nicole).
 14. **Si sobreescribes `mobInteract`, termina SIEMPRE con `return super.mobInteract(player, hand);`**
-    y solo actúas cuando `!player.isShiftKeyDown()` y la mano NO está vacía. La Baliza de Hogar
-    (`WaifuBeaconItem`) y el cambio de modo (Shift + clic mano vacía) viven en la base: un
-    `mobInteract` que devuelva `SUCCESS` en cualquier otro caso se los carga.
+    y solo actúas cuando `!player.isShiftKeyDown()` y la mano NO está vacía. La Baliza de Llamado
+    (`WaifuBeaconItem`, solo teletransporte) y el panel de modos (`WaifuModeMenu`, Shift + clic con la
+    mano vacía) viven en la base: un `mobInteract` que devuelva `SUCCESS` en cualquier otro caso se los
+    carga. El **hogar** ya no se fija con un item: lo pone el bloque `WaifuHomeBlock` al colocarse.
 
 > El arte y las texturas PNG los aporta el humano (nunca los generes). Aquí solo se escribe código
 > y, si acaso, los JSON de modelos/lang.
@@ -118,6 +119,15 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
     - Compilar con `.\gradlew.bat build` y pegar la salida literal.
 7.  **Nada de emojis fuera del rango que dibuja Minecraft** (los ✨/★ se usan ya en el mod; los
     emojis tipo 🔥 salen como cuadro vacío).
+8.  **Antes de construir algo, busca la ruta más corta — y avisa al humano si hay una más fácil.**
+    Si un encargo se puede resolver reutilizando lo que ya existe (un hook nativo de Minecraft, una
+    opción de config, copiar el estado de un objeto válido) en vez de crear menús, pantallas o
+    máquinas nuevas, **no te lances por la complicada**: dile primero
+    *"hay una forma más fácil: X; la otra es Y"* con el coste de cada una y **deja que él decida**.
+    Solo sigue por la difícil si te lo pide. Ejemplo real (2026-10-29): para camuflar el
+    `WaifuHomeBlock` se hizo un menú con selector de bloques (`HomeMimicMenu` + `HomeMimicScreen`)
+    cuando bastaba con clic-derecho llevando el bloque en la mano (`useItemOn`) y copiar su textura;
+    funcionó, pero era mucho más código del necesario.
 
 ### ¿Se corta a mitad? (se queda sin tokens de salida)
 

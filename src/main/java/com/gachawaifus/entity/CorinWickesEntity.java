@@ -58,7 +58,7 @@ public class CorinWickesEntity extends AbstractWaifuEntity implements GeoEntity 
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.corin_wickes.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.corin_wickes.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.corin_wickes.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.corin_wickes.special"))

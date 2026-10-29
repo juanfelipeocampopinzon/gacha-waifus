@@ -4,6 +4,7 @@ import com.gachawaifus.entity.BossSpawnConfig;
 import com.gachawaifus.entity.RecallConfig;
 import com.gachawaifus.entity.WanderConfig;
 import com.gachawaifus.entity.WildWaifuConfig;
+import com.gachawaifus.gacha.GachaConfig;
 import com.gachawaifus.gacha.MissionConfig;
 import net.neoforged.neoforge.common.ModConfigSpec;
 
@@ -12,11 +13,12 @@ import net.neoforged.neoforge.common.ModConfigSpec;
  * Mods → Gacha Waifus → Config, o editando ese toml. Como es COMMON, la leen también los servidores
  * dedicados (no se puede leer una config CLIENT desde el servidor).
  *
- * <p>Tiene cinco secciones: {@code team} (límite de waifus invocadas), {@code wander} (radio de
+ * <p>Tiene seis secciones: {@code team} (límite de waifus invocadas), {@code wander} (radio de
  * deambulación, definida en {@link WanderConfig}), {@code bosses} (rareza de sus apariciones
  * naturales, definida en {@link BossSpawnConfig}), {@code missions} (objetivos diarios, definida en
- * {@link MissionConfig}) y {@code wild} (waifus salvajes por bioma, definida en
- * {@link WildWaifuConfig}). NeoForge rechaza un segundo spec COMMON del mismo mod con "Detected
+ * {@link MissionConfig}), {@code wild} (waifus salvajes por bioma, definida en
+ * {@link WildWaifuConfig}) y {@code husbands} (excluir a los maridos del sorteo, definida en
+ * {@link GachaConfig}). NeoForge rechaza un segundo spec COMMON del mismo mod con "Detected
  * config file conflict", así que todo lo COMMON se construye aquí.
  */
 public final class TeamConfig {
@@ -41,6 +43,7 @@ public final class TeamConfig {
         BossSpawnConfig.appendTo(builder);
         MissionConfig.appendTo(builder);
         WildWaifuConfig.appendTo(builder);
+        GachaConfig.appendTo(builder);
         SPEC = builder.build();
     }
 

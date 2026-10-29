@@ -59,7 +59,7 @@ public class AliceEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.alice.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.alice.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
 
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.alice.attack"))

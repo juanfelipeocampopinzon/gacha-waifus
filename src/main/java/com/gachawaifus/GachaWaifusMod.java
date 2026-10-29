@@ -59,8 +59,12 @@ import com.gachawaifus.entity.client.RemielleModel;
 import com.gachawaifus.entity.client.JaneDoeModel;
 import com.gachawaifus.client.GachaBannerScreen;
 import com.gachawaifus.client.GuideScreen;
+import com.gachawaifus.client.HomeMimicScreen;
+import com.gachawaifus.client.WaifuHomeBlockRenderer;
+import com.gachawaifus.client.WaifuModeScreen;
 import com.gachawaifus.client.WaifuStorageScreen;
 import com.gachawaifus.client.bust.WaifuBustLayers;
+import com.gachawaifus.registry.ModBlockEntities;
 import com.gachawaifus.registry.ModBlocks;
 import com.gachawaifus.registry.ModCreativeTabs;
 import com.gachawaifus.registry.ModEntities;
@@ -108,6 +112,7 @@ public class GachaWaifusMod {
         ModItems.ITEMS.register(modEventBus);
         ModBlocks.BLOCKS.register(modEventBus);
         ModBlocks.BLOCK_ITEMS.register(modEventBus);
+        ModBlockEntities.BLOCK_ENTITY_TYPES.register(modEventBus);
         ModSounds.SOUND_EVENTS.register(modEventBus);
         ModCreativeTabs.CREATIVE_MODE_TABS.register(modEventBus);
         ModMenuTypes.MENU_TYPES.register(modEventBus);
@@ -135,6 +140,8 @@ public class GachaWaifusMod {
         event.register(ModMenuTypes.WAIFU_STORAGE.get(), WaifuStorageScreen::new);
         event.register(ModMenuTypes.GACHA_BANNER.get(), GachaBannerScreen::new);
         event.register(ModMenuTypes.WAIFU_GUIDE.get(), GuideScreen::new);
+        event.register(ModMenuTypes.WAIFU_MODE.get(), WaifuModeScreen::new);
+        event.register(ModMenuTypes.HOME_MIMIC.get(), HomeMimicScreen::new);
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {
@@ -252,6 +259,8 @@ public class GachaWaifusMod {
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        // El único renderer de bloque: el Bloque de Hogar se pinta imitando otro bloque.
+        event.registerBlockEntityRenderer(ModBlockEntities.WAIFU_HOME.get(), WaifuHomeBlockRenderer::new);
         // ★★★★★ — Hoshimi Miyabi
         event.registerEntityRenderer(ModEntities.MIYABI.get(), MiyabiMisiramaRenderer::new);
         // ★★★★☆ — Astra Yao

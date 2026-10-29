@@ -57,7 +57,7 @@ public class LucyEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.lucy.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.lucy.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.lucy.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.lucy.special"))

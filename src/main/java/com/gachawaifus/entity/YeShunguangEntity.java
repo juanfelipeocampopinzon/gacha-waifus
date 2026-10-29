@@ -60,7 +60,7 @@ public class YeShunguangEntity extends AbstractWaifuEntity implements GeoEntity 
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.ye_shunguang.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.ye_shunguang.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
 
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.ye_shunguang.attack"))

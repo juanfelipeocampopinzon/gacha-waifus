@@ -58,7 +58,7 @@ public class NormaEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.norma.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.norma.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.norma.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.norma.special"))

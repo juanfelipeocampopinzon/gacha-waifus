@@ -58,7 +58,7 @@ public class NangongYuEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nangong_yu.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nangong_yu.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.nangong_yu.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nangong_yu.special"))

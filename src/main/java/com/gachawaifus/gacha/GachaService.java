@@ -153,11 +153,9 @@ public final class GachaService {
 
     /** La waifu que enseña el banner: la destacada del día o la del pool estándar que toque. */
     public static WaifuRoster.Entry spotlight(ServerLevel level, Banner banner) {
-        if (banner == Banner.PROMO) {
-            return WaifuRoster.featured(level);
-        }
-        long day = level.getServer().overworld().getDayTime() / 24000L;
-        return WaifuRoster.STANDARD_POOL.get((int) Math.floorMod(day, WaifuRoster.STANDARD_POOL.size()));
+        return banner == Banner.PROMO
+                ? WaifuRoster.featured(level)
+                : WaifuRoster.featuredStandard(level);
     }
 
     /**
@@ -165,16 +163,24 @@ public final class GachaService {
      * llama a {@code WaifuRoster.ownedIds()} una vez cada 10 ticks y reutiliza el resultado.
      */
     public static boolean hasTargets(Banner banner, Set<String> ownedIds) {
-        if (banner == Banner.PROMO) {
-            for (WaifuRoster.Entry entry : WaifuRoster.ROTATION) {
-                if (!ownedIds.contains(entry.id())) return true;
-            }
-            return false;
-        }
-        for (WaifuRoster.Entry entry : WaifuRoster.STANDARD_POOL) {
-            if (!ownedIds.contains(entry.id())) return true;
+        for (WaifuRoster.Entry entry : pool(banner)) {
+            if (WaifuRoster.inGacha(entry) && !ownedIds.contains(entry.id())) return true;
         }
         return false;
+    }
+
+    /** La lista de la que sortea cada banner. */
+    private static List<WaifuRoster.Entry> pool(Banner banner) {
+        return banner == Banner.PROMO ? WaifuRoster.ROTATION : WaifuRoster.STANDARD_POOL;
+    }
+
+    /** Cuántas waifus puede entregar aún este banner (las excluidas por la config no cuentan). */
+    public static int poolSize(Banner banner) {
+        int n = 0;
+        for (WaifuRoster.Entry entry : pool(banner)) {
+            if (WaifuRoster.inGacha(entry)) n++;
+        }
+        return n;
     }
 
     /** Máscara de bits del pool estándar: bit {@code i} encendido = ya la tienes. */
@@ -221,8 +227,10 @@ public final class GachaService {
         if (!hasTargets(player, Banner.PROMO)) {
             // Colección completa: NO se cobra nada ni se toca la pity. Tener a la destacada nunca
             // bloquea (antes bloqueaba todas las tiradas y el terminal quedaba inservible).
-            result.deny("§e[GachaWaifus] Ya tienes a §f" + WaifuRoster.ROTATION.size()
-                    + "§e waifus: la colección está completa. No se gastan bolitas.");
+            result.deny("§e[GachaWaifus] Ya tienes a §f" + poolSize(Banner.PROMO)
+                    + "§e waifus del banner: no queda ninguna por conseguir. No se gastan bolitas."
+                    + (GachaConfig.excluded()
+                    ? " §7(Los maridos están excluidos del gacha en la config.)" : ""));
             return result;
         }
 
@@ -351,8 +359,10 @@ public final class GachaService {
         GachaSavedData.PlayerState state = data.state(player.getUUID());
 
         if (!hasTargets(player, Banner.STANDARD)) {
-            result.deny("§e[GachaWaifus] Ya tienes a las §f" + WaifuRoster.STANDARD_POOL.size()
-                    + "§e waifus estándar: el banner permanente no da más. No se gastan bolitas azules.");
+            result.deny("§e[GachaWaifus] Ya tienes a las §f" + poolSize(Banner.STANDARD)
+                    + "§e waifus estándar: el banner permanente no da más. No se gastan bolitas azules."
+                    + (GachaConfig.excluded()
+                    ? " §7(Los maridos están excluidos del gacha en la config.)" : ""));
             return result;
         }
 
@@ -421,7 +431,7 @@ public final class GachaService {
     private static WaifuRoster.Entry randomStandardUnowned(Player player) {
         List<WaifuRoster.Entry> libres = new ArrayList<>();
         for (WaifuRoster.Entry e : WaifuRoster.STANDARD_POOL) {
-            if (!WaifuRoster.owns(player, e)) libres.add(e);
+            if (WaifuRoster.inGacha(e) && !WaifuRoster.owns(player, e)) libres.add(e);
         }
         if (libres.isEmpty()) return null;
         return libres.get(player.getRandom().nextInt(libres.size()));

@@ -53,7 +53,7 @@ public class NekomataEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nekomata.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.nekomata.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.nekomata.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.nekomata.special"))

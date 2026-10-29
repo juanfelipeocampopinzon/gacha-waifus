@@ -104,186 +104,96 @@
    }
   },
   "animation.roxy.walk": {
-   "comment": "Roxy caminando: zancada de piernas y brazos contrarios.",
-   "animation_length": 0.8,
    "loop": true,
+   "animation_length": 0.48,
    "bones": {
-    "right_leg": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.2": [
-       25.0,
-       0.0,
-       0.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.6": [
-       -25.0,
-       0.0,
-       0.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       0.0
-      ]
+     "right_leg": {
+       "rotation": {
+         "0.0": ["math.clamp(query.ground_speed * 4, 0, 1) * 80.2", 0, 0],
+         "0.04": ["math.clamp(query.ground_speed * 4, 0, 1) * 69.5", 0, 0],
+         "0.08": ["math.clamp(query.ground_speed * 4, 0, 1) * 40.1", 0, 0],
+         "0.12": [0, 0, 0],
+         "0.16": ["math.clamp(query.ground_speed * 4, 0, 1) * -40.1", 0, 0],
+         "0.2": ["math.clamp(query.ground_speed * 4, 0, 1) * -69.5", 0, 0],
+         "0.24": ["math.clamp(query.ground_speed * 4, 0, 1) * -80.2", 0, 0],
+         "0.28": ["math.clamp(query.ground_speed * 4, 0, 1) * -69.5", 0, 0],
+         "0.32": ["math.clamp(query.ground_speed * 4, 0, 1) * -40.1", 0, 0],
+         "0.36": [0, 0, 0],
+         "0.4": ["math.clamp(query.ground_speed * 4, 0, 1) * 40.1", 0, 0],
+         "0.44": ["math.clamp(query.ground_speed * 4, 0, 1) * 69.5", 0, 0],
+         "0.48": ["math.clamp(query.ground_speed * 4, 0, 1) * 80.2", 0, 0]
+       }
+     },
+     "left_leg": {
+       "rotation": {
+         "0.0": ["math.clamp(query.ground_speed * 4, 0, 1) * -80.2", 0, 0],
+         "0.04": ["math.clamp(query.ground_speed * 4, 0, 1) * -69.5", 0, 0],
+         "0.08": ["math.clamp(query.ground_speed * 4, 0, 1) * -40.1", 0, 0],
+         "0.12": [0, 0, 0],
+         "0.16": ["math.clamp(query.ground_speed * 4, 0, 1) * 40.1", 0, 0],
+         "0.2": ["math.clamp(query.ground_speed * 4, 0, 1) * 69.5", 0, 0],
+         "0.24": ["math.clamp(query.ground_speed * 4, 0, 1) * 80.2", 0, 0],
+         "0.28": ["math.clamp(query.ground_speed * 4, 0, 1) * 69.5", 0, 0],
+         "0.32": ["math.clamp(query.ground_speed * 4, 0, 1) * 40.1", 0, 0],
+         "0.36": [0, 0, 0],
+         "0.4": ["math.clamp(query.ground_speed * 4, 0, 1) * -40.1", 0, 0],
+         "0.44": ["math.clamp(query.ground_speed * 4, 0, 1) * -69.5", 0, 0],
+         "0.48": ["math.clamp(query.ground_speed * 4, 0, 1) * -80.2", 0, 0]
+       }
+     },
+     "right_arm": {
+       "rotation": {
+         "0.0": ["math.clamp(query.ground_speed * 4, 0, 1) * -57.3", 0, -2],
+         "0.04": ["math.clamp(query.ground_speed * 4, 0, 1) * -49.6", 0, -2],
+         "0.08": ["math.clamp(query.ground_speed * 4, 0, 1) * -28.6", 0, -2],
+         "0.12": [0, 0, -2],
+         "0.16": ["math.clamp(query.ground_speed * 4, 0, 1) * 28.6", 0, -2],
+         "0.2": ["math.clamp(query.ground_speed * 4, 0, 1) * 49.6", 0, -2],
+         "0.24": ["math.clamp(query.ground_speed * 4, 0, 1) * 57.3", 0, -2],
+         "0.28": ["math.clamp(query.ground_speed * 4, 0, 1) * 49.6", 0, -2],
+         "0.32": ["math.clamp(query.ground_speed * 4, 0, 1) * 28.6", 0, -2],
+         "0.36": [0, 0, -2],
+         "0.4": ["math.clamp(query.ground_speed * 4, 0, 1) * -28.6", 0, -2],
+         "0.44": ["math.clamp(query.ground_speed * 4, 0, 1) * -49.6", 0, -2],
+         "0.48": ["math.clamp(query.ground_speed * 4, 0, 1) * -57.3", 0, -2]
+       }
+     },
+     "left_arm": {
+       "rotation": {
+         "0.0": ["math.clamp(query.ground_speed * 4, 0, 1) * 57.3", 0, 2],
+         "0.04": ["math.clamp(query.ground_speed * 4, 0, 1) * 49.6", 0, 2],
+         "0.08": ["math.clamp(query.ground_speed * 4, 0, 1) * 28.6", 0, 2],
+         "0.12": [0, 0, 2],
+         "0.16": ["math.clamp(query.ground_speed * 4, 0, 1) * -28.6", 0, 2],
+         "0.2": ["math.clamp(query.ground_speed * 4, 0, 1) * -49.6", 0, 2],
+         "0.24": ["math.clamp(query.ground_speed * 4, 0, 1) * -57.3", 0, 2],
+         "0.28": ["math.clamp(query.ground_speed * 4, 0, 1) * -49.6", 0, 2],
+         "0.32": ["math.clamp(query.ground_speed * 4, 0, 1) * -28.6", 0, 2],
+         "0.36": [0, 0, 2],
+         "0.4": ["math.clamp(query.ground_speed * 4, 0, 1) * 28.6", 0, 2],
+         "0.44": ["math.clamp(query.ground_speed * 4, 0, 1) * 49.6", 0, 2],
+         "0.48": ["math.clamp(query.ground_speed * 4, 0, 1) * 57.3", 0, 2]
+       }
+     },
+     "capa": {
+       "rotation": {
+         "0.0": [5.8, 0, -1],
+         "0.04": [1.4, 0, 0.3],
+         "0.08": [-2.8, 0, 1.4],
+         "0.12": [-6.9, 0, 2.3],
+         "0.16": [-8.3, 0, 2.3],
+         "0.2": [-7.9, 0, 1.9],
+         "0.24": [-5.8, 0, 1],
+         "0.28": [-1.4, 0, -0.3],
+         "0.32": [2.8, 0, -1.4],
+         "0.36": [6.9, 0, -2.3],
+         "0.4": [8.3, 0, -2.3],
+         "0.44": [7.9, 0, -1.9],
+         "0.48": [5.8, 0, -1]
+       }
      }
-    },
-    "left_leg": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.2": [
-       -25.0,
-       0.0,
-       0.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.6": [
-       25.0,
-       0.0,
-       0.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       0.0
-      ]
-     }
-    },
-    "right_arm": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       -2.0
-      ],
-      "0.2": [
-       -15.0,
-       0.0,
-       -2.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       -2.0
-      ],
-      "0.6": [
-       15.0,
-       0.0,
-       -2.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       -2.0
-      ]
-     }
-    },
-    "left_arm": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       2.0
-      ],
-      "0.2": [
-       15.0,
-       0.0,
-       2.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       2.0
-      ],
-      "0.6": [
-       -15.0,
-       0.0,
-       2.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       2.0
-      ]
-     }
-    },
-    "body": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.2": [
-       4.0,
-       0.0,
-       1.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.6": [
-       4.0,
-       0.0,
-       -1.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       0.0
-      ]
-     }
-    },
-    "capa": {
-     "rotation": {
-      "0.0": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.2": [
-       9.0,
-       0.0,
-       0.0
-      ],
-      "0.4": [
-       0.0,
-       0.0,
-       0.0
-      ],
-      "0.6": [
-       -9.0,
-       0.0,
-       0.0
-      ],
-      "0.8": [
-       0.0,
-       0.0,
-       0.0
-      ]
-     }
-    }
    }
-  },
+ },
   "animation.roxy.attack": {
    "comment": "Roxy: golpe cuerpo a cuerpo corto con el brazo derecho.",
    "animation_length": 0.5,

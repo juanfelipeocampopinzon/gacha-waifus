@@ -6,6 +6,7 @@ import com.gachawaifus.color.WaifuColor;
 import com.gachawaifus.color.WaifuColors;
 import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
+import com.gachawaifus.menu.WaifuModeMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -367,22 +368,6 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         return this.modelSitPose;
     }
 
-    /** Shift + clic con mano vacía (solo el dueño): pasa al siguiente modo y avisa. */
-    private void cycleWaifuMode(Player player) {
-        this.setWaifuMode(this.waifuMode.next());
-        player.displayClientMessage(Component.literal(
-                "§d[GachaWaifus] §f" + this.getDisplayName().getString() + " §7→ modo "
-                        + this.waifuMode.colorCode() + this.waifuMode.plainName()
-                        + "§7 · Shift + clic para cambiarlo."), true);
-        if (this.waifuMode == WaifuMode.EN_CASA && this.hasHome()) {
-            player.displayClientMessage(Component.literal(
-                    "§7Su hogar es §f" + this.homePos.toShortString() + " §7en §f"
-                            + this.homeDimension.location().getPath() + "§7. La Baliza de Hogar lo cambia."), true);
-        }
-        this.level().playSound(null, this.blockPosition(),
-                SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 1.0F, 1.4F);
-    }
-
     /**
      * Filtro central de objetivos según el modo. Al interceptar {@code setTarget} se controla de
      * golpe a las 19 waifus: sus kits (en {@code aiStep}) solo se disparan con objetivo, y los
@@ -429,8 +414,8 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                 && player.isShiftKeyDown()
                 && player.getMainHandItem().isEmpty()
                 && this.isOwnedBy(player)) {
-            if (!this.level().isClientSide) {
-                this.cycleWaifuMode(player);
+            if (!this.level().isClientSide && player instanceof ServerPlayer serverPlayer) {
+                WaifuModeMenu.open(serverPlayer, this);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }

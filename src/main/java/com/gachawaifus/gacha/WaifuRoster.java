@@ -160,6 +160,32 @@ public final class WaifuRoster {
     }
 
     /**
+     * ¿Puede salir en el sorteo? Con la sección {@code husbands} de la config encendida, los maridos
+     * quedan fuera de <b>toda</b> la ruleta: ni destacada del día, ni 4★, ni consuelo del 50/50, ni
+     * tirada doble. Es el único sitio donde se consulta la exclusión, así que lo que no pasa por aquí
+     * (el token, la Cápsula, el glosario, el spawn salvaje, {@link #byId}) sigue funcionando igual:
+     * se apaga la ruleta, no el personaje.
+     */
+    public static boolean inGacha(Entry entry) {
+        return !(GachaConfig.excluded() && GachaConfig.ids().contains(entry.id()));
+    }
+
+    /**
+     * La primera elegible empezando por {@code start} y dando la vuelta a la lista: es lo que hace que
+     * la destacada del día "salte" al marido que tocaba sin mover el calendario de nadie.
+     */
+    private static Entry firstEligible(List<Entry> list, int start) {
+        int n = list.size();
+        for (int i = 0; i < n; i++) {
+            Entry candidate = list.get(Math.floorMod(start + i, n));
+            if (inGacha(candidate)) {
+                return candidate;
+            }
+        }
+        return list.get(Math.floorMod(start, n));
+    }
+
+    /**
      * Una 4★ que al jugador todavía le falte, al azar. {@code null} si ya las tiene todas: el
      * Terminal lo trata como tirada de comida sin castigar la pity.
      */
@@ -168,7 +194,7 @@ public final class WaifuRoster {
         Set<String> owned = ownedIds(player);
         List<Entry> libres = new java.util.ArrayList<>();
         for (Entry e : ROTATION) {
-            if (isFourStar(e) && !owned.contains(e.id())) {
+            if (isFourStar(e) && inGacha(e) && !owned.contains(e.id())) {
                 libres.add(e);
             }
         }
@@ -178,7 +204,13 @@ public final class WaifuRoster {
     /** La destacada del día: solo de la rotación promocional (nunca una del pool permanente). */
     public static Entry featured(ServerLevel level) {
         long day = level.getServer().overworld().getDayTime() / 24000L;
-        return PROMO_ROTATION.get((int) (Math.floorMod(day, PROMO_ROTATION.size())));
+        return firstEligible(PROMO_ROTATION, (int) Math.floorMod(day, PROMO_ROTATION.size()));
+    }
+
+    /** La que enseña el banner permanente hoy, saltándose a la excluida. */
+    public static Entry featuredStandard(ServerLevel level) {
+        long day = level.getServer().overworld().getDayTime() / 24000L;
+        return firstEligible(STANDARD_POOL, (int) Math.floorMod(day, STANDARD_POOL.size()));
     }
 
     public static Entry byId(String id) {
@@ -200,7 +232,7 @@ public final class WaifuRoster {
         List<Entry> list = PROMO_ROTATION.contains(entry) ? PROMO_ROTATION : STANDARD_POOL;
         int i = list.indexOf(entry);
         if (i < 0) return null;
-        return list.get((i + 1) % list.size());
+        return firstEligible(list, i + 1);
     }
 
     public static Entry byToken(Item item) {
@@ -230,7 +262,7 @@ public final class WaifuRoster {
         List<Entry> libres = new java.util.ArrayList<>();
         for (Entry e : ROTATION) {
             if (exclude != null && e.id().equals(exclude.id())) continue;
-            if (!owns(player, e)) libres.add(e);
+            if (inGacha(e) && !owns(player, e)) libres.add(e);
         }
         if (libres.isEmpty()) return null;
         return libres.get(player.getRandom().nextInt(libres.size()));
@@ -246,7 +278,7 @@ public final class WaifuRoster {
         List<Entry> libres = new java.util.ArrayList<>();
         for (Entry e : STANDARD_POOL) {
             if (exclude != null && e.id().equals(exclude.id())) continue;
-            if (!owns(player, e)) libres.add(e);
+            if (inGacha(e) && !owns(player, e)) libres.add(e);
         }
         if (libres.isEmpty()) return randomUnowned(player, exclude);
         return libres.get(player.getRandom().nextInt(libres.size()));

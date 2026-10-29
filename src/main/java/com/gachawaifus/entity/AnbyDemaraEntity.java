@@ -56,7 +56,7 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.anby_demara.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.anby_demara.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
 
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.anby_demara.attack"))

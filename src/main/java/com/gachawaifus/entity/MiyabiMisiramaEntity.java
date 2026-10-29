@@ -89,7 +89,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
 
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> {
             // Sin habilidad activa se vuelve a la pose neutra (si el predicado se quedara en STOP,

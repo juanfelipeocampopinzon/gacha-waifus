@@ -12,10 +12,12 @@ import net.neoforged.neoforge.client.event.RenderLivingEvent;
 /**
  * Bajo de la waifu hasta el suelo cuando está sentada.
  *
- * <p>Las piernas y el torso los dobla {@code WaifuPlayerModel} (57 de las 63 waifus); aquí solo queda
- * desplazar el modelo, que un {@code PlayerModel} no tiene un hueso raíz que mover. Las 6 de GeckoLib
- * (Anby, Ellen, Miyabi, Burnice, Nicole, Ye Shunguang) animan por JSON y no pasan por ese modelo: a
- * esas se les sigue fingiendo la pose encogiendo la silueta.
+ * <p>Las piernas, el torso, los brazos y la cabeza los dobla {@code WaifuPlayerModel} (las waifus de
+ * modelo de jugador, incluidas las que llevan pieza del pecho); aquí solo queda desplazar el modelo,
+ * que un {@code PlayerModel} no tiene un hueso raíz que mover. Las migradas a GeckoLib no pasan por
+ * este evento — {@code GeoEntityRenderer} no hereda de {@code LivingEntityRenderer}, así que
+ * {@code RenderLivingEvent} no se dispara para ellas—: esas se hunden con {@code root.setPosY(-10)}
+ * en {@link WaifuGeoSitPose}, que es el sitio de donde están copiados los números de aquí.
  *
  * <p>El evento se dispara desde {@code EntityRenderDispatcher#render} dentro del push/pop del
  * renderizador, así que el {@code PoseStack} está alineado con el mundo: las unidades son bloques y

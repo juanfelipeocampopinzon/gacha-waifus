@@ -58,7 +58,7 @@ public class CaesarEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.caesar.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.caesar.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.caesar.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.caesar.special"))

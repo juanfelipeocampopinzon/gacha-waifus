@@ -58,7 +58,7 @@ public class ClaretEntity extends AbstractWaifuEntity implements GeoEntity {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.claret.walk"));
             }
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.claret.idle"));
-        }));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
         controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
                 .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.claret.attack"))
                 .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.claret.special"))

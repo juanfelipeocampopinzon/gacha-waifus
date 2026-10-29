@@ -4,6 +4,126 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [6.6.0] — 2026-10-28
+
+### 🎛 Panel de modos, caminar tipo vanilla, recetario en la guía y el Hogar como bloque
+- **Panel de modos (`menu/WaifuModeMenu` + `client/WaifuModeScreen`)** — antes `Shift + clic con la
+  mano vacía` rotaba el modo a ciegas (un ciclo de 5 sin saber cuál estaba puesto). Ahora abre una
+  pantalla dibujada a mano: cinco filas (PASIVO, NEUTRO, AGRESIVO, SENTADA, EN_CASA), la activa
+  marcada y el hogar escrito al pie. Cambiar de modo es un clic en la fila.
+  - `AbstractWaifuEntity.cycleWaifuMode()` desaparece: `mobInteract()` llama a `WaifuModeMenu.open()`.
+  - El **servidor** manda: el menú guarda la entidad en la copia de servidor y aplica el modo en
+    `clickMenuButton()`; la copia de cliente recibe el modo inicial y el hogar por el
+    `RegistryFriendlyByteBuf` del `IContainerFactory` (en 1.21.1 `AbstractContainerMenu` no tiene
+    `level` ni `DataSlot` hacia el cliente sin redsync extra). El resaltado del cliente es optimista.
+  - Registro en `ModMenuTypes.WAIFU_MODE` y `GachaWaifusMod.registerScreens`.
+- **Caminar de las 22 GeckoLib = el de vanilla, clonado** — se descartó el ciclo senoidal de 1.0 s
+  (no se parecía al paso por defecto) y las `.walk` se reescribieron copiando literalmente
+  `HumanoidModel#setupAnim`: ciclo de **0,48 s** (9,6 ticks de animación frente a los 9,4248 =
+  2π/0,6662 de vanilla), 13 keyframes muestreados del coseno a 0,04 s, piernas **±80,2°** (1,4 rad) en
+  contrafase, brazos **±57,3°** (1,0 rad) con sus 2° de apertura lateral, y **sin rebote de cuerpo ni
+  de cabeza** — vanilla tampoco lo tiene, y ese rebote inventado era parte del desacople.
+  - La amplitud de cada keyframe va multiplicada por `math.clamp(query.ground_speed * 4, 0, 1)` (la
+    misma fórmula de `LivingEntity#updateWalkAnimation`, y GeckoLib acepta molang como valor de
+    keyframe) y la cadencia la pone **`entity/WaifuGeoWalk.cadence`**, enganchado con
+    `setAnimationSpeedHandler` al controlador `movement` de las 22 entidades: devuelve
+    `walkAnimation.speed()`, así que al ir despacio la zancada sale corta y lenta por sí sola. Parado
+    devuelve 1,0 en vez de 0 porque el mismo controlador es el que pone `idle`.
+  - Los accesorios se remuestrearon por fase sobre la rejilla nueva, **respetando el reposo y el eje**
+    medidos de sus keyframes anteriores: la cola de Ellen sigue barriendo en Y, las capas de Anby
+    escalan 4/8/12°, las coletas laterales de Ye Shunguang conservan su ±14° de caída y la katana
+    envainada de Miyabi se sigue escondiendo con su `position [0,-200,0]` intacto. Se editó solo el
+    bloque `bones` de la walk, así que el resto de cada fichero queda byte a byte igual.
+- **Recetario dibujado en la Guía (`GuideScreen`)** — las páginas 17 y 18 muestran la **rejilla real**
+  de 7 recetas (`pink_ball`, `blue_ball`, `gacha_terminal`, `waifu_capsule`, `waifu_beacon`,
+  `waifu_home_block`, `waifu_guide`): marco de slots, los ingredientes del `Ingredient` y el resultado
+  tras la flecha, con sus decoraciones de pila. Se leen del `RecipeManager` del mundo en el momento de
+  dibujar y se cachean por apertura, así que un resource pack que cambie una receta ve dibujada la
+  suya. La máquina Gacha no aparece: sigue sin receta en survival (solo pestaña creativa).
+- **El Hogar pasa a ser un bloque (`block/WaifuHomeBlock`, `waifu_home_block`)** — colocar el bloque
+  fija ya el hogar de todas las waifus invocadas del que lo pone, y darle `clic derecho` lo re-fija
+  (para las invocadas después, o para mudar la casa). Romperlo limpia los hogares que apuntaban ahí,
+  por dueño, con aviso en la barra de acción. Receta: cobre en cruz con perla de ender al centro;
+  suelta el propio bloque. **Textura provisional**: el modelo apunta a `item/waifu_beacon`, hay que
+  dibujar `textures/block/waifu_home_block.png` (64×64) y cambiar esa línea.
+- **La Baliza ahora solo teletransporta (`WaifuBeaconItem` reescrita)** — se le quitó todo el código
+  de fijar hogar: clic = traer a todas (aunque cambien de dimensión), clic sobre una = solo ella.
+  Nombre y tooltip actualizados a «Baliza de Llamado». Hogar y llamada son dos objetos distintos.
+- **La sentada de las de `PlayerModel` se copia de la de GeckoLib** — el torso, las piernas y los
+  brazos ya tenían los mismos números (`WaifuPlayerModel` frente a `WaifuGeoSitPose`, con el signo de
+  X invertido por la convención de `ModelPart`), pero quedaba una diferencia visible: vanilla deja
+  `netHeadYaw`/`headPitch` puestos en la cabeza y las migradas no la animan, así que las de modelo de
+  jugador cabeceaban al sentarse. `WaifuPlayerModel.setupAnim` ahora también nivela la cabeza, y el
+  comentario de `WaifuSittingPose` se corrigió (hablaba de «las 6 de GeckoLib que se encogen» cuando ya
+  son 22 y pasan por otro camino).
+- **Caderas abiertas al sentarse (se acabó la costura)** — las piernas de vanilla están en x = ±1,9 y
+  miden 4 de ancho, así que sus caras internas se solapan 0,1 unidad: con el muslo horizontal ese
+  solape es la línea donde se mezclaba la textura. Ahora `WaifuPlayerModel` mueve los `ModelPart` de
+  las piernas 1 unidad hacia fuera mientras la waifu está sentada (y los devuelve cada frame al
+  puesto al levantarse), y `WaifuGeoSitPose` desplaza igual los huesos `left_leg`/`right_leg`, usando
+  el signo de `getPivotX()` para no equivocarse de lado en ningún `.geo.json`. Son 1/16 de bloque por
+  pierna de hueco: se ven separadas sin quedar abiertas de más.
+- **Los retratos viajan dentro del jar** — los 61 PNG aprobados por el proyecto de IA de imágenes
+  (`~/ai-art-pixelart/splash_pipeline/clean/outbox_juego`) se copiaron a
+  `src/main/resources/assets/gachawaifus/textures/gui/art/`. Hasta ahora `instalar_juego.py` los
+  inyectaba en el jar ya construido, así que cada compilación los perdía. `pyrois` es la única del
+  roster (62 entradas) que se queda sin retrato.
+- **El Bloque de Hogar puede aparentar otro bloque** — `block/WaifuHomeBlock` pasa a
+  `BaseEntityBlock` (con eso su `RenderShape` ya es `INVISIBLE`) y estrenamos el primer BlockEntity
+  del mod, `block/WaifuHomeBlockEntity`, que guarda el id del bloque imitado y lo sincroniza por
+  `getUpdateTag` (chunk que entra cargado) y `getUpdatePacket` (cambio en vivo).
+  `client/WaifuHomeBlockRenderer` lo pinta con `renderSingleBlock`, la misma ruta del `BlockDisplay`,
+  de ahí que el tinte de la grama, la forma de una cama o una losa media salgan solos sin escribir
+  modelo ninguno. Por defecto imita hormigón rosa.
+  - `shift + clic derecho` con la mano vacía abre `menu/HomeMimicMenu` + `client/HomeMimicScreen`:
+    rejilla de 9×5 con buscador, paginación con la rueda o las flechas del pie, y tooltip con el ítem
+    real de cada bloque. La lista es **todos los bloques con ítem ordenados por id de registro** — se
+    ordena a propósito para que la copia de cliente y la de servidor coincidan en los índices, que es
+    lo único que viaja (`clickMenuButton`).
+  - Registro en `registry/ModBlockEntities` (el primer BlockEntity del mod), `ModMenuTypes.HOME_MIMIC`
+    y sus dos líneas en `GachaWaifusMod`; el selector lleva 11 claves nuevas en `en_us` y `es_es`, y la
+    página 12 de la Guía cuenta el selector (receta recortada a una línea para no pasar de 14).
+- **Los maridos se pueden quedar fuera del gacha (`gacha/GachaConfig`)** — sección `husbands` en la
+  config COMMON, con `exclude_from_gacha = false` (apagada: por defecto salen todos, como hasta
+  ahora) y una lista `ids` editable en el propio toml. Con la opción encendida quedan fuera de
+  **toda** la ruleta: destacada del día, 4★, consuelo del 50/50 y tirada doble; el filtro vive en
+  `WaifuRoster.inGacha()` y lo consultan `featured()`, `featuredStandard()`, `next()`,
+  `randomUnowned()`, `randomStandardUnowned()` y `GachaService.hasTargets()`/`poolSize()`. No
+  desaparecen del mod: token, Cápsula, glosario, spawn salvaje y `byId()` siguen igual — se apaga la
+  ruleta, no el personaje. La lista por defecto son los 12 que el mod construye con modelo ancho sin
+  pieza (Anton, Banyue, Ben Bigger, Billy Kid, Harumasa, Hugo Vlad, Lighter, Manato, Pan Yinhu,
+  Pyrois, Seth Lowell y Von Lycaon); se puede añadir o quitar cualquiera sin tocar código. Los
+  mensajes de «colección completa» avisan de que hay maridos excluidos cuando la opción está puesta.
+- **Lang** — 16 claves nuevas del panel (`gachawaifus.mode_screen.*` y `gachawaifus.mode.*` con su
+  descripción), 5 del bloque de hogar y las dos de la baliza reescritas, en `en_us` y `es_es`. Las
+  páginas 11 y 12 de la guía se reescriben para contar el panel y la separación bloque/baliza, y la 1
+  apunta al recetario.
+- **Burnice: máquina de estados de acción** — la reescritura que traía el port de Fabric 6.2.0, salvo
+  el retoque de las animaciones de caminar (en 6.6.0 ya es el paso de vanilla y no se toca).
+  - `entity/BurniceWhiteEntity` estrena `ACTION` sincronizada (0 quieta, 1 lanzallamas, 2 salto,
+    3 lluvia, 4 recuperación, 5 tajo) en lugar de los cinco `triggerableAnim`: el clip sale del
+    estado, así que no hay dos fuentes de verdad peleándose.
+  - El **golpe normal ya no hace daño al instante**: apunta el objetivo y lo golpea 4 ticks después,
+    cuando la animación llega al fotograma del impacto (`applyNormalStrike`), con comprobación de
+    rango y de línea de visión.
+  - **Recuperación de 8 ticks** plantada tras el especial, la ultimate y el tajo, con su propio clip.
+  - **Run/walk con histéresis** (entra en `run` a 0,2 y no vuelve a `walk` hasta 0,16), conservando
+    `WaifuGeoWalk::cadence` como velocidad de reproducción.
+  - **Reset total al sentarse o morir** y al cargar el chunk: limpia `ACTION`, gravedad, invulnerabilidad
+    y pendientes. Se suma al arreglo de `invulnerableTicks` que ya había. El flag
+    `BurniceAerialAbility` se guarda en NBT y se limpia al leer, así que recargar a media ultimate ya
+    no la deja flotando e intocable.
+  - `entity/client/BurniceWhiteModel`: la **cabeza y el torso giran hacia el objetivo** (±35°, 0,7 y
+    0,15), desactivado si está sentada, muerta o ejecutando una habilidad.
+  - `burnice_white.animation.json`: solo se añaden los clips **`run`** (0,6 s en loop) y **`recovery`**
+    (0,4 s). Los otros cinco clips quedan intactos para no deshacer el caminar de 6.6.0 ni duplicar
+    el giro de cabeza.
+- **Build verificado**: `./gradlew build` → `BUILD SUCCESSFUL` —
+  `build/libs/gachawaifus-6.6.0.jar` (15.262.813 B, 728 entradas — el peso son los retratos). Sin
+  desplegar el jar y sin commitear.
+
+---
+
 ## [6.5.0] — 2026-10-28
 
 ### 🩶 Roxy, Rina y Qingyi pasan a GeckoLib (modelos del humano)

@@ -1,22 +1,42 @@
 package com.gachawaifus.client;
 
+import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.menu.GuideMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.item.crafting.CraftingRecipe;
+import net.minecraft.world.item.crafting.Ingredient;
+import net.minecraft.world.item.crafting.RecipeHolder;
+import net.minecraft.world.item.crafting.RecipeType;
+import net.minecraft.world.item.crafting.ShapedRecipe;
+import org.jetbrains.annotations.Nullable;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * La cara de la Guía del Invocador: un manual de páginas navegables dibujado a mano.
  *
  * <p>Igual que {@link GachaBannerScreen}, todo se pinta con rectángulos y texto: el mod no tiene
- * {@code textures/gui/} y así la pantalla no se rompe si falta un PNG. El contenido es estático
- * (vive en {@link #PAGES}), por eso el menú no sincroniza nada: la página que se lee es local y el
- * {@link GuideMenu} solo existe para poder abrir la pantalla desde el servidor.
+ * {@code textures/gui/} y así la pantalla no se rompe si falta un PNG. El texto de las páginas es
+ * estático (vive en {@link #PAGES}), por eso el menú no sincroniza nada: la página que se lee es
+ * local y el {@link GuideMenu} solo existe para poder abrir la pantalla desde el servidor.
+ *
+ * <p>Las dos últimas páginas no son texto: son las <b>rejillas de crafteo</b>, leídas del
+ * {@code RecipeManager} del mundo en el momento de dibujar. Por eso muestran la receta que de verdad
+ * lleva el pack instalado (incluido un resource pack que la cambie) en vez de una descripción escrita
+ * a mano que se quedaría vieja.
  *
  * <p>Cada línea empieza con un {@code §} que elige su color desde {@link #PALETTE}: no son los
  * colores de chat literales, sino su versión subida de brillo, porque en el panel oscuro el verde o
@@ -46,6 +66,28 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
     private static final int BTN_W = 56;
     private static final int BTN_H = 14;
     private static final int CLOSE_X = W - 18;
+
+    /* ── Páginas de crafteo ────────────────────────────────────────────────────────────────── */
+
+    /** Páginas de crafteo: las últimas dos de {@link #PAGES}, una rejilla por cada cuatro recetas. */
+    private static final int CRAFT_PAGES = 2;
+
+    /** Cuatro por página: dos filas de dos celdas es lo que cabe entre el título y el pie. */
+    private static final int CRAFTS_PER_PAGE = 4;
+
+    /** Qué se dibuja y en qué orden. Un id sin receta en el mundo simplemente no aparece. */
+    private static final String[] CRAFT_ITEMS = {
+            "pink_ball", "blue_ball", "gacha_terminal", "waifu_capsule",
+            "waifu_beacon", "waifu_home_block", "waifu_guide",
+    };
+
+    private static final int SLOT = 18;
+    private static final int GRID = SLOT * 3;
+    private static final int CELL_X = 138;
+    private static final int CELL_Y = 68;
+
+    /** Donde empieza la primera celda: justo debajo de la única línea de título de la página. */
+    private static final int CRAFT_Y0 = TEXT_Y + LINE_H + 4;
 
     /* ── Paleta del panel ────────────────────────────────────────────────────────────────── */
     private static final int PANEL_TOP = 0xFF1A1424;
@@ -80,7 +122,14 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
     /** Página que se muestra entre aperturas de la misma sesión: se recuerda al cerrar el libro. */
     private static int rememberedPage;
 
+    /** Receta con su resultado ya resuelto: se busca una sola vez por apertura de la guía. */
+    private record Craft(ShapedRecipe recipe, ItemStack result) {
+    }
+
     private int page;
+
+    @Nullable
+    private List<Craft> craftCache;
 
     public GuideScreen(GuideMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, Component.translatable("gachawaifus.guide.title"));
@@ -148,7 +197,107 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
             drawMarkedLine(graphics, left + TEXT_X, y, lines[i]);
             y += LINE_H;
         }
+        if (this.page >= PAGES.length - CRAFT_PAGES) {
+            drawCrafts(graphics, left, top, this.page - (PAGES.length - CRAFT_PAGES));
+        }
         graphics.disableScissor();
+    }
+
+    /* ══ Rejillas de crafteo ═════════════════════════════════════════════════════════════════ */
+
+    private void drawCrafts(GuiGraphics graphics, int left, int top, int craftPage) {
+        List<Craft> crafts = crafts();
+        for (int i = 0; i < CRAFTS_PER_PAGE; i++) {
+            int index = craftPage * CRAFTS_PER_PAGE + i;
+            if (index >= crafts.size()) {
+                return;
+            }
+            drawCraft(graphics, crafts.get(index),
+                    left + TEXT_X + (i % 2) * CELL_X,
+                    top + CRAFT_Y0 + (i / 2) * CELL_Y);
+        }
+    }
+
+    /** Una receta: nombre arriba, rejilla de 3x3 centrada con lo que lleva y el resultado a la derecha. */
+    private void drawCraft(GuiGraphics graphics, Craft craft, int x, int y) {
+        ShapedRecipe recipe = craft.recipe();
+        int width = recipe.getWidth();
+        int height = recipe.getHeight();
+        String name = this.font.plainSubstrByWidth(plain(craft.result().getHoverName().getString()), CELL_X - 16);
+        graphics.drawString(this.font, name, x, y, PALETTE[13], false);
+
+        int areaY = y + 11;
+        int gridX = x + (GRID - width * SLOT) / 2;
+        int gridY = areaY + (GRID - height * SLOT) / 2;
+        List<Ingredient> ingredients = recipe.getIngredients();
+        for (int row = 0; row < height; row++) {
+            for (int col = 0; col < width; col++) {
+                int slotX = gridX + col * SLOT;
+                int slotY = gridY + row * SLOT;
+                drawSlot(graphics, slotX, slotY);
+                ItemStack icon = iconOf(ingredients.get(row * width + col));
+                if (!icon.isEmpty()) {
+                    graphics.renderItem(icon, slotX + 1, slotY + 1);
+                    graphics.renderItemDecorations(this.font, icon, slotX + 1, slotY + 1);
+                }
+            }
+        }
+
+        int centerY = areaY + GRID / 2;
+        drawMarkedLine(graphics, x + GRID + 2, centerY - 5, "§f→");
+        int resultX = x + GRID + 15;
+        drawSlot(graphics, resultX, centerY - 9);
+        graphics.renderItem(craft.result(), resultX + 1, centerY - 8);
+        graphics.renderItemDecorations(this.font, craft.result(), resultX + 1, centerY - 8);
+    }
+
+    /** El hueco vacío de la rejilla: marco y fondo, como los slots de la mesa de crafteo. */
+    private void drawSlot(GuiGraphics graphics, int x, int y) {
+        graphics.fill(x, y, x + SLOT, y + SLOT, 0xFF171226);
+        frame(graphics, x, y, SLOT, SLOT, 0xFF4A4066);
+    }
+
+    /** La primera variante del ingrediente: es la que enseña la guía, no un catálogo de alternativas. */
+    private static ItemStack iconOf(Ingredient ingredient) {
+        ItemStack[] stack = ingredient.getItems();
+        return stack.length == 0 ? ItemStack.EMPTY : stack[0];
+    }
+
+    /** Recetas resueltas, cacheadas: buscar en la lista del mundo cada frame sería tonto. */
+    private List<Craft> crafts() {
+        if (this.craftCache == null) {
+            this.craftCache = resolveCrafts();
+        }
+        return this.craftCache;
+    }
+
+    private List<Craft> resolveCrafts() {
+        List<Craft> found = new ArrayList<>();
+        if (this.minecraft == null || this.minecraft.level == null) {
+            return found;
+        }
+        for (String id : CRAFT_ITEMS) {
+            Item item = BuiltInRegistries.ITEM.get(ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, id));
+            if (item == Items.AIR) {
+                continue;
+            }
+            for (RecipeHolder<CraftingRecipe> holder
+                    : this.minecraft.level.getRecipeManager().getAllRecipesFor(RecipeType.CRAFTING)) {
+                if (holder.value() instanceof ShapedRecipe shaped) {
+                    ItemStack result = shaped.getResultItem(this.minecraft.level.registryAccess());
+                    if (result.is(item)) {
+                        found.add(new Craft(shaped, result));
+                        break;
+                    }
+                }
+            }
+        }
+        return found;
+    }
+
+    /** Los nombres de item no llevan §, pero el recurso de un pack ajeno sí podría. */
+    private static String plain(String text) {
+        return text.replaceAll("(?i)§.", "");
     }
 
     /** Pinta una línea respetando los § de dentro, corrida a corrida. */
@@ -291,6 +440,11 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
      * Una entrada de PAGES = una página. Cada línea empieza con § (su color) y cabe de ancho
      * en la hoja; como mucho LINES líneas, y la primera es el título. Si una página crece más
      * de LINES líneas, lo que sobra NO se pinta: hay que partir el contenido en otra página.
+     *
+     * Las últimas CRAFT_PAGES entradas llevan una sola línea (el título): debajo se dibuja la
+     * rejilla de cada receta, así que meterles texto extra solo les come el sitio de las celdas.
+     * Si sale un item nuevo que se craftee, se añade a CRAFT_ITEMS y, si desborda las cuatro
+     * por página, se añade su página aquí.
      * ═════════════════════════════════════════════════════════════════════════════════════ */
 
     private static final String[][] PAGES = {
@@ -305,10 +459,10 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
                     "§f",
                     "§dHay §f62 §dwaifus invocables en el roster.",
                     "§eEMPIEZA AQUÍ",
-                    "§f· §a/inicio §f— reclama tu waifu de regalo (pág. 2).",
-                    "§f· §a/guia §f— reabre este manual al cerrarlo.",
-                    "§f· La rueda, las flechas o un clic en la hoja",
-                    "§f  pasan de página."
+                    "§f· §a/inicio §f— tu waifu de regalo (pág. 2).",
+                    "§f· §a/guia §f— reabre este manual.",
+                    "§f· La rueda o un clic en la hoja pasan de página.",
+                    "§f· El crafteo dibujado: páginas §f17 §fy §f18§f."
             },
             { // 2
                     "§dLAS TRES FORMAS DE CONSEGUIRLA",
@@ -457,34 +611,34 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
             { // 11
                     "§eMODOS DE COMBATE",
                     "§f",
-                    "§fSe cambia con §fShift + clic con la MANO VACÍA",
-                    "§fsobre ella§f. El ciclo siempre va en este orden:",
+                    "§fShift + clic derecho §fcon la §fMANO VACÍA §fsobre",
+                    "§funa tuya abre el panel de modos: cinco botones,",
+                    "§fmarcado el activo y su hogar escrito al pie.",
+                    "§f",
                     "§a· PASIVO §f— no ataca a nada. Sus habilidades",
                     "§f  tampoco se disparan.",
                     "§e· NEUTRO §f— solo defiende: va a lo que le pegue",
                     "§f  a ella o a ti.",
                     "§c· AGRESIVO §f— embiste a los hostiles de cerca.",
-                    "§9· SENTADA §f— quieta donde está: no sigue, no",
-                    "§f  pasea, no se teletransporta y no ataca.",
-                    "§2· EN CASA §f— custodia su hogar (página 12).",
-                    "§f· El modo se guarda en la entidad: sobrevive al",
-                    "§f  recargar el mundo."
+                    "§9· SENTADA §f— quieta: no te sigue, no pasea, no",
+                    "§f  cruza dimensiones y no ataca.",
+                    "§2· EN CASA §f— custodia su hogar (página 12)."
             },
             { // 12
-                    "§2HOGAR Y BALIZA",
-                    "§2BALIZA DE HOGAR §f— crafteo en columna: placa",
-                    "§f  de peso de oro ligera, §fperla de ender §fy §fcobre§f.",
-                    "§f· §fClic §f— trae a §ftodas §ftus waifus invocadas a",
-                    "§f  tu lado, aunque estén en §fotra dimensión§f.",
-                    "§f· §fClic sobre una tuya §f— solo ella viene.",
-                    "§f· §fShift + clic sobre tu waifu §f— le fija el",
-                    "§f  §fhogar §fen el bloque que miras.",
-                    "§f· §fShift + clic en un bloque §f— hogar de todas",
-                    "§f  las tuyas en ese bloque.",
-                    "§f· §fShift + clic al aire §f— hogar a tus pies.",
-                    "§2MODO EN CASA §f— con hogar asignado se queda de",
-                    "§f  guardia ahí en vez de seguirte, y ataca a lo",
-                    "§f  que se le acerque dentro de su radio."
+                    "§2HOGAR Y CITA",
+                    "§f",
+                    "§2BLOQUE DE HOGAR §7— receta en la pág. 17.",
+                    "§f· §fColocarlo §fo §fclic derecho §fencima fija el",
+                    "§f  hogar de tus waifus invocadas.",
+                    "§f· Con un §fbloque en la mano§f, el clic lo",
+                    "§f  §fcamufla §f(y no lo coloca). §fShift + clic",
+                    "§f  §fvacío §fabre una rejilla de bloques.",
+                    "§f· Es el punto del §2modo En casa§f: ahí custodia",
+                    "§f  y muerde a lo que se le acerque.",
+                    "§f· §fRomperlo §fles quita el hogar y te avisa.",
+                    "§2BALIZA DE LLAMADO §7— solo teletransporte:",
+                    "§f· §fClic §f— trae a §ftodas §fa tu lado, aunque estén",
+                    "§f  en otra dimensión. §fClic sobre una §f— solo ella."
             },
             { // 13
                     "§6SE PERDIÓ: AUTO-RECUERDO",
@@ -549,6 +703,12 @@ public class GuideScreen extends AbstractContainerScreen<GuideMenu> {
                     "§a/gwcolor §f— colores de la colección.",
                     "§8Fan content sin ánimo de lucro: los modelos y",
                     "§8las texturas son recreaciones propias del mod."
+            },
+            { // 17 — rejilla de crafteo (1/2): lo que se pinta debajo es la receta del mundo
+                    "§6CRAFTEOS §7· así se fabrica (1 de 2)"
+            },
+            { // 18 — rejilla de crafteo (2/2)
+                    "§6CRAFTEOS §7· así se fabrica (2 de 2)"
             },
     };
 }

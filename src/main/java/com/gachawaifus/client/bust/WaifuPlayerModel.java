@@ -3,7 +3,6 @@ package com.gachawaifus.client.bust;
 import com.gachawaifus.entity.AbstractWaifuEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
-import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -20,6 +19,17 @@ import net.minecraft.world.entity.LivingEntity;
  * {@code WaifuSittingPose}, porque un {@code PlayerModel} no tiene un hueso raíz que desplazar.
  */
 public class WaifuPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
+
+    /**
+     * Pivote de la cadera en el modelo de vanilla: las piernas están a x = ±1,9 y miden 4 de ancho,
+     * así que sus caras internas se solapan 0,1 unidad. Sentadas, con el muslo horizontal, ese
+     * solape es la costura que se ve mal.
+     */
+    private static final float HIP_PIVOT_X = 1.9F;
+    private static final float HIP_PIVOT_Y = 12.0F;
+
+    /** Cuánto se separan las caderas al sentarse, en unidades de modelo (1/16 de bloque cada pierna). */
+    private static final float LEGS_APART_X = 1.0F;
 
     /** Piernas estiradas hacia delante: -85°, casi horizontales sobre el suelo. */
     private static final float LEGS_FORWARD = -1.48F;
@@ -43,7 +53,16 @@ public class WaifuPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
     public void setupAnim(T entity, float limbSwing, float limbSwingAmount, float ageInTicks,
                           float netHeadYaw, float headPitch) {
         super.setupAnim(entity, limbSwing, limbSwingAmount, ageInTicks, netHeadYaw, headPitch);
-        if (!(entity instanceof AbstractWaifuEntity waifu) || !waifu.isInSittingPose()) {
+        if (!(entity instanceof AbstractWaifuEntity waifu)) {
+            return;
+        }
+        boolean sitting = waifu.isInSittingPose();
+        // Las caderas se abren solo al sentarse; se re-escriben cada frame porque el pivot es
+        // memoria persistente del ModelPart y hay que devolverlo a su sitio al levantarse.
+        float hip = HIP_PIVOT_X + (sitting ? LEGS_APART_X : 0.0F);
+        this.leftLeg.setPos(hip, HIP_PIVOT_Y, 0.0F);
+        this.rightLeg.setPos(-hip, HIP_PIVOT_Y, 0.0F);
+        if (!sitting) {
             return;
         }
         waifu.markModelSitPose();
@@ -52,6 +71,13 @@ public class WaifuPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
         this.body.xRot = 0.0F;
         this.body.yRot = 0.0F;
         this.body.zRot = 0.0F;
+
+        // Cabeza quieta y nivelada: los JSON de las GeckoLib no animan "head", así que las
+        // migradas no cabecean ni miran hacia los lados al sentarse. Aquí vanilla sí deja
+        // netHeadYaw/headPitch en el modelo, y ese meneo era la diferencia que se notaba.
+        this.head.xRot = 0.0F;
+        this.head.yRot = 0.0F;
+        this.head.zRot = 0.0F;
 
         // Piernas estiradas hacia adelante sobre el suelo
         this.leftLeg.xRot = LEGS_FORWARD;
