@@ -272,6 +272,12 @@ public class ModItems {
             ITEMS.register("megumin_token", () -> new com.gachawaifus.item.MeguminTokenItem(new Item.Properties().stacksTo(1)));
     public static final DeferredHolder<Item, Item> DARKNESS_TOKEN =
             ITEMS.register("darkness_token", () -> new com.gachawaifus.item.DarknessTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> YATOGAMI_TOHKA_TOKEN =
+            ITEMS.register("yatogami_tohka_token", () -> new com.gachawaifus.item.YatogamiTohkaTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> PHOENIX_TOKEN =
+            ITEMS.register("phoenix_token", () -> new com.gachawaifus.item.PhoenixTokenItem(new Item.Properties().stacksTo(1)));
+    public static final DeferredHolder<Item, Item> HATSUNE_MIKU_TOKEN =
+            ITEMS.register("hatsune_miku_token", () -> new com.gachawaifus.item.HatsuneMikuTokenItem(new Item.Properties().stacksTo(1)));
 
     /** Baliza de Hogar: mando de recall y asignación de hogar de las waifus. */
     public static final DeferredHolder<Item, WaifuBeaconItem> WAIFU_BEACON =

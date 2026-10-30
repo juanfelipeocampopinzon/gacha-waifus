@@ -532,4 +532,26 @@ public class ModEntities {
                     EntityType.Builder.of(com.gachawaifus.entity.DarknessEntity::new, MobCategory.CREATURE)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
-                            .build("darkness"));}
+                            .build("darkness"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.YatogamiTohkaEntity>> YATOGAMI_TOHKA =
+            ENTITY_TYPES.register("yatogami_tohka", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.YatogamiTohkaEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("yatogami_tohka"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.PhoenixEntity>> PHOENIX =
+            ENTITY_TYPES.register("phoenix", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.PhoenixEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("phoenix"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.HatsuneMikuEntity>> HATSUNE_MIKU =
+            ENTITY_TYPES.register("hatsune_miku", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.HatsuneMikuEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("hatsune_miku"));
+}

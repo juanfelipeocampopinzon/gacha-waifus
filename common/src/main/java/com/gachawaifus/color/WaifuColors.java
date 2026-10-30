@@ -82,6 +82,9 @@ public final class WaifuColors {
         put("aqua", WaifuColor.AZUL);            // pelo y agua de la diosa
         put("megumin", WaifuColor.MORADO);       // toga y magia púrpura
         put("darkness", WaifuColor.MARRON);      // melena cobriza de la cruzada
+        put("yatogami_tohka", WaifuColor.MORADO); // vestido astral púrpura
+        put("phoenix", WaifuColor.ROJO);         // llamas eternas y plumaje bermellón
+        put("hatsune_miku", WaifuColor.VERDE);   // cabello turquesa / verde azulado
     }
 
     private WaifuColors() {

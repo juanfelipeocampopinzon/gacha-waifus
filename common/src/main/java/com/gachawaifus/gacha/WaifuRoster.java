@@ -109,8 +109,18 @@ public final class WaifuRoster {
 
     /** Darkness (KonoSuba) — Defense (Cruzada) */
     public static final Entry DARKNESS = new Entry("darkness", () -> ModEntities.DARKNESS.get(), () -> ModItems.DARKNESS_TOKEN.get(), "Darkness");
+
+    /** Yatogami Tohka (Date A Live) — Attack (Sandalphon / Espada espiritual) */
+    public static final Entry YATOGAMI_TOHKA = new Entry("yatogami_tohka", () -> ModEntities.YATOGAMI_TOHKA.get(), () -> ModItems.YATOGAMI_TOHKA_TOKEN.get(), "Yatogami Tohka");
+
+    /** Phoenix (ZZZ) — Anomaly (Fuego eterno) */
+    public static final Entry PHOENIX = new Entry("phoenix", () -> ModEntities.PHOENIX.get(), () -> ModItems.PHOENIX_TOKEN.get(), "Phoenix");
+
+    /** Hatsune Miku (Vocaloid) — Support (Diva virtual / Melodía sónica) */
+    public static final Entry HATSUNE_MIKU = new Entry("hatsune_miku", () -> ModEntities.HATSUNE_MIKU.get(), () -> ModItems.HATSUNE_MIKU_TOKEN.get(), "Hatsune Miku");
+
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, PYROIS, NORMA, VELINA, SIGRID, CLARET, ROXY, AQUA, MEGUMIN, DARKNESS);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, PYROIS, NORMA, VELINA, SIGRID, CLARET, ROXY, AQUA, MEGUMIN, DARKNESS, YATOGAMI_TOHKA, PHOENIX, HATSUNE_MIKU);
 
     /**
      * Pool fijo del 50/50 perdido (el "banner permanente" de ZZZ): el consuelo solo cae de

@@ -256,6 +256,9 @@ public class GachaWaifusMod {
         event.put(ModEntities.AQUA.get(), com.gachawaifus.entity.AquaEntity.createAttributes().build());
         event.put(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.MeguminEntity.createAttributes().build());
         event.put(ModEntities.DARKNESS.get(), com.gachawaifus.entity.DarknessEntity.createAttributes().build());
+        event.put(ModEntities.YATOGAMI_TOHKA.get(), com.gachawaifus.entity.YatogamiTohkaEntity.createAttributes().build());
+        event.put(ModEntities.PHOENIX.get(), com.gachawaifus.entity.PhoenixEntity.createAttributes().build());
+        event.put(ModEntities.HATSUNE_MIKU.get(), com.gachawaifus.entity.HatsuneMikuEntity.createAttributes().build());
     }
 
     private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
@@ -370,5 +373,8 @@ public class GachaWaifusMod {
         event.registerEntityRenderer(ModEntities.AQUA.get(), com.gachawaifus.entity.client.AquaRenderer::new);
         event.registerEntityRenderer(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.client.MeguminRenderer::new);
         event.registerEntityRenderer(ModEntities.DARKNESS.get(), com.gachawaifus.entity.client.DarknessRenderer::new);
+        event.registerEntityRenderer(ModEntities.YATOGAMI_TOHKA.get(), com.gachawaifus.entity.client.YatogamiTohkaRenderer::new);
+        event.registerEntityRenderer(ModEntities.PHOENIX.get(), com.gachawaifus.entity.client.PhoenixRenderer::new);
+        event.registerEntityRenderer(ModEntities.HATSUNE_MIKU.get(), com.gachawaifus.entity.client.HatsuneMikuRenderer::new);
     }
 }
