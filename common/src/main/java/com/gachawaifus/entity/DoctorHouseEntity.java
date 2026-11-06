@@ -41,10 +41,11 @@ import java.util.UUID;
  * por pelea (para que no sea una granja de XP infinita). Cuando House muere, sus Wilson se van
  * con él.
  */
-public class DoctorHouseEntity extends Monster {
+public class DoctorHouseEntity extends Monster implements BossEntity {
 
-    /** El daño del jugador se multiplica por esto (un 20 %): la pelea es de las waifus. */
-    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.2F;
+    /** El daño del jugador se multiplica por esto (un 50 %): las waifus siguen siendo mejores,
+     *  pero el jugador ya puede hacerle daño real sin waifu. */
+    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.5F;
     /** Bolitas Azules (tiradas del banner permanente) que suelta al morir. */
     public static final int BALL_REWARD = 5;
 

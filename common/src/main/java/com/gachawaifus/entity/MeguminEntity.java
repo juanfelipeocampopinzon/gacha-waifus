@@ -87,6 +87,7 @@ public class MeguminEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 30;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -96,6 +97,7 @@ public class MeguminEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 300;
         target.hurt(this.damageSources().mobAttack(this), 22.0F);
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 0));
@@ -107,11 +109,12 @@ public class MeguminEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         // Un solo disparo al día de verdad: tras la Explosión queda agotada y no puede moverse.
         this.ultimateCooldown = 1800;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§5Megumin §o\"¡EXPLOSIÓÓÓÓÓN! Grandeza de la raza demoníaca, disfruta.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.megumin.1"));
         }
         AABB area = this.getBoundingBox().inflate(9.0D);
         List<LivingEntity> enemies = this.level().getEntitiesOfClass(LivingEntity.class, area,

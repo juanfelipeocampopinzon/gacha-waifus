@@ -116,6 +116,7 @@ public class QingyiEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 22;
         this.doHurtTarget(target);
@@ -126,6 +127,7 @@ public class QingyiEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 260;
         target.hurt(this.damageSources().mobAttack(this), 15.0F);
@@ -137,11 +139,12 @@ public class QingyiEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§1Qingyi §o\"El té se sirve solo una vez, ¡que no se enfríe!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.qingyi.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

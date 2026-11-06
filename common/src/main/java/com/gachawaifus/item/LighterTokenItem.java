@@ -35,8 +35,7 @@ public class LighterTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Lighter invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.lighter_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class LighterTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);
-        tooltipComponents.add(Component.literal("§7Invoca a §6Lighter§7 (Naranja / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.lighter_token.2"));
         tooltipComponents.add(Component.literal("§8L-Form Thundering Fist · V-Form Sunrise Uppercut · W-Form Crowned Inferno"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -118,6 +118,7 @@ public class TokisakiKurumiEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         // Dentro de 3 bloques usa la culata; desde mas lejos dispara el mosquete
         if (this.distanceToSqr(target) > 9.0D) {
             performMusketShot(target);
@@ -133,6 +134,7 @@ public class TokisakiKurumiEntity extends AbstractWaifuEntity {
 
     // La pepita del mosquete: sale de la boca del cañon, a 0.9 de bloque por delante de la cara
     private void performMusketShot(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 30;
         this.swing(InteractionHand.MAIN_HAND);
 
@@ -171,6 +173,7 @@ public class TokisakiKurumiEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 250;
         target.hurt(this.damageSources().mobAttack(this), 10.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 4));
@@ -181,6 +184,7 @@ public class TokisakiKurumiEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 800;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {

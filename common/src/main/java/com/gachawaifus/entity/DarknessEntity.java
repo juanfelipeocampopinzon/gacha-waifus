@@ -117,6 +117,7 @@ public class DarknessEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.triggerAnim("attack_controller", "attack");
         this.normalAttackCooldown = 26;
         this.doHurtTarget(target);
@@ -127,6 +128,7 @@ public class DarknessEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.triggerAnim("attack_controller", "special");
         this.specialSkillCooldown = 260;
         target.hurt(this.damageSources().mobAttack(this), 13.0F);
@@ -139,11 +141,12 @@ public class DarknessEntity extends AbstractWaifuEntity implements GeoEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.triggerAnim("attack_controller", "ultimate");
         this.ultimateCooldown = 800;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§4Darkness §o\"¡Protección! Los golpes me los llevo yo, no tú.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.darkness.1"));
             p.addEffect(new MobEffectInstance(MobEffects.ABSORPTION, 600, 2));
             p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 400, 1));
         }

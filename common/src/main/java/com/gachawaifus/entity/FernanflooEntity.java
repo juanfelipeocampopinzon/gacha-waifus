@@ -42,10 +42,11 @@ import java.util.UUID;
  * apenas le hace daño, y la recompensa va al dueño de la waifu que peleó (o al jugador que más
  * cerca esté). Los Curly se van con él cuando muere, igual que los Wilson de House.
  */
-public class FernanflooEntity extends Monster {
+public class FernanflooEntity extends Monster implements BossEntity {
 
-    /** El daño del jugador se multiplica por esto (un 20 %): la pelea es de las waifus. */
-    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.2F;
+    /** El daño del jugador se multiplica por esto (un 50 %): las waifus siguen siendo mejores,
+     *  pero el jugador ya puede hacerle daño real sin waifu. */
+    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.5F;
     /** Bolitas Rosas (tiradas del banner de eventos) que suelta al morir. */
     public static final int BALL_REWARD = 3;
 

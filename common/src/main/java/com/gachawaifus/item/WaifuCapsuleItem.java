@@ -39,7 +39,7 @@ public class WaifuCapsuleItem extends Item {
             return InteractionResult.PASS;
         }
         if (!player.isShiftKeyDown()) {
-            player.displayClientMessage(Component.literal("§7[GachaWaifus] Agáchate (Shift) + clic para guardar a tu waifu. Clic derecho en el aire para ver tu colección y revivir a las caídas."), true);
+            player.displayClientMessage(Component.translatable("item.gachawaifus.waifu_capsule_item.1"), true);
             return InteractionResult.PASS;
         }
 
@@ -48,23 +48,24 @@ public class WaifuCapsuleItem extends Item {
             return InteractionResult.PASS;
         }
         if (waifu.getOwnerUUID() == null || !waifu.getOwnerUUID().equals(player.getUUID())) {
-            player.displayClientMessage(Component.literal("§c[GachaWaifus] Esta waifu no es tuya."), true);
+            player.displayClientMessage(Component.translatable("item.gachawaifus.waifu_capsule_item.2"), true);
             return InteractionResult.FAIL;
         }
 
         WaifuStorageSavedData storage = WaifuStorageSavedData.get(player.level());
         if (storage.contains(player.getUUID(), entry.id())) {
-            player.displayClientMessage(Component.literal("§c[GachaWaifus] Ya tienes a " + entry.name() + " guardada."), true);
+            player.displayClientMessage(Component.translatable("gachawaifus.capsule.already_have", entry.name()), true);
             return InteractionResult.FAIL;
         }
 
         storage.add(player.getUUID(), entry.id());
+        storage.setAffinity(player.getUUID(), entry.id(), waifu.affinity());
         ServerLevel serverLevel = (ServerLevel) player.level();
         serverLevel.sendParticles(ParticleTypes.FLASH, waifu.getX(), waifu.getY() + 1.0, waifu.getZ(), 2, 0.2, 0.4, 0.2, 0.0);
         serverLevel.sendParticles(ParticleTypes.HEART, waifu.getX(), waifu.getY() + 1.2, waifu.getZ(), 8, 0.4, 0.5, 0.4, 0.2);
         serverLevel.playSound(null, waifu.blockPosition(), SoundEvents.END_PORTAL_FRAME_FILL, SoundSource.PLAYERS, 1.0F, 1.4F);
         waifu.discard();
-        player.displayClientMessage(Component.literal("§a[GachaWaifus] §f" + entry.name() + "§a guardada en la cápsula. Clic derecho en el aire para ver tu colección."), true);
+        player.displayClientMessage(Component.translatable("gachawaifus.capsule.stored", entry.name()), true);
         return InteractionResult.CONSUME;
     }
 
@@ -76,13 +77,13 @@ public class WaifuCapsuleItem extends Item {
             return InteractionResultHolder.success(stack);
         }
         if (player.isShiftKeyDown()) {
-            player.displayClientMessage(Component.literal("§7[GachaWaifus] Shift + clic en tu waifu para guardarla; clic normal para abrir la cápsula."), true);
+            player.displayClientMessage(Component.translatable("item.gachawaifus.waifu_capsule_item.3"), true);
             return InteractionResultHolder.pass(stack);
         }
 
         MenuProvider provider = new SimpleMenuProvider(
                 (containerId, playerInventory, p) -> new WaifuStorageMenu(containerId, playerInventory),
-                Component.literal("§dCápsula Waifu"));
+                Component.translatable("item.gachawaifus.waifu_capsule_item.4"));
         player.openMenu(provider);
         return InteractionResultHolder.consume(stack);
     }

@@ -35,8 +35,7 @@ public class AntonTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Anton Ivanov invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.anton_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class AntonTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
-        tooltipComponents.add(Component.literal("§7Invoca a §2Anton Ivanov§7 (Gris / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.anton_token.2"));
         tooltipComponents.add(Component.literal("§8Enthusiastic Drills · Smash the Horizon, Bro! · Go Go Go Go Go!"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -48,6 +48,12 @@ public final class GuideGiver {
                     GuideMenu.open((ServerPlayer) player);
                     return 1;
                 }));
+        event.getDispatcher().register(Commands.literal("guide")
+                .executes(context -> {
+                    Player player = context.getSource().getPlayerOrException();
+                    GuideMenu.open((ServerPlayer) player);
+                    return 1;
+                }));
     }
 
     /** Mete la guía en la mano del jugador recién llegado, una sola vez por mundo. */
@@ -64,11 +70,8 @@ public final class GuideGiver {
             player.drop(guide, false);
         }
 
-        player.sendSystemMessage(Component.literal(
-                "§d[GachaWaifus] §fTienes una §dGuía del Invocador §fen la mano: clic derecho para"
-                        + " abrirla. §7Explica las bolitas, las tiradas, los modos y el hogar."));
-        player.sendSystemMessage(Component.literal(
-                "§7Después se craftea y §f/guia §fla abre sin llevarla encima."));
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.guide_giver.1"));
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.guide_giver.2"));
     }
 
     private static boolean given(ServerPlayer player) {

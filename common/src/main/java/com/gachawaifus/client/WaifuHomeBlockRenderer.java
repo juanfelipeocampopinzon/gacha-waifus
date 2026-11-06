@@ -13,8 +13,10 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
  *
  * <p>El bloque en sí tiene {@code RenderShape.INVISIBLE} (se lo da {@code BaseEntityBlock}), así que
  * el cubo lo dibuja exclusivamente esta clase con {@code renderSingleBlock}: la misma ruta que usan
- * el {@code BlockDisplay} o las flores del gólem, y por tanto el tinte de la grama, el modelo
- * conexo de una cama o la losa media funcionan sin escribir ningún renderer propio.
+ * el {@code BlockDisplay} o las flores del gólem, y por tanto el tinte de la grama, la forma de una
+ * escalera o la losa media funcionan sin escribir ningún renderer propio. Solo se guardan bloques
+ * con modelo estático (ver {@link WaifuHomeBlockEntity#isMimicable}), así que nunca llega aquí una
+ * cama o un cofre que necesitaría su BlockEntityRenderer.
  *
  * <p>El {@code PoseStack} que llega a un renderer de bloque ya viene desplazado a la esquinita del
  * bloque (menos la cámara), así que no hay que traducir nada: el cubo cae exactamente encima del

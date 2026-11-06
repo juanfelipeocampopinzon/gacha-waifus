@@ -140,7 +140,7 @@ public class CorinWickesEntity extends AbstractWaifuEntity implements GeoEntity 
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§8Corin §o\"¡P-perdón por el desastre!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.corin_wickes.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

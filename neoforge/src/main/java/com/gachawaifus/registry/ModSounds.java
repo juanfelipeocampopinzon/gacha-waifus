@@ -1,6 +1,7 @@
 package com.gachawaifus.registry;
 
 import com.gachawaifus.GachaWaifusMod;
+import com.gachawaifus.entity.WaifuVoices;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvent;
@@ -55,6 +56,22 @@ public class ModSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> MUSKET_SHOT =
             SOUND_EVENTS.register("entity/tokisaki_kurumi/musket_shot",
                     () -> SoundEvent.createVariableRangeEvent(MUSKET_SHOT_ID));
+
+    static {
+        // Voces de las 13 waifus con audio confirmado: se registran desde la lista común, siempre
+        // con el mismo id que declare {@code sounds.json} (si no coinciden, el juego no encuentra
+        // el archivo y no suena nada).
+        for (String id : WaifuVoices.VOICED) {
+            for (String action : WaifuVoices.ACTIONS) {
+                if (!WaifuVoices.has(id, action)) {
+                    continue;
+                }
+                ResourceLocation voiceId = WaifuVoices.soundId(id, action);
+                SOUND_EVENTS.register(voiceId.getPath(),
+                        () -> SoundEvent.createVariableRangeEvent(voiceId));
+            }
+        }
+    }
 
     private ModSounds() {
     }

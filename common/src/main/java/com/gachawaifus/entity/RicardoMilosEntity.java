@@ -53,10 +53,11 @@ import java.util.UUID;
  * <p>Al morir entrega las 10 Bolitas Rosas al dueño de la waifu que le dio el golpe de gracia
  * (o al jugador que lo remató); si no hay nadie cerca, caen al suelo.
  */
-public class RicardoMilosEntity extends Monster {
+public class RicardoMilosEntity extends Monster implements BossEntity {
 
-    /** El daño del jugador se multiplica por esto (un 20 %): sin waifus el combate no avanza. */
-    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.2F;
+    /** El daño del jugador se multiplica por esto (un 50 %): las waifus siguen siendo mejores,
+     *  pero el jugador ya puede hacerle daño real sin waifu. */
+    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.5F;
     /** Tiradas (Bolitas Rosas) que suelta al morir. */
     public static final int PULL_REWARD = 10;
 

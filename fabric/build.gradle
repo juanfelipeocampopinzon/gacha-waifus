@@ -21,6 +21,9 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 loom {
     // El código se escribe en mappings de Mojang (los mismos que NeoForge) y Loom lo remapea a
     // intermediary al empaquetar. Por eso common/ compila tal cual, sin traducir nombres.
+    // Loom detecta gachawaifus.mixins.json desde el bloque "mixins" de fabric.mod.json y le
+    // inyecta el refmap automáticamente (LivingEntity#hurt necesita el parche: Fabric API no
+    // tiene evento de daño modificable).
 }
 
 repositories {

@@ -62,7 +62,9 @@ public final class ColorCommand {
                 .executes(ColorCommand::inspect)
                 .then(Commands.literal("list").executes(ColorCommand::list))
                 .then(Commands.literal("biomas").executes(ColorCommand::biomes))
-                .then(Commands.literal("aqui").executes(ColorCommand::here)));
+                .then(Commands.literal("biomes").executes(ColorCommand::biomes))
+                .then(Commands.literal("aqui").executes(ColorCommand::here))
+                .then(Commands.literal("here").executes(ColorCommand::here)));
     }
 
     private static int inspect(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -133,13 +135,14 @@ public final class ColorCommand {
                 continue;
             }
             MutableComponent line = Component.empty().append(color.styledName())
-                    .append(Component.literal(" §7(" + quienes.size() + " waifus)§7 → "));
+                    .append(Component.translatable("gachawaifus.color.biomes_count", quienes.size()));
             for (int i = 0; i < climas.size(); i++) {
                 if (i > 0) {
                     line.append(Component.literal(" §8· "));
                 }
                 WildWaifuSpawner.Climate climate = climas.get(i);
-                line.append(Component.literal("§d" + climate.label() + " §7"))
+                line.append(Component.literal("§d")).append(Component.translatable(climate.label()))
+                        .append(Component.literal(" §7"))
                         .append(biomeNames(registry, climate, BIOMES_SHOWN));
             }
             final Component out = line;
@@ -173,12 +176,12 @@ public final class ColorCommand {
         Registry<Biome> registry = level.registryAccess().registryOrThrow(Registries.BIOME);
 
         context.getSource().sendSuccess(() -> Component.empty()
-                .append(Component.literal("§d[GachaWaifus] §f" + climate.label()))
-                .append(Component.literal("§7 (" + climate.where() + ")"))
-                .append(Component.literal(" §7· bioma: ")).append(biomeName(registry, biome))
-                .append(Component.literal(" §7· colores: ")).append(WaifuColor.names(WildWaifuSpawner.faunaOf(climate))),
+                .append(Component.literal("§d[GachaWaifus] §f")).append(Component.translatable(climate.label()))
+                .append(Component.literal("§7 (")).append(Component.translatable(climate.where())).append(Component.literal(")"))
+                .append(Component.translatable("gachawaifus.color.here_biome")).append(biomeName(registry, biome))
+                .append(Component.translatable("gachawaifus.color.here_colors")).append(WaifuColor.names(WildWaifuSpawner.faunaOf(climate))),
                 false);
-        context.getSource().sendSuccess(() -> Component.literal("§7Pueden nacer aquí §f(" + pool.size() + "§7): ")
+        context.getSource().sendSuccess(() -> Component.translatable("gachawaifus.color.here_spawn", pool.size())
                 .append(CollectionCommand.names(pool)), false);
         return pool.size();
     }
@@ -200,7 +203,7 @@ public final class ColorCommand {
             out.append(biomeName(registry, todos.get(i)));
         }
         if (todos.size() > mostrados) {
-            out.append(Component.literal(" §7+" + (todos.size() - mostrados) + " más"));
+            out.append(Component.translatable("gachawaifus.color.biomes_more", todos.size() - mostrados));
         }
         return out;
     }
@@ -209,7 +212,7 @@ public final class ColorCommand {
     private static Component biomeName(Registry<Biome> registry, Holder<Biome> holder) {
         ResourceLocation key = registry.getKey(holder.value());
         if (key == null) {
-            return Component.literal("§fdesconocido");
+            return Component.translatable("gachawaifus.color.biome_unknown");
         }
         return Component.literal("§f").append(
                 Component.translatable("biome." + key.getNamespace() + "." + key.getPath()));

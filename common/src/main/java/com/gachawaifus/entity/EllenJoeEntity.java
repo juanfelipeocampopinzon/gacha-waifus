@@ -139,6 +139,7 @@ public class EllenJoeEntity extends AbstractWaifuEntity implements GeoEntity {
      * Skill 1: Normal Attack — Flash Freeze Trimming
      */
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 20; // Cooldown de 1 segundo
 
         this.triggerAnim("attack_controller", "attack");
@@ -161,6 +162,7 @@ public class EllenJoeEntity extends AbstractWaifuEntity implements GeoEntity {
      * Skill 2: Special Skill — Sharknami
      */
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 200; // Cooldown de 10 segundos
 
         this.triggerAnim("attack_controller", "special");
@@ -195,6 +197,7 @@ public class EllenJoeEntity extends AbstractWaifuEntity implements GeoEntity {
      * Skill 3: Ultimate — Endless Winter (Vórtice Helado AoE)
      */
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 700; // Cooldown de 35 segundos
 
         Level level = this.level();

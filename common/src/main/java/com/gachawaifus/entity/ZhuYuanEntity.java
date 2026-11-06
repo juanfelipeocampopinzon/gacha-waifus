@@ -92,6 +92,7 @@ public class ZhuYuanEntity extends AbstractWaifuEntity {
 
     /** "Don't Move!": tiro de pistola al objetivo. */
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 18;
         target.hurt(this.damageSources().mobAttack(this), 7.0F);
         if (this.level() instanceof ServerLevel sl) {
@@ -102,6 +103,7 @@ public class ZhuYuanEntity extends AbstractWaifuEntity {
 
     /** "Suppressive Fire": ráfaga Éter que ralentiza al objetivo. */
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 240;
         target.hurt(this.damageSources().mobAttack(this), 15.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 80, 2));
@@ -113,10 +115,11 @@ public class ZhuYuanEntity extends AbstractWaifuEntity {
 
     /** "Full Barrage": Ola de Fuego que arrasa la zona y enfurece al dueño. */
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§1Zhu Yuan §o\"¡NEPS, controlando la zona!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.zhu_yuan.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 0));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

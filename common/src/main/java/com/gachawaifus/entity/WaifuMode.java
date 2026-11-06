@@ -23,22 +23,23 @@ import net.minecraft.network.chat.Component;
  */
 public enum WaifuMode {
 
-    PASIVO("Pasivo", "§a"),
-    NEUTRO("Neutro", "§e"),
-    AGRESIVO("Agresivo", "§c"),
-    SENTADA("Sentada", "§9"),
-    EN_CASA("En casa", "§2");
+    PASIVO("gachawaifus.mode.pasivo", "§a"),
+    NEUTRO("gachawaifus.mode.neutro", "§e"),
+    AGRESIVO("gachawaifus.mode.agresivo", "§c"),
+    SENTADA("gachawaifus.mode.sentada", "§9"),
+    EN_CASA("gachawaifus.mode.en_casa", "§2");
 
-    private final String name;
+    private final String key;
     private final String color;
 
-    WaifuMode(String name, String color) {
-        this.name = name;
+    WaifuMode(String key, String color) {
+        this.key = key;
         this.color = color;
     }
 
-    public String plainName() {
-        return this.name;
+    /** Clave de idioma del nombre del modo. */
+    public String key() {
+        return this.key;
     }
 
     public String colorCode() {
@@ -47,7 +48,7 @@ public enum WaifuMode {
 
     /** Nombre coloreado, para mensajes. */
     public Component label() {
-        return Component.literal(this.color + this.name);
+        return Component.literal(this.color).append(Component.translatable(this.key));
     }
 
     /** Siguiente modo del ciclo (Pasivo → Neutro → Agresivo → Sentada → En casa → Pasivo …). */

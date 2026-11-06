@@ -1,7 +1,9 @@
 package com.gachawaifus.client;
 
+import com.gachawaifus.entity.AbstractWaifuEntity;
 import com.gachawaifus.entity.WaifuMode;
 import com.gachawaifus.menu.WaifuModeMenu;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
@@ -22,13 +24,16 @@ public class WaifuModeScreen extends AbstractContainerScreen<WaifuModeMenu> {
     /* ── Geometría ───────────────────────────────────────────────────────────────────────── */
     private static final int W = 232;
     private static final int ROW_H = 24;
-    private static final int H = 26 + WaifuMode.values().length * ROW_H + 26;
+    private static final int H = 26 + WaifuMode.values().length * ROW_H + 52;
     private static final int HEADER_H = 20;
 
     private static final int ROW_X = 8;
     private static final int ROW_W = W - 16;
     private static final int ROWS_Y = HEADER_H + 8;
     private static final int FOOT_Y = H - 22;
+
+    /** Fila del vínculo de amor: entre la última fila de modos y el pie. */
+    private static final int AFF_Y = ROWS_Y + WaifuMode.values().length * ROW_H + 4;
 
     /* ── Paleta (la misma familia que la Guía) ───────────────────────────────────────────── */
     private static final int PANEL_TOP = 0xFF1A1424;
@@ -88,7 +93,29 @@ public class WaifuModeScreen extends AbstractContainerScreen<WaifuModeMenu> {
                     mouseX - (left + ROW_X));
         }
 
+        drawAffinity(graphics, left, top);
         drawFoot(graphics, left, top);
+    }
+
+    /** Vínculo de amor: nombre del nivel, número y barra de progreso rosada. */
+    private void drawAffinity(GuiGraphics graphics, int left, int top) {
+        int affinity = this.menu.affinity();
+        int tier = 0;
+        for (int milestone : AbstractWaifuEntity.LOVE_MILESTONES) {
+            if (affinity >= milestone) {
+                tier++;
+            }
+        }
+        graphics.drawString(this.font,
+                Component.translatable("gachawaifus.mode_screen.affinity",
+                        Component.translatable("gachawaifus.love.tier." + tier).withStyle(ChatFormatting.LIGHT_PURPLE),
+                        affinity).withStyle(ChatFormatting.GRAY),
+                left + 8, top + AFF_Y + 1, TEXT, false);
+        int barX = left + ROW_X;
+        int barW = ROW_W;
+        graphics.fill(barX, top + AFF_Y + 12, barX + barW, top + AFF_Y + 17, 0xFF140F1C);
+        graphics.fill(barX, top + AFF_Y + 12, barX + barW * affinity / 100, top + AFF_Y + 17, PINK_ACCENT);
+        frame(graphics, barX, top + AFF_Y + 12, barW, 5, ROW_EDGE);
     }
 
     private void drawRow(GuiGraphics graphics, int left, int top, WaifuMode mode, boolean active,

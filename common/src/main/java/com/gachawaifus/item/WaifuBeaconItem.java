@@ -69,8 +69,8 @@ public class WaifuBeaconItem extends Item {
         }
         int moved = WaifuRecallHandler.recallAll(serverPlayer);
         say(serverPlayer, moved > 0
-                ? "§a[GachaWaifus] §f" + moved + " waifu(s) teletransportada(s) a tu lado."
-                : "§7[GachaWaifus] §fNinguna de tus waifus invocadas está perdida.");
+                ? Component.translatable("gachawaifus.beacon.moved_multi", moved)
+                : Component.translatable("gachawaifus.beacon.none"));
         return InteractionResultHolder.consume(stack);
     }
 
@@ -84,20 +84,19 @@ public class WaifuBeaconItem extends Item {
     /** Trae a una sola waifu al lado del jugador. */
     private static InteractionResult recallOne(ServerPlayer player, AbstractWaifuEntity waifu) {
         if (!player.getUUID().equals(waifu.getOwnerUUID())) {
-            say(player, "§c[GachaWaifus] §fEsa waifu no es tuya.");
+            say(player, Component.translatable("gachawaifus.beacon.not_yours"));
             return InteractionResult.FAIL;
         }
         boolean moved = waifu.recallTo(player);
         WaifuRecallHandler.forget(waifu);
         say(player, moved
-                ? "§a[GachaWaifus] §f" + waifu.getDisplayName().getString() + " §fse vino a tu lado."
-                : "§c[GachaWaifus] §fNo hubo hueco libre junto a ti para "
-                        + waifu.getDisplayName().getString() + ".");
+                ? Component.translatable("gachawaifus.beacon.came", waifu.getDisplayName())
+                : Component.translatable("gachawaifus.beacon.no_room", waifu.getDisplayName()));
         return moved ? InteractionResult.CONSUME : InteractionResult.FAIL;
     }
 
-    private static void say(ServerPlayer player, String message) {
-        player.displayClientMessage(Component.literal(message), true);
+    private static void say(ServerPlayer player, Component message) {
+        player.displayClientMessage(message, true);
     }
 
     private static InteractionResultHolder<ItemStack> toHolder(InteractionResult result, ItemStack stack) {

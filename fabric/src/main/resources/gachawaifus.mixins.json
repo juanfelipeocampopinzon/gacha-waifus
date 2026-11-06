@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "package": "com.gachawaifus.mixin",
+  "compatibilityLevel": "JAVA_21",
+  "refmap": "gachawaifus-refmap.json",
+  "mixins": [
+    "LivingEntityHurtMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}

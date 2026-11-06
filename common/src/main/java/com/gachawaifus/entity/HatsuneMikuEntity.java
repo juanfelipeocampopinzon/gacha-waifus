@@ -93,6 +93,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 20;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -103,6 +104,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 220;
         target.hurt(this.damageSources().magic(), 12.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
@@ -122,10 +124,11 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 650;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§bHatsune Miku §o\"¡Directo al corazón! ¡Que empiece el concierto, 39!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.hatsune_miku.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 260, 2));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1));
             owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 1));

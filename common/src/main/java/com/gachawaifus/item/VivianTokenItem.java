@@ -35,8 +35,7 @@ public class VivianTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Vivian Banshee invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.vivian_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class VivianTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MORADO);
-        tooltipComponents.add(Component.literal("§7Invoca a §5Vivian Banshee§7 (Morado / Anomaly)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.vivian_token.2"));
         tooltipComponents.add(Component.literal("§8Feathered Strike · Violet Requiem · Soaring Bird's Song"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

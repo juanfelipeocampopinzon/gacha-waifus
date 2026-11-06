@@ -47,9 +47,7 @@ public class AstraYaoTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Astra Yao activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.astra_yao_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -65,7 +63,7 @@ public class AstraYaoTokenItem extends Item {
 
             if (player != null) {
                 astraYao.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Astra Yao ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.astra_yao_token.2"), true);
             }
 
             level.addFreshEntity(astraYao);

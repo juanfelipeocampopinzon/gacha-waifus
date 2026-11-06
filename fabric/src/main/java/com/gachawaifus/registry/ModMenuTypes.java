@@ -3,7 +3,6 @@ package com.gachawaifus.registry;
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.menu.GachaMenu;
 import com.gachawaifus.menu.GuideMenu;
-import com.gachawaifus.menu.HomeMimicMenu;
 import com.gachawaifus.menu.WaifuModeMenu;
 import com.gachawaifus.menu.WaifuStorageMenu;
 import net.minecraft.core.Registry;
@@ -36,9 +35,6 @@ public class ModMenuTypes {
 
     public static final Supplier<MenuType<WaifuModeMenu>> WAIFU_MODE =
             register("waifu_mode", (id, inv) -> new WaifuModeMenu(id, inv, (net.minecraft.network.RegistryFriendlyByteBuf) null));
-
-    public static final Supplier<MenuType<HomeMimicMenu>> HOME_MIMIC =
-            register("home_mimic", (id, inv) -> new HomeMimicMenu(id, inv, (net.minecraft.network.RegistryFriendlyByteBuf) null));
 
     public static void openWaifuMode(net.minecraft.server.level.ServerPlayer player, com.gachawaifus.entity.AbstractWaifuEntity waifu) {
         player.openMenu(new net.minecraft.world.SimpleMenuProvider(

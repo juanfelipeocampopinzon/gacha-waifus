@@ -140,7 +140,7 @@ public class JuFufuEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§4Ju Fufu §o\"¡La olla Hu Wei arrasa!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.ju_fufu.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

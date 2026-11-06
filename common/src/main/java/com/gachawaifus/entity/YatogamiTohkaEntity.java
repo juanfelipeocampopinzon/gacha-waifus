@@ -117,7 +117,7 @@ public class YatogamiTohkaEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 700;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§5Yatogami Tohka §o\"¡Sandalphon... Halvanhelev! ¡Corta toda oscuridad!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.yatogami_tohka.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1));
             owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 0));
         }

@@ -1,5 +1,6 @@
 package com.gachawaifus.entity;
 
+import com.gachawaifus.entity.BossEntity;
 import com.gachawaifus.registry.ModItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -40,10 +41,10 @@ import java.util.UUID;
  * el jugador apenas le hace daño y la recompensa va al dueño de la waifu que peleó. El bate es un
  * item GeckoLib ({@code BateBeisbolItem}) visible gracias al {@code ItemInHandLayer}.
  */
-public class TungTungSahurEntity extends Monster {
+public class TungTungSahurEntity extends Monster implements BossEntity {
 
-    /** El daño del jugador se multiplica por esto (un 20 %): la pelea es de las waifus. */
-    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.2F;
+    /** El daño del jugador se multiplica por esto (un 50 %): la pelea sigue siendo de las waifus, pero el jugador puede hacer daño. */
+    public static final float PLAYER_DAMAGE_MULTIPLIER = 0.5F;
     /** Bolitas Azules que suelta al morir. */
     public static final int BALL_REWARD = 4;
 

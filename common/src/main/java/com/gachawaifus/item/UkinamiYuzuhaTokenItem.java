@@ -43,9 +43,7 @@ public class UkinamiYuzuhaTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Ukinami Yuzuha activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ukinami_yuzuha_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -61,7 +59,7 @@ public class UkinamiYuzuhaTokenItem extends Item {
 
             if (player != null) {
                 yuzuha.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Ukinami Yuzuha ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ukinami_yuzuha_token.2"), true);
             }
 
             level.addFreshEntity(yuzuha);
@@ -91,7 +89,7 @@ public class UkinamiYuzuhaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.VERDE);
-        tooltipComponents.add(Component.literal("§7Invoca a Ukinami Yuzuha, la pequeña tanuki del apoyo (Verde)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ukinami_yuzuha_token.3"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

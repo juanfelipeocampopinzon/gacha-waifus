@@ -7,6 +7,9 @@ import com.gachawaifus.color.WaifuColors;
 import com.gachawaifus.gacha.WaifuRoster;
 import com.gachawaifus.gacha.WaifuStorageSavedData;
 import com.gachawaifus.menu.WaifuModeMenu;
+import com.gachawaifus.skin.WaifuSkinProfile;
+import com.gachawaifus.skin.WaifuSkinState;
+import com.gachawaifus.skin.WaifuSkins;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,12 +18,17 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
@@ -35,6 +43,7 @@ import net.minecraft.world.entity.ai.goal.Goal;
 import net.minecraft.world.entity.ai.goal.SitWhenOrderedToGoal;
 import net.minecraft.world.entity.ai.goal.WrappedGoal;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -50,6 +59,258 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     protected AbstractWaifuEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.goalsRegistrados = true;
+    }
+
+    // ---------------------------------------------------------------------
+    // Skins alternativas (ver com.gachawaifus.skin)
+    // ---------------------------------------------------------------------
+
+    /** Estado visual de la skin; se sincroniza porque el renderizador vive en el cliente. */
+    private static final EntityDataAccessor<Byte> DATA_SKIN_STATE =
+            SynchedEntityData.defineId(AbstractWaifuEntity.class, EntityDataSerializers.BYTE);
+
+    /** Ticks que se queda la skin de combate después del último golpe u objetivo. */
+    private static final int COMBAT_SKIN_LINGER = 100;
+
+    /** Duración de la skin de habilidad especial y de la ultimate. */
+    private static final int SPECIAL_SKIN_TICKS = 100;
+    private static final int ULTIMATE_SKIN_TICKS = 140;
+
+    private int combatSkinTicks;
+    private int specialSkinTicks;
+    private int ultimateSkinTicks;
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_SKIN_STATE, (byte) WaifuSkinState.BASE.ordinal());
+        builder.define(DATA_AFFINITY, (byte) 0);
+    }
+
+    // ---------------------------------------------------------------------
+    // Sistema de amor: afinidad 0..100 (comer cura y sube el vínculo)
+    // ---------------------------------------------------------------------
+
+    /** Afinidad con su dueño; sincronizada porque el panel de modos la pinta en el cliente. */
+    private static final EntityDataAccessor<Byte> DATA_AFFINITY =
+            SynchedEntityData.defineId(AbstractWaifuEntity.class, EntityDataSerializers.BYTE);
+
+    /** Ticks (20 s) entre comida y comida: sin esto, curar sería un spam de clics infinitos. */
+    private static final int FEED_COOLDOWN = 400;
+
+    /** Hijos de la afinidad: se anuncian al cruzarlos hacia arriba y nunca se pierden. */
+    public static final int[] LOVE_MILESTONES = {25, 50, 75, 100};
+
+    /** Con la afinidad al máximo la waifu pega un 15 % más (vía ATTACK_DAMAGE, igual en los dos loaders). */
+    private static final float LOVE_DAMAGE_MULTIPLIER = 1.15F;
+
+    /** Cuenta atrás de {@link #FEED_COOLDOWN}; solo corre en el servidor. */
+    private int feedCooldown;
+
+    /** Dos voces seguidas se enciman: cada waifu habla como mucho cada 2 segundos. */
+    private static final int VOICE_COOLDOWN = 40;
+
+    /** Cuenta atrás de {@link #VOICE_COOLDOWN}; solo corre en el servidor. */
+    private int voiceCooldown;
+
+    /** Afinidad actual (0..100). */
+    public int affinity() {
+        return Math.max(0, this.entityData.get(DATA_AFFINITY));
+    }
+
+    /** Fija la afinidad (solo en el servidor: el cliente la recibe sincronizada). */
+    public void setAffinity(int value) {
+        this.entityData.set(DATA_AFFINITY, (byte) Mth.clamp(value, 0, 100));
+    }
+
+    /** Cuántos hitos (25/50/75/100) ha alcanzado: 0..4, el índice del rótulo de amor. */
+    public int loveTier() {
+        int affinity = this.affinity();
+        int tier = 0;
+        for (int milestone : LOVE_MILESTONES) {
+            if (affinity >= milestone) {
+                tier++;
+            }
+        }
+        return tier;
+    }
+
+    /**
+     * Voz de esta waifu: el path registrado de su tipo, si está entre las 13 con audio confirmado
+     * ({@link WaifuVoices}). Null para el resto: simplemente no hablan.
+     */
+    protected String voiceId() {
+        String path = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getPath();
+        return WaifuVoices.VOICED.contains(path) ? path : null;
+    }
+
+    /** Reproduce una voz de acción (attack/hurt/death/feed/idle) respetando el enfriamiento. */
+    public void playVoice(String action) {
+        this.playVoice(action, false);
+    }
+
+    /**
+     * Con {@code force} la voz pasa aunque el enfriamiento esté activo: la muerte y la ultimate
+     * no pueden callarse por haber atacado hace un instante. El tono varía ligeramente para que
+     * las repeticiones no suenen a disco rayado.
+     */
+    public void playVoice(String action, boolean force) {
+        if (this.level().isClientSide) {
+            return;
+        }
+        String id = this.voiceId();
+        if (id == null || !WaifuVoices.has(id, action)) {
+            return;
+        }
+        if (!force && this.voiceCooldown > 0) {
+            return;
+        }
+        SoundEvent sound = WaifuVoices.lookup(id, action);
+        if (sound == null) {
+            return;
+        }
+        this.voiceCooldown = VOICE_COOLDOWN;
+        this.level().playSound(null, this.blockPosition(), sound, this.getSoundSource(),
+                1.0F, 0.95F + this.random.nextFloat() * 0.1F);
+    }
+
+    /**
+     * Comida en mano principal de su dueño: cura según nutrición y afinidad, y sube la afinidad.
+     * El enfriamiento vive en la waifu, así que alimentar a una no deja comer a las demás.
+     */
+    private InteractionResult feed(Player player, ItemStack stack, FoodProperties food) {
+        if (this.feedCooldown > 0) {
+            return InteractionResult.PASS;
+        }
+        this.feedCooldown = FEED_COOLDOWN;
+
+        int nutrition = food.nutrition();
+        // La curación escala con la afinidad: al máximo cura 1.5 veces la base.
+        this.heal(nutrition * 2.0F * (1.0F + this.affinity() / 200.0F));
+
+        int before = this.affinity();
+        int gained = Mth.clamp(2 + nutrition / 2, 2, 8);
+        this.setAffinity(before + gained);
+
+        if (this.level() instanceof ServerLevel level) {
+            level.sendParticles(ParticleTypes.HEART, this.getX(),
+                    this.getY() + this.getBbHeight() + 0.2D, this.getZ(),
+                    3 + gained, 0.3D, 0.3D, 0.3D, 0.0D);
+        }
+        this.level().playSound(null, this.blockPosition(), SoundEvents.GENERIC_EAT,
+                SoundSource.PLAYERS, 1.0F, 1.1F);
+        this.playVoice("feed", true);
+
+        // En la barra de acciones: la colección de mensajes de comida no debe llenar el chat.
+        player.displayClientMessage(Component.translatable("gachawaifus.love.fed",
+                this.getDisplayName(), stack.getHoverName()), true);
+
+        // Aviso de hijo alcanzado (el 100 añade además el rótulo definitivo).
+        for (int i = 0; i < LOVE_MILESTONES.length; i++) {
+            if (LOVE_MILESTONES[i] > before && LOVE_MILESTONES[i] <= this.affinity()) {
+                player.sendSystemMessage(Component.translatable("gachawaifus.love.milestone",
+                        this.getDisplayName(),
+                        Component.translatable("gachawaifus.love.tier." + (i + 1)).withStyle(
+                                net.minecraft.ChatFormatting.LIGHT_PURPLE)));
+                this.level().playSound(null, this.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME,
+                        SoundSource.PLAYERS, 1.0F, 1.5F);
+            }
+        }
+
+        if (!player.getAbilities().instabuild) {
+            stack.shrink(1);
+        }
+        return InteractionResult.CONSUME;
+    }
+
+    /** Estado visual que debe pintar el renderizador ahora mismo. */
+    public WaifuSkinState skinState() {
+        byte id = this.entityData.get(DATA_SKIN_STATE);
+        WaifuSkinState[] states = WaifuSkinState.values();
+        return id >= 0 && id < states.length ? states[id] : WaifuSkinState.BASE;
+    }
+
+    private void setSkinState(WaifuSkinState state) {
+        byte id = (byte) state.ordinal();
+        if (this.entityData.get(DATA_SKIN_STATE) != id) {
+            this.entityData.set(DATA_SKIN_STATE, id);
+        }
+    }
+
+    /**
+     * Textura que hay que enseñar para esta waifu. Las waifus sin perfil devuelven {@code fallback}
+     * (la textura fija de su renderizador), así que esto se puede usar en todos los renderizadores
+     * sin tocar a las que no se transforman.
+     */
+    public ResourceLocation skinTexture(ResourceLocation fallback) {
+        return WaifuSkins.textureFor(this, fallback);
+    }
+
+    /**
+     * Avisa de que esta waifu acaba de usar su habilidad especial. Solo hace algo si su
+     * {@link WaifuSkinProfile} define una skin para {@link WaifuSkinState#SPECIAL}.
+     */
+    public void notifySpecialUsed() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        WaifuSkinProfile profile = WaifuSkins.profile(this);
+        if (profile != null && profile.special() != null) {
+            this.specialSkinTicks = SPECIAL_SKIN_TICKS;
+        }
+    }
+
+    /**
+     * Avisa de que esta waifu acaba de lanzar su ultimate. Solo hace algo si su perfil define una
+     * skin para {@link WaifuSkinState#ULTIMATE}.
+     */
+    public void notifyUltimateUsed() {
+        if (this.level().isClientSide) {
+            return;
+        }
+        WaifuSkinProfile profile = WaifuSkins.profile(this);
+        if (profile != null && profile.ultimate() != null) {
+            this.ultimateSkinTicks = ULTIMATE_SKIN_TICKS;
+        }
+    }
+
+    /**
+     * Decide la skin en el servidor. El combate se detecta por objetivo vivo o por un golpe reciente
+     * y se mantiene unos segundos al salir; las habilidades se encienden con los {@code notify*}.
+     */
+    private void tickSkin() {
+        WaifuSkinProfile profile = WaifuSkins.profile(this);
+        if (profile == null) {
+            return;
+        }
+        if (this.combatSkinTicks > 0) this.combatSkinTicks--;
+        if (this.specialSkinTicks > 0) this.specialSkinTicks--;
+        if (this.ultimateSkinTicks > 0) this.ultimateSkinTicks--;
+
+        if (profile.combat() != null) {
+            LivingEntity target = this.getTarget();
+            boolean canFight = this.waifuMode != WaifuMode.PASIVO
+                    && this.waifuMode != WaifuMode.SENTADA;
+            boolean inCombat = canFight && target != null && target.isAlive();
+            if (!inCombat && canFight && this.getLastHurtByMob() != null) {
+                inCombat = this.tickCount - this.getLastHurtByMobTimestamp() < COMBAT_SKIN_LINGER;
+            }
+            if (inCombat) {
+                this.combatSkinTicks = COMBAT_SKIN_LINGER;
+            } else if (!canFight) {
+                this.combatSkinTicks = 0;
+            }
+        }
+
+        WaifuSkinState state = WaifuSkinState.BASE;
+        if (profile.ultimate() != null && this.ultimateSkinTicks > 0) {
+            state = WaifuSkinState.ULTIMATE;
+        } else if (profile.special() != null && this.specialSkinTicks > 0) {
+            state = WaifuSkinState.SPECIAL;
+        } else if (profile.combat() != null && this.combatSkinTicks > 0) {
+            state = WaifuSkinState.COMBAT;
+        }
+        this.setSkinState(state);
     }
 
     /** {@code false} mientras corre el constructor de {@code Mob}, que es cuando los goals capturan el rango. */
@@ -70,6 +331,12 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     public double getAttributeValue(Holder<Attribute> attribute) {
         if (attribute.is(Attributes.FOLLOW_RANGE)) {
             return this.goalsRegistrados ? (double) WanderConfig.range() : (double) WanderConfig.MAX_RANGE;
+        }
+        if (attribute.is(Attributes.ATTACK_DAMAGE) && this.affinity() >= 100) {
+            // Recompensa del amor: +15 % de daño. Se escala aquí y no en un evento porque el
+            // evento de daño modificado solo existe en NeoForge (Fabric no tiene homólogo); con
+            // la atribución los dos loaders se comportan igual.
+            return super.getAttributeValue(attribute) * LOVE_DAMAGE_MULTIPLIER;
         }
         return super.getAttributeValue(attribute);
     }
@@ -101,7 +368,13 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         if (this.level().isClientSide) {
             BustPhysics.tick(this);
         } else {
+            if (this.feedCooldown > 0) this.feedCooldown--;
+            if (this.voiceCooldown > 0) this.voiceCooldown--;
+            if (this.random.nextInt(400) == 0 && !this.isOrderedToSit()) {
+                this.playVoice("idle");
+            }
             this.updateWanderRestriction();
+            this.tickSkin();
         }
     }
 
@@ -427,6 +700,19 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
         }
+        // Comida en mano del dueño: sistema de amor (cura + afinidad). Las waifus que tienen su
+        // propio mobInteract (caricias de Astra y Nicole) caen aquí por super cuando llevan item.
+        if (hand == InteractionHand.MAIN_HAND && this.isOwnedBy(player)) {
+            ItemStack held = player.getItemInHand(hand);
+            // DataComponents.FOOD es el camino vanilla común a los dos loaders: nulo si no es comida.
+            FoodProperties food = held.get(net.minecraft.core.component.DataComponents.FOOD);
+            if (food != null) {
+                if (this.level().isClientSide) {
+                    return InteractionResult.SUCCESS;
+                }
+                return this.feed(player, held, food);
+            }
+        }
         return super.mobInteract(player, hand);
     }
 
@@ -434,6 +720,7 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     public void addAdditionalSaveData(CompoundTag tag) {
         super.addAdditionalSaveData(tag);
         tag.putByte("WaifuMode", (byte) this.waifuMode.ordinal());
+        tag.putByte("WaifuAffinity", (byte) this.affinity());
         if (this.homePos != null && this.homeDimension != null) {
             tag.put("WaifuHome", NbtUtils.writeBlockPos(this.homePos));
             tag.putString("WaifuHomeDim", this.homeDimension.location().toString());
@@ -443,6 +730,9 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Override
     public void readAdditionalSaveData(CompoundTag tag) {
         super.readAdditionalSaveData(tag);
+        if (tag.contains("WaifuAffinity")) {
+            this.setAffinity(tag.getByte("WaifuAffinity"));
+        }
         if (tag.contains("WaifuMode")) {
             int ordinal = tag.getByte("WaifuMode");
             WaifuMode[] modes = WaifuMode.values();
@@ -487,7 +777,11 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                 return false;
             }
         }
-        return super.hurt(source, amount);
+        boolean damaged = super.hurt(source, amount);
+        if (damaged) {
+            this.playVoice("hurt");
+        }
+        return damaged;
     }
 
     /**
@@ -498,6 +792,7 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Override
     public void die(DamageSource source) {
         if (!this.level().isClientSide) {
+            this.playVoice("death", true);
             LivingEntity owner = this.getOwner();
             Component name = this.getDisplayName();
 
@@ -506,12 +801,11 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                     BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getPath());
 
             if (owner instanceof Player player && entry != null) {
-                WaifuStorageSavedData.get(this.level()).addFallen(player.getUUID(), entry.id());
-                player.sendSystemMessage(Component.literal(
-                        "§c[GachaWaifus] ¡" + name.getString() + " ha caído en combate!"));
-                player.sendSystemMessage(Component.literal(
-                        "§7Su alma quedó resguardada en tu §dCápsula Waifu§7. "
-                                + "Ábrela (clic derecho) y selecciónala para revivirla con §b4 diamantes§7."));
+                WaifuStorageSavedData.get(this.level())
+                        .addFallen(player.getUUID(), entry.id(), this.affinity());
+                player.sendSystemMessage(Component.translatable(
+                        "gachawaifus.waifu.fallen", name.getString()));
+                player.sendSystemMessage(Component.translatable("message.gachawaifus.abstract_waifu.1"));
             }
 
             // Efectos de partículas de muerte celestial

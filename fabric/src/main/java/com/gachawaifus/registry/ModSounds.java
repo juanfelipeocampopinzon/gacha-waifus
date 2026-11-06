@@ -33,6 +33,21 @@ public class ModSounds {
     public static final Supplier<SoundEvent> MUSKET_SHOT =
             register("entity/tokisaki_kurumi/musket_shot", MUSKET_SHOT_ID);
 
+    static {
+        // Voces de las 13 waifus con audio confirmado: se registran desde la lista común, siempre
+        // con el mismo id que declare {@code sounds.json} (si no coinciden, no suena nada).
+        for (String id : com.gachawaifus.entity.WaifuVoices.VOICED) {
+            for (String action : com.gachawaifus.entity.WaifuVoices.ACTIONS) {
+                if (!com.gachawaifus.entity.WaifuVoices.has(id, action)) {
+                    continue;
+                }
+                ResourceLocation voiceId = com.gachawaifus.entity.WaifuVoices.soundId(id, action);
+                Registry.register(BuiltInRegistries.SOUND_EVENT, voiceId,
+                        SoundEvent.createVariableRangeEvent(voiceId));
+            }
+        }
+    }
+
     public static void init() {
     }
 

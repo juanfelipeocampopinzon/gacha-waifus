@@ -140,7 +140,7 @@ public class ClaretEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§4Claret §o\"Juicio tras juicio: forjada en sangre.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.claret.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

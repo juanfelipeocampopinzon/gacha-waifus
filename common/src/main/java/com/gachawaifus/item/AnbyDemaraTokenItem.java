@@ -44,9 +44,7 @@ public class AnbyDemaraTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Anby Demara activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.anby_demara_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -62,7 +60,7 @@ public class AnbyDemaraTokenItem extends Item {
 
             if (player != null) {
                 anbyDemara.tame(player);
-                player.displayClientMessage(Component.literal("§a[GachaWaifus] ¡Anby Demara ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.anby_demara_token.2"), true);
             }
 
             level.addFreshEntity(anbyDemara);

@@ -140,7 +140,7 @@ public class CissiaEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§2Cissia §o\"Tú, eres la presa.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.cissia.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

@@ -145,14 +145,13 @@ public final class WaifuRecallHandler {
             return;
         }
         if (home) {
-            owner.displayClientMessage(Component.literal("§2[GachaWaifus] §f" + waifu.getDisplayName().getString()
-                    + " §7volvió a su hogar " + waifu.homePos().toShortString() + " §7("
-                    + waifu.homeDimension().location().getPath() + ")"), true);
+            owner.displayClientMessage(Component.translatable("gachawaifus.recall.home",
+                    waifu.getDisplayName(), waifu.homePos().toShortString(),
+                    waifu.homeDimension().location().getPath()), true);
         } else {
-            owner.displayClientMessage(Component.literal("§d[GachaWaifus] §f" + waifu.getDisplayName().getString()
-                    + " §7" + (sameDimension ? "se teletransportó a ti" : "cruzó dimensiones para encontrarte")
-                    + " §7— la tenías demasiado lejos. Ponla en modo §2En casa §7con su hogar si quieres"
-                    + " que se quede de guardia."), true);
+            owner.displayClientMessage(Component.translatable(
+                    sameDimension ? "gachawaifus.recall.same_dim" : "gachawaifus.recall.cross_dim",
+                    waifu.getDisplayName(), Component.translatable("gachawaifus.mode.en_casa")), true);
         }
     }
 

@@ -44,8 +44,7 @@ public class Soldier11TokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Soldier 11 activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.soldier11_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -57,7 +56,7 @@ public class Soldier11TokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§6[GachaWaifus] ¡Soldier 11 ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.soldier11_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -76,7 +75,7 @@ public class Soldier11TokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §6Soldier 11§7 (Naranja / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.soldier11_token.3"));
         tooltipComponents.add(Component.literal("§8Fire Suppression · Warmup · Molten Barrage"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

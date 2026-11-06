@@ -35,8 +35,7 @@ public class LucyTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Luciana Lucy de Montefio invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.lucy_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class LucyTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AMARILLO);
-        tooltipComponents.add(Component.literal("§7Invoca a §eLuciana Lucy de Montefio§7 (Amarillo / Support)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.lucy_token.2"));
         tooltipComponents.add(Component.literal("§8Lady's Bat · Home Run! · Walk-Off Home Run!"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -41,8 +41,7 @@ public class KoledaTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Koleda activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.koleda_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -71,7 +70,7 @@ public class KoledaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.ROJO);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §cKoleda§7 (Rojo / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.koleda_token.2"));
         tooltipComponents.add(Component.literal("§8Demolition Blast · Explosive Hammer · Furnace Firepower"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

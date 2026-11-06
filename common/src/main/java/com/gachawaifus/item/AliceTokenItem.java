@@ -35,8 +35,7 @@ public class AliceTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Alice Thymefield invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.alice_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class AliceTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.ROSA);
-        tooltipComponents.add(Component.literal("§7Invoca a §dAlice Thymefield§7 (Rosa / Anomaly)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.alice_token.2"));
         tooltipComponents.add(Component.literal("§8Celestial Overture · Aurora Thrust - Northern/Southern Cross · Starfall Finale"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

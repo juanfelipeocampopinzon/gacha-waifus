@@ -2,6 +2,7 @@ package com.gachawaifus.color;
 
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.entity.AbstractWaifuEntity;
+import com.gachawaifus.entity.WildWaifus;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -54,22 +55,29 @@ public final class ColorEvents {
         ServerTickEvents.END_SERVER_TICK.register(ColorEvents::onServerTick);
     }
 
-    public static void onIncomingDamage(LivingEntity victim, Entity source, float amount) {
-        if (!ColorSettings.ENABLED) return;
-
-
+    /**
+     * El daño entrante real, llamado por {@code LivingEntityHurtMixin} en el HEAD de
+     * {@code hurt(DamageSource, float)}: el mismo punto exacto donde NeoForge lanza su evento.
+     * Devuelve el importe con el que vanilla debe seguir procesando el golpe.
+     */
+    public static float onIncomingDamage(LivingEntity victim, Entity source, float amount) {
+        // Una waifu salvaje jamás hiere jugadores (espejo del corte de WildWaifus en NeoForge):
+        // sus ultimas calculan el daño de área a mano y, sin dueño, no hay a quién respetar.
+        if (source instanceof AbstractWaifuEntity waifu && WildWaifus.isWild(waifu)
+                && victim instanceof Player) {
+            return 0.0F;
+        }
+        if (!ColorSettings.ENABLED) return amount;
 
         boolean fromWaifu = source instanceof AbstractWaifuEntity;
         boolean toProtected = victim instanceof AbstractWaifuEntity || victim instanceof Player;
-        if (!fromWaifu && !toProtected) return;
-        if (source instanceof Player && !ColorSettings.PLAYER_OUTGOING_USES_COLOR) return;
+        if (!fromWaifu && !toProtected) return amount;
+        if (source instanceof Player && !ColorSettings.PLAYER_OUTGOING_USES_COLOR) return amount;
 
         WaifuColor attacker = ColorCombat.attackerColor(source);
         WaifuColor defender = ColorCombat.colorOf(victim);
         ColorCombat.Matchup matchup = ColorCombat.matchup(attacker, defender);
-        if (matchup == ColorCombat.Matchup.NEUTRAL) return;
-
-        // damage adjusted
+        if (matchup == ColorCombat.Matchup.NEUTRAL) return amount;
 
         if (victim.level() instanceof ServerLevel level) {
             boolean strong = matchup == ColorCombat.Matchup.STRONG;
@@ -81,6 +89,7 @@ public final class ColorEvents {
         if (ColorSettings.MESSAGES) {
             announce(source, victim, attacker, defender, matchup);
         }
+        return amount * ColorCombat.multiplier(attacker, defender);
     }
 
     private static void announce(Entity source, LivingEntity victim, WaifuColor attacker,

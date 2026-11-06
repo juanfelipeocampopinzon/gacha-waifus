@@ -109,7 +109,7 @@ public class PanYinhuEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§6Pan Yinhu §o\"¡La cocina también es una batalla!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.pan_yinhu.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

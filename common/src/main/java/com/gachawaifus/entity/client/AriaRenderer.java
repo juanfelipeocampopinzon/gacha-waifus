@@ -18,7 +18,7 @@ public class AriaRenderer extends LivingEntityRenderer<AriaEntity, WaifuBustPlay
 
     @Override
     public ResourceLocation getTextureLocation(AriaEntity entity) {
-        return TEXTURE;
+        return entity.skinTexture(TEXTURE);
     }
 
     @Override

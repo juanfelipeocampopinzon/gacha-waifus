@@ -36,7 +36,7 @@ public class PhoenixTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Ya tienes una Phoenix activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.phoenix_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -48,7 +48,7 @@ public class PhoenixTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Phoenix ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.phoenix_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -65,8 +65,8 @@ public class PhoenixTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.ROJO);
-        tooltipComponents.add(Component.literal("§7Invoca a §cPhoenix§7 (Rojo / Anomaly)."));
-        tooltipComponents.add(Component.literal("§8Garra de Fénix · Plumas Incandescentes · Renacimiento"));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.phoenix_token.3"));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.phoenix_token.4"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

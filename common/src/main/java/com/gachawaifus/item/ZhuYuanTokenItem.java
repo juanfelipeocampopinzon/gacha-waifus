@@ -39,8 +39,7 @@ public class ZhuYuanTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Zhu Yuan activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.zhu_yuan_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -71,7 +70,7 @@ public class ZhuYuanTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §1Zhu Yuan§7 (Azul / Attack), oficial del NEPS."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.zhu_yuan_token.2"));
         tooltipComponents.add(Component.literal("§8Don't Move! · Suppressive Fire · Full Barrage"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

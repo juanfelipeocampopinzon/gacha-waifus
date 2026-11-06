@@ -35,8 +35,7 @@ public class DarknessTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Darkness invocada! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.darkness_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class DarknessTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MARRON);
-        tooltipComponents.add(Component.literal("§7Invoca a §4Darkness§7 (Marrón / Defense)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.darkness_token.2"));
         tooltipComponents.add(Component.literal("§8Crimber · Heavy Attack · Protection"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

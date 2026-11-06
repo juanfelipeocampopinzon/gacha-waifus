@@ -30,6 +30,12 @@ public class WaifuStorageSavedData extends SavedData {
 
     private final Map<UUID, List<String>> captured = new HashMap<>();
     private final Map<UUID, List<String>> fallen = new HashMap<>();
+    /**
+     * Afinidad (sistema de amor) guardada por waifu, tanto viva como caída. Solo existen entradas
+     * con valor &gt; 0: una afinidad de 0 es el estado natural de toda waifu, así que borrar el
+     * registro al llegar a 0 mantiene el NBT limpio.
+     */
+    private final Map<UUID, Map<String, Integer>> affinity = new HashMap<>();
 
     /**
      * Almacén de waifus, SIEMPRE en el Overworld.
@@ -79,6 +85,21 @@ public class WaifuStorageSavedData extends SavedData {
         WaifuStorageSavedData data = new WaifuStorageSavedData();
         data.captured.putAll(readList(tag, "players"));
         data.fallen.putAll(readList(tag, "fallen"));
+        CompoundTag affinities = tag.getCompound("affinity");
+        for (String uuidKey : affinities.getAllKeys()) {
+            try {
+                Map<String, Integer> byWaifu = new HashMap<>();
+                CompoundTag entry = affinities.getCompound(uuidKey);
+                for (String waifuId : entry.getAllKeys()) {
+                    byWaifu.put(waifuId, entry.getInt(waifuId));
+                }
+                if (!byWaifu.isEmpty()) {
+                    data.affinity.put(UUID.fromString(uuidKey), byWaifu);
+                }
+            } catch (IllegalArgumentException ignored) {
+                // UUID corrupto: se descarta esa entrada en vez de romper la carga.
+            }
+        }
         return data;
     }
 
@@ -86,6 +107,15 @@ public class WaifuStorageSavedData extends SavedData {
     public CompoundTag save(CompoundTag tag, HolderLookup.Provider provider) {
         tag.put("players", writeList(captured));
         tag.put("fallen", writeList(fallen));
+        CompoundTag affinities = new CompoundTag();
+        for (Map.Entry<UUID, Map<String, Integer>> e : affinity.entrySet()) {
+            CompoundTag byWaifu = new CompoundTag();
+            for (Map.Entry<String, Integer> w : e.getValue().entrySet()) {
+                byWaifu.putInt(w.getKey(), w.getValue());
+            }
+            affinities.put(e.getKey().toString(), byWaifu);
+        }
+        tag.put("affinity", affinities);
         return tag;
     }
 
@@ -110,6 +140,32 @@ public class WaifuStorageSavedData extends SavedData {
 
     public void remove(UUID player, String waifuId) {
         get(player).remove(waifuId);
+        setAffinity(player, waifuId, 0);
+        setDirty();
+    }
+
+    // ------------------------------------------------------------------- afinidad
+
+    /** Afinidad guardada de esa waifu (0 si nunca comió o si ya se gastó al invocar). */
+    public int getAffinity(UUID player, String waifuId) {
+        return affinity.getOrDefault(player, Map.of()).getOrDefault(waifuId, 0);
+    }
+
+    /** Guarda la afinidad; con 0 borra el registro (las waifus sin vínculo no ocupan NBT). */
+    public void setAffinity(UUID player, String waifuId, int value) {
+        Map<String, Integer> byWaifu = affinity.get(player);
+        if (value <= 0) {
+            if (byWaifu != null && byWaifu.remove(waifuId) != null && byWaifu.isEmpty()) {
+                affinity.remove(player);
+            }
+            setDirty();
+            return;
+        }
+        if (byWaifu == null) {
+            byWaifu = new HashMap<>();
+            affinity.put(player, byWaifu);
+        }
+        byWaifu.put(waifuId, Math.min(100, value));
         setDirty();
     }
 
@@ -125,12 +181,13 @@ public class WaifuStorageSavedData extends SavedData {
     }
 
     /** Registra la caída y la saca de las guardadas vivas (no puede estar en ambas). */
-    public void addFallen(UUID player, String waifuId) {
+    public void addFallen(UUID player, String waifuId, int affinityValue) {
         List<String> down = getFallen(player);
         if (!down.contains(waifuId)) {
             down.add(waifuId);
         }
         get(player).remove(waifuId);
+        setAffinity(player, waifuId, affinityValue);
         setDirty();
     }
 

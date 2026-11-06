@@ -139,7 +139,7 @@ public class LuciaEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§5Lucia §o\"¡Gran armadura, a la carga!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.lucia.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

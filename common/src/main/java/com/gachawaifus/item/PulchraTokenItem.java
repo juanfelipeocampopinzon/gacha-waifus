@@ -35,8 +35,7 @@ public class PulchraTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Pulchra Fellini invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.pulchra_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class PulchraTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MARRON);
-        tooltipComponents.add(Component.literal("§7Invoca a §6Pulchra Fellini§7 (Marrón / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.pulchra_token.2"));
         tooltipComponents.add(Component.literal("§8Swift Strike · Rending Claw - Flashstep · Oh, Time to Play?"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

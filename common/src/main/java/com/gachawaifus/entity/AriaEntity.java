@@ -107,9 +107,10 @@ public class AriaEntity extends AbstractWaifuEntity {
 
     private void performUltimate() {
         this.ultimateCooldown = 750;
+        this.notifyUltimateUsed();
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§dAria §o\"¡Energía al 100%, delusión total!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.aria.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

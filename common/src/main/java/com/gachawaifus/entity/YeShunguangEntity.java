@@ -221,6 +221,7 @@ public class YeShunguangEntity extends AbstractWaifuEntity implements GeoEntity 
      */
     private void performUltimate(LivingEntity target) {
         this.ultimateCooldown = 750; // Cooldown de ~37.5 segundos
+        this.notifyUltimateUsed();
 
         // Fase de invulnerabilidad "Meditación"
         this.setInvulnerable(true);

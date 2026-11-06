@@ -96,6 +96,7 @@ public class PromeiaEntity extends AbstractWaifuEntity {
 
     private void performSpecialSkill(LivingEntity target) {
         this.specialSkillCooldown = 200;
+        this.notifySpecialUsed();
         target.hurt(this.damageSources().mobAttack(this), 12.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 2));
         if (this.level() instanceof ServerLevel sl) {
@@ -106,6 +107,7 @@ public class PromeiaEntity extends AbstractWaifuEntity {
 
     private void performUltimate() {
         this.ultimateCooldown = 600;
+        this.notifyUltimateUsed();
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
             p.sendSystemMessage(Component.literal("§b[PROMEIA] §o\"Death isn't my enemy, it's my salvation\""));

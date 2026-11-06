@@ -36,23 +36,28 @@ public final class DailyPulls {
                         ServerPlayer player = context.getSource().getPlayerOrException();
                         return grantDaily(player, true) ? 1 : 0;
                     }));
+            dispatcher.register(Commands.literal("pull")
+                    .executes(context -> {
+                        ServerPlayer player = context.getSource().getPlayerOrException();
+                        return grantDaily(player, true) ? 1 : 0;
+                    }));
             dispatcher.register(Commands.literal("banner")
                     .executes(context -> {
                         ServerPlayer player = context.getSource().getPlayerOrException();
                         WaifuRoster.Entry featured = WaifuRoster.featured(player.serverLevel());
                         GachaSavedData.PlayerState state = GachaSavedData.get(player.level())
                                 .state(player.getUUID());
-                        player.sendSystemMessage(Component.literal(
-                                "§d[GachaWaifus] §fDestacada de hoy: §d" + featured.name()
-                                        + "§f. §7(rota cada día de Minecraft)"));
-                        player.sendSystemMessage(Component.literal(
-                                "§7Pity 5★: §b" + state.pity + "§7/64"
-                                        + (state.guaranteed ? " §7· §e¡la próxima 5★ es la destacada!" : "")));
-                        player.sendSystemMessage(Component.literal(
-                                "§7Pity 4★: §e" + state.pity4 + "§7/32 §7(a la 32 llega una 4★ segura)"));
+                        player.sendSystemMessage(Component.translatable(
+                                "gachawaifus.daily.featured", featured.name()));
+                        player.sendSystemMessage(Component.translatable("gachawaifus.daily.pity5", state.pity)
+                                .append(state.guaranteed
+                                        ? Component.translatable("gachawaifus.daily.pity5_guaranteed")
+                                        : Component.empty()));
+                        player.sendSystemMessage(Component.translatable(
+                                "gachawaifus.daily.pity4", state.pity4));
                         boolean hoy = LAST_DAILY.getOrDefault(player.getUUID(), 0L) >= LocalDate.now().toEpochDay();
-                        player.sendSystemMessage(Component.literal(
-                                "§7Tirada diaria: " + (hoy ? "§aya recogida hoy" : "§e¡disponible! usa §f/tirada")));
+                        player.sendSystemMessage(Component.translatable(
+                                hoy ? "gachawaifus.daily.claimed" : "gachawaifus.daily.available"));
                         return 1;
                     }));
         });
@@ -64,8 +69,7 @@ public final class DailyPulls {
 
         if (last >= today) {
             if (announceAnyway) {
-                player.sendSystemMessage(Component.literal(
-                        "§e[GachaWaifus] Ya recogiste tu Bolita Rosa de hoy. Vuelve mañana. §7(Entra al mundo o usa /tirada)"));
+                player.sendSystemMessage(Component.translatable("gui.gachawaifus.daily_pulls.1"));
             }
             return false;
         }
@@ -77,9 +81,7 @@ public final class DailyPulls {
             player.drop(ball, false);
         }
 
-        player.sendSystemMessage(Component.literal(
-                "§d[GachaWaifus] §f¡Tirada diaria! §dHas recibido §f" + PINK_PER_DAY
-                        + " Bolita Rosa§d. Úsala en el §fTerminal Gacha§d."));
+        player.sendSystemMessage(Component.translatable("gachawaifus.daily.granted", PINK_PER_DAY));
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                 SoundSource.PLAYERS, 0.7F, 1.6F);
         player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME,

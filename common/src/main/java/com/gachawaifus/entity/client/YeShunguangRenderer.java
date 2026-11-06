@@ -8,6 +8,7 @@ public class YeShunguangRenderer extends GeoEntityRenderer<YeShunguangEntity> {
     public YeShunguangRenderer(EntityRendererProvider.Context context) {
         super(context, new YeShunguangModel());
         this.shadowRadius = 0.5F;
+        this.addRenderLayer(new YeShunguangGlowLayer(this));
     }
 
     @Override

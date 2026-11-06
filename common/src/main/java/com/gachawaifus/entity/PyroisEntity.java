@@ -109,7 +109,7 @@ public class PyroisEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§fPyrois §o\"Aniquilación de legiones, en marcha.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.pyrois.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

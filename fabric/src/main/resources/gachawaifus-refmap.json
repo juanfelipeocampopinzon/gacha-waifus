@@ -1,0 +1,8 @@
+{
+  "mappings": {
+    "com/gachawaifus/mixin/LivingEntityHurtMixin": {
+      "Lnet/minecraft/world/entity/LivingEntity;": "Lnet/minecraft/class_1309;",
+      "hurt(Lnet/minecraft/world/damagesource/DamageSource;F)Z": "method_5643(Lnet/minecraft/class_1282;F)Z"
+    }
+  }
+}

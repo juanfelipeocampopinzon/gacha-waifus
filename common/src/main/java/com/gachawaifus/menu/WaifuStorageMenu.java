@@ -225,7 +225,7 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
     private void summonEntry(WaifuRoster.Entry entry, Player p) {
         WaifuStorageSavedData storage = WaifuStorageSavedData.get(p.level());
         if (!storage.contains(p.getUUID(), entry.id())) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] " + entry.name() + " no está en tu cápsula."));
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.not_in_capsule", entry.name()));
             return;
         }
 
@@ -235,12 +235,14 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         }
 
         if (WaifuRoster.hasActive(p, entry)) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] Ya tienes una " + entry.name() + " activa en el mundo."));
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.already_active", entry.name()));
             return;
         }
 
-        if (!spawnWaifu(entry, p, 1.0F)) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] No se ha podido invocar a " + entry.name() + "."));
+        // La afinidad se lee ANTES del remove(): storage.remove limpia el registro al vaciar la cápsula.
+        int affinity = storage.getAffinity(p.getUUID(), entry.id());
+        if (!spawnWaifu(entry, p, 1.0F, affinity)) {
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.summon_failed", entry.name()));
             return;
         }
 
@@ -250,7 +252,7 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         serverLevel.sendParticles(ParticleTypes.NOTE, p.getX(), p.getY() + 1.2, p.getZ(), 12, 0.4, 0.6, 0.4, 0.3);
         serverLevel.playSound(null, p.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
 
-        p.sendSystemMessage(Component.literal("§a[GachaWaifus] §f" + entry.name() + "§a invocada desde la cápsula."));
+        p.sendSystemMessage(Component.translatable("gachawaifus.storage.summoned", entry.name()));
 
         if (p instanceof ServerPlayer sp) {
             refreshAll(sp);
@@ -261,7 +263,7 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
     private void reviveEntry(WaifuRoster.Entry entry, Player p) {
         WaifuStorageSavedData storage = WaifuStorageSavedData.get(p.level());
         if (!storage.getFallen(p.getUUID()).contains(entry.id())) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] " + entry.name() + " no está caída en combate."));
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.not_fallen", entry.name()));
             return;
         }
 
@@ -271,19 +273,18 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         }
 
         if (WaifuRoster.hasActive(p, entry)) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] " + entry.name() + " ya está activa en el mundo."));
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.already_active", entry.name()));
             return;
         }
 
         int diamonds = countDiamonds(p);
         if (diamonds < REVIVE_COST) {
-            p.sendSystemMessage(Component.literal(
-                    "§c[GachaWaifus] El ritual necesita §f" + REVIVE_COST + " diamantes§c (tienes " + diamonds + ")."));
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.revive_cost", REVIVE_COST, diamonds));
             return;
         }
 
-        if (!spawnWaifu(entry, p, 0.5F)) {
-            p.sendSystemMessage(Component.literal("§c[GachaWaifus] No se ha podido revivir a " + entry.name() + "."));
+        if (!spawnWaifu(entry, p, 0.5F, storage.getAffinity(p.getUUID(), entry.id()))) {
+            p.sendSystemMessage(Component.translatable("gachawaifus.storage.revive_failed", entry.name()));
             return;
         }
 
@@ -297,7 +298,7 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         serverLevel.playSound(null, p.blockPosition(), SoundEvents.TOTEM_USE, SoundSource.PLAYERS, 1.0F, 1.2F);
         serverLevel.playSound(null, p.blockPosition(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.4F, 1.0F);
 
-        p.sendSystemMessage(Component.literal("§d[GachaWaifus] §f" + entry.name() + "§d ha vuelto a la vida."));
+        p.sendSystemMessage(Component.translatable("gachawaifus.storage.revived", entry.name()));
 
         if (p instanceof ServerPlayer sp) {
             refreshAll(sp);
@@ -305,13 +306,14 @@ public class WaifuStorageMenu extends AbstractContainerMenu {
         }
     }
 
-    private boolean spawnWaifu(WaifuRoster.Entry entry, Player p, float healthFraction) {
+    private boolean spawnWaifu(WaifuRoster.Entry entry, Player p, float healthFraction, int affinity) {
         AbstractWaifuEntity waifu = entry.type().get().create(p.level());
         if (waifu == null) return false;
         double x = p.getX() + (-Math.sin(Math.toRadians(p.getYRot())) * 1.5);
         double z = p.getZ() + (Math.cos(Math.toRadians(p.getYRot())) * 1.5);
         waifu.moveTo(x, p.getY(), z, p.getYRot(), 0.0F);
         waifu.tame(p);
+        waifu.setAffinity(affinity); // el vínculo sobrevive a cápsula, caída y resurrección
         if (healthFraction < 1.0F) {
             waifu.setHealth(Math.max(1.0F, waifu.getMaxHealth() * healthFraction));
         }

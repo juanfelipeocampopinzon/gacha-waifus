@@ -11,6 +11,7 @@
   "entrypoints": {
     "main": ["com.gachawaifus.GachaWaifusMod"]
   },
+  "mixins": ["gachawaifus.mixins.json"],
   "depends": {
     "fabricloader": ">=0.19.5",
     "minecraft": "1.21.1",

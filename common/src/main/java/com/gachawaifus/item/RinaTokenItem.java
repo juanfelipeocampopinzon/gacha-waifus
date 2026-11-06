@@ -36,8 +36,7 @@ public InteractionResult useOn(UseOnContext context) {
                 player.getBoundingBox().inflate(128.0D),
                 e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
         if (!existing.isEmpty()) {
-            player.displayClientMessage(Component.literal(
-                    "§c[GachaWaifus] ¡Ya tienes una Rina activa! Solo puedes tener 1 activa a la vez."), true);
+            player.displayClientMessage(Component.translatable("item.gachawaifus.rina_token.1"), true);
             return InteractionResult.FAIL;
         }
     }
@@ -49,7 +48,7 @@ public InteractionResult useOn(UseOnContext context) {
                 player != null ? player.getYRot() : 0.0F, 0.0F);
         if (player != null) {
             entity.tame(player);
-            player.displayClientMessage(Component.literal("§f[GachaWaifus] ¡Rina ha sido invocada!"), true);
+            player.displayClientMessage(Component.translatable("item.gachawaifus.rina_token.2"), true);
         }
         level.addFreshEntity(entity);
         level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -66,7 +65,7 @@ public InteractionResult useOn(UseOnContext context) {
 @Override
 public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
 ColorTooltip.append(tooltipComponents, WaifuColor.ROSA);   // §7Color, fuerte y débil
-tooltipComponents.add(Component.literal("§7Invoca a §fRina§7 (Rosa / Defense)."));
+tooltipComponents.add(Component.translatable("item.gachawaifus.rina_token.3"));
 tooltipComponents.add(Component.literal("§8Ribbon Lash · Silk Shield · Waltz of the Weaver"));
 super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
 }

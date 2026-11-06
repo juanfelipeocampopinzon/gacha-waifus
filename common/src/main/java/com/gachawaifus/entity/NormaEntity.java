@@ -140,7 +140,7 @@ public class NormaEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§6Norma §o\"¡Superioridad en potencia de fuego!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.norma.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

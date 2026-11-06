@@ -109,7 +109,7 @@ public class HugoVladEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§0Hugo §o\"Blasfemia silenciosa: ya sois ceniza.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.hugo_vlad.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

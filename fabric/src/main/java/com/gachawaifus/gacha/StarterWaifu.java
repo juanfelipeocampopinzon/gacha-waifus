@@ -24,14 +24,18 @@ public final class StarterWaifu {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             ServerPlayer player = handler.player;
             if (!claimed(player)) {
-                player.sendSystemMessage(Component.literal(
-                        "§d[GachaWaifus] §fTienes una §dwaifu de regalo§f sin reclamar. Míralas con §f/inicio"
-                                + " §7y elige con §f/inicio <número>§f."));
+                player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.1"));
             }
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, env) -> {
             dispatcher.register(Commands.literal("inicio")
+                    .executes(context -> listar(context.getSource().getPlayerOrException()))
+                    .then(Commands.argument("numero",
+                                    IntegerArgumentType.integer(1, WaifuRoster.STANDARD_POOL.size()))
+                            .executes(context -> entregar(context.getSource().getPlayerOrException(),
+                                    IntegerArgumentType.getInteger(context, "numero")))));
+            dispatcher.register(Commands.literal("start")
                     .executes(context -> listar(context.getSource().getPlayerOrException()))
                     .then(Commands.argument("numero",
                                     IntegerArgumentType.integer(1, WaifuRoster.STANDARD_POOL.size()))
@@ -43,27 +47,21 @@ public final class StarterWaifu {
     private static int listar(ServerPlayer player) {
         List<WaifuRoster.Entry> opciones = WaifuRoster.STANDARD_POOL;
         if (claimed(player)) {
-            player.sendSystemMessage(Component.literal(
-                    "§e[GachaWaifus] §fTu waifu inicial ya está elegida. §7Las demás salen del"
-                            + " §fTerminal Gacha§7, de las §fmisiones diarias§7 y domando waifus salvajes."));
+            player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.2"));
             return 0;
         }
-        player.sendSystemMessage(Component.literal(
-                "§d[GachaWaifus] §fElige tu waifu inicial §7(una sola vez, gratis)§f:"));
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.3"));
         for (int i = 0; i < opciones.size(); i++) {
             player.sendSystemMessage(Component.literal(
                     "§7 " + (i + 1) + " §f· §d" + opciones.get(i).name()));
         }
-        player.sendSystemMessage(Component.literal(
-                "§7Reclama con §f/inicio <número>§7. §f/inicio §7vuelve a listarlas."));
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.4"));
         return opciones.size();
     }
 
     private static int entregar(ServerPlayer player, int numero) {
         if (claimed(player)) {
-            player.sendSystemMessage(Component.literal(
-                    "§e[GachaWaifus] §fLa waifu inicial ya se reclamó en este mundo. §7Escribe §f/inicio"
-                            + " §7para ver cuál elegiste en tu Cápsula."));
+            player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.5"));
             return 0;
         }
         WaifuRoster.Entry entry = WaifuRoster.STANDARD_POOL.get(numero - 1);
@@ -74,11 +72,8 @@ public final class StarterWaifu {
             player.drop(token, false);
         }
 
-        player.sendSystemMessage(Component.literal(
-                "§d[GachaWaifus] §f¡" + entry.name() + " §fes tu waifu inicial! §7Su token está en tu"
-                        + " inventario: clic derecho al suelo para invocarla."));
-        player.sendSystemMessage(Component.literal(
-                "§7Shift + clic con la mano vacía sobre ella cambia su modo de combate."));
+        player.sendSystemMessage(Component.translatable("gachawaifus.starter.given", entry.name()));
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.starter_waifu.6"));
         player.level().playSound(null, player.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP,
                 SoundSource.PLAYERS, 1.0F, 1.3F);
         player.serverLevel().sendParticles(ParticleTypes.HEART, player.getX(), player.getY() + 1.6D,

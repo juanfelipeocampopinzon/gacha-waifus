@@ -59,7 +59,6 @@ import com.gachawaifus.entity.client.RemielleModel;
 import com.gachawaifus.entity.client.JaneDoeModel;
 import com.gachawaifus.client.GachaBannerScreen;
 import com.gachawaifus.client.GuideScreen;
-import com.gachawaifus.client.HomeMimicScreen;
 import com.gachawaifus.client.WaifuHomeBlockRenderer;
 import com.gachawaifus.client.WaifuModeScreen;
 import com.gachawaifus.client.WaifuStorageScreen;
@@ -131,6 +130,7 @@ public class GachaWaifusMod {
         event.registerLayerDefinition(WaifuBustLayers.TUBE, WaifuBustLayers::create);
         event.registerLayerDefinition(WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
         event.registerLayerDefinition(WaifuBustLayers.TUBE_WIDE, WaifuBustLayers::createWide);
+        event.registerLayerDefinition(WaifuBustLayers.PROMEIA, WaifuBustLayers::createPromeia);
         event.registerLayerDefinition(TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
         event.registerLayerDefinition(RemielleModel.LAYER_LOCATION, RemielleModel::createBodyLayer);
         event.registerLayerDefinition(JaneDoeModel.LAYER_LOCATION, JaneDoeModel::createBodyLayer);
@@ -141,7 +141,6 @@ public class GachaWaifusMod {
         event.register(ModMenuTypes.GACHA_BANNER.get(), GachaBannerScreen::new);
         event.register(ModMenuTypes.WAIFU_GUIDE.get(), GuideScreen::new);
         event.register(ModMenuTypes.WAIFU_MODE.get(), WaifuModeScreen::new);
-        event.register(ModMenuTypes.HOME_MIMIC.get(), HomeMimicScreen::new);
     }
 
     private void registerAttributes(EntityAttributeCreationEvent event) {

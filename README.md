@@ -2,7 +2,7 @@
 
 Mod de waifus coleccionables con combate inspirado en *Zenless Zone Zero (ZZZ)*, mecánicas de gacha (banners promocional y permanente con pity), sistema de hogar, modos tácticos de comportamiento y animaciones fluidas con **GeckoLib**.
 
-> **Versión:** `6.6.0` · **Minecraft:** 1.21.1 · **NeoForge:** `21.1.233` · **Fabric:** `0.116.17` · **Java:** 21
+> **Versión:** `7.2.0` · **Minecraft:** 1.21.1 · **NeoForge:** `21.1.233` · **Fabric:** `0.116.17` · **Java:** 21
 
 ---
 
@@ -83,8 +83,8 @@ env JAVA_HOME="$J" ./gradlew build -Dorg.gradle.java.home="$J" --offline --no-da
 ```
 
 ### Jars Generados
-- **NeoForge:** `neoforge/build/libs/gachawaifus-6.6.0.jar`
-- **Fabric:** `fabric/build/libs/gachawaifus-fabric-6.6.0-fabric.1.jar`
+- **NeoForge:** `neoforge/build/libs/gachawaifus-7.2.0.jar`
+- **Fabric:** `fabric/build/libs/gachawaifus-fabric-7.2.0-fabric.1.jar`
 
 ---
 

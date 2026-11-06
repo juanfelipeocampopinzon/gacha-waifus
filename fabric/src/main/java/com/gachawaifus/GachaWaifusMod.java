@@ -1,6 +1,7 @@
 package com.gachawaifus;
 
 import com.gachawaifus.color.ColorEvents;
+import com.gachawaifus.block.WaifuHomeBlock;
 import com.gachawaifus.command.CollectionCommand;
 import com.gachawaifus.command.ColorCommand;
 import com.gachawaifus.entity.BossSpawnHandler;
@@ -21,6 +22,7 @@ import com.gachawaifus.registry.ModMenuTypes;
 import com.gachawaifus.registry.ModSounds;
 import com.gachawaifus.team.TeamEvents;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +36,7 @@ public class GachaWaifusMod implements ModInitializer {
 
         ModSounds.init();
         ModBlocks.init();
+        UseBlockCallback.EVENT.register(WaifuHomeBlock::onUseBlock);
         ModBlockEntities.init();
         ModEntities.init();
         ModItems.init();

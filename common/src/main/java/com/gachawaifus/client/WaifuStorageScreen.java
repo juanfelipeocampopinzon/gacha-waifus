@@ -97,7 +97,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
     private WaifuRoster.Entry lastClickedEntry = null;
 
     public WaifuStorageScreen(WaifuStorageMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, Component.literal("§dCápsula Waifu §7& Compendio"));
+        super(menu, playerInventory, Component.translatable("gui.gachawaifus.waifu_storage.1"));
         this.imageWidth = W;
         this.imageHeight = H;
     }
@@ -172,11 +172,13 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
     /* ══ Geometría Responsiva al Texto (Cajas Dinámicas) ═════════════════════════════════════ */
 
     private String capsuleTabLabel() {
-        return "CÁPSULA (" + (this.menu.storedWaifus() + this.menu.fallenWaifus()) + ")";
+        return Component.translatable("gachawaifus.storage.tab_capsule",
+                this.menu.storedWaifus() + this.menu.fallenWaifus()).getString();
     }
 
     private String glossaryTabLabel() {
-        return "GLOSARIO (" + this.menu.ownedWaifus() + "/" + WaifuRoster.ROTATION.size() + ")";
+        return Component.translatable("gachawaifus.storage.tab_glossary",
+                this.menu.ownedWaifus(), WaifuRoster.ROTATION.size()).getString();
     }
 
     /** [x, y, w, h] responsivo para la pestaña de Cápsula */
@@ -198,9 +200,9 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
 
     /** [x, y, w, h] responsivo para los subfiltros del glosario (0=TODAS, 1=OBTENIDAS, 2=FALTANTES) */
     private int[] getSubFilterBounds(int left, int top, int filterIdx) {
-        String f1 = "TODAS";
-        String f2 = "OBTENIDAS";
-        String f3 = "FALTANTES";
+        String f1 = Component.translatable("gachawaifus.storage.filter_all").getString();
+        String f2 = Component.translatable("gachawaifus.storage.filter_owned").getString();
+        String f3 = Component.translatable("gachawaifus.storage.filter_missing").getString();
 
         int w1 = this.font.width(f1) + 12;
         int w2 = this.font.width(f2) + 12;
@@ -220,7 +222,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
 
     /** [x, y, w, h] responsivo para el botón de alternar vista 3D */
     private int[] getToggle3DBounds(int left, int top) {
-        String label = "3D VIVO";
+        String label = Component.translatable("gachawaifus.storage.view_3d").getString();
         int w = this.font.width(label) + 12;
         int x = left + FRAME_X;
         return new int[]{x, top + 40, w, 12};
@@ -229,7 +231,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
     /** [x, y, w, h] responsivo para el botón de alternar vista Pixel Art */
     private int[] getToggleArtBounds(int left, int top) {
         int[] t3d = getToggle3DBounds(left, top);
-        String label = "ARTE 128px";
+        String label = Component.translatable("gachawaifus.storage.view_art").getString();
         int w = this.font.width(label) + 12;
         int x = t3d[0] + t3d[2] + 4;
         return new int[]{x, top + 40, w, 12};
@@ -246,18 +248,19 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         boolean isOwned = this.menu.isOwned(rIdx);
 
         if (isStored) {
-            return "✔ INVOCAR AHORA";
+            return Component.translatable("gachawaifus.storage.action_summon").getString();
         } else if (isFallen) {
             int diamonds = this.menu.diamondCount();
             return diamonds >= WaifuStorageMenu.REVIVE_COST
-                    ? "❤ REVIVIR (4 💎)"
-                    : "FALTAN 💎 (" + diamonds + "/4)";
+                    ? Component.translatable("gachawaifus.storage.action_revive").getString()
+                    : Component.translatable("gachawaifus.storage.action_missing_gems", diamonds,
+                            WaifuStorageMenu.REVIVE_COST).getString();
         } else if (isActive) {
-            return "★ ACTIVA EN EL MUNDO";
+            return Component.translatable("gachawaifus.storage.action_active").getString();
         } else if (isOwned) {
-            return "❖ EN TU INVENTARIO";
+            return Component.translatable("gachawaifus.storage.action_inventory").getString();
         } else {
-            return "🔒 EN EL GACHA / SALVAJE";
+            return Component.translatable("gachawaifus.storage.action_locked").getString();
         }
     }
 
@@ -279,7 +282,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
     /** [x, y, w, h] para el botón « (página anterior) */
     private int[] getPrevPageBounds(int left, int top) {
         int navCenter = left + GRID_START_X + (COLS * (CELL_SIZE + 3) - 3) / 2;
-        int pagePillW = this.font.width("Pág. 99 / 99") + 12;
+        int pagePillW = this.font.width(pagePillDummy()) + 12;
         int x = (navCenter - pagePillW / 2) - 24;
         return new int[]{x, top + 172, 20, 14};
     }
@@ -287,9 +290,14 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
     /** [x, y, w, h] para el botón » (página siguiente) */
     private int[] getNextPageBounds(int left, int top) {
         int navCenter = left + GRID_START_X + (COLS * (CELL_SIZE + 3) - 3) / 2;
-        int pagePillW = this.font.width("Pág. 99 / 99") + 12;
+        int pagePillW = this.font.width(pagePillDummy()) + 12;
         int x = (navCenter + pagePillW / 2) + 4;
         return new int[]{x, top + 172, 20, 14};
+    }
+
+    /** Ancho reservado para la píldora de página: se mide con el peor caso "99 / 99". */
+    private String pagePillDummy() {
+        return Component.translatable("gachawaifus.storage.page", 99, 99).getString();
     }
 
     /* ══ Renderizado Principal ═══════════════════════════════════════════════════════════════ */
@@ -327,7 +335,8 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         graphics.fill(left + 1, top + HEADER_H, left + W - 1, top + HEADER_H + 1, 0xFF000000 | accent);
 
         graphics.drawString(this.font, "★", left + 10, top + 7, GOLD, true);
-        graphics.drawString(this.font, "CÁPSULA & GLOSARIO", left + 20, top + 7, 0xFFFFFFFF, true);
+        graphics.drawString(this.font, "§f" + Component.translatable("gachawaifus.storage.header").getString(),
+                left + 20, top + 7, 0xFFFFFFFF, true);
 
         // Pestañas Superiores y Cerrar (Cajas Responsivas)
         drawTabs(graphics, left, top, mouseX, mouseY);
@@ -393,26 +402,32 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         // Subfiltros del Glosario (Cajas con Ancho Dinámico)
         if (this.activeTab == WaifuStorageMenu.TAB_GLOSSARY) {
             int[] f1 = getSubFilterBounds(left, top, FILTER_ALL);
-            drawSubFilter(graphics, f1[0], f1[1], f1[2], f1[3], "TODAS", this.glossaryFilter == FILTER_ALL, mouseX, mouseY);
+            drawSubFilter(graphics, f1[0], f1[1], f1[2], f1[3],
+                    Component.translatable("gachawaifus.storage.filter_all").getString(),
+                    this.glossaryFilter == FILTER_ALL, mouseX, mouseY);
 
             int[] f2 = getSubFilterBounds(left, top, FILTER_OWNED);
-            drawSubFilter(graphics, f2[0], f2[1], f2[2], f2[3], "OBTENIDAS", this.glossaryFilter == FILTER_OWNED, mouseX, mouseY);
+            drawSubFilter(graphics, f2[0], f2[1], f2[2], f2[3],
+                    Component.translatable("gachawaifus.storage.filter_owned").getString(),
+                    this.glossaryFilter == FILTER_OWNED, mouseX, mouseY);
 
             int[] f3 = getSubFilterBounds(left, top, FILTER_MISSING);
-            drawSubFilter(graphics, f3[0], f3[1], f3[2], f3[3], "FALTANTES", this.glossaryFilter == FILTER_MISSING, mouseX, mouseY);
+            drawSubFilter(graphics, f3[0], f3[1], f3[2], f3[3],
+                    Component.translatable("gachawaifus.storage.filter_missing").getString(),
+                    this.glossaryFilter == FILTER_MISSING, mouseX, mouseY);
         } else {
-            String title = "WAIFUS EN TU CÁPSULA";
+            String title = Component.translatable("gachawaifus.storage.capsule_title").getString();
             int tw = this.font.width(title);
             graphics.drawString(this.font, "§d" + title, left + 16, top + 30, TEXT, true);
         }
 
         // Si la cápsula está vacía: Tarjeta/Caja Informativa Responsiva
         if (this.activeTab == WaifuStorageMenu.TAB_CAPSULE && total == 0) {
-            String l1 = "★ CÁPSULA VACÍA ★";
-            String l2 = "Guarda a tu waifu con:";
-            String l3 = "Shift + Clic derecho";
-            String l4 = "con la cápsula en mano.";
-            String l5 = "¡Quedará a salvo aquí!";
+            String l1 = Component.translatable("gachawaifus.storage.empty_l1").getString();
+            String l2 = Component.translatable("gachawaifus.storage.empty_l2").getString();
+            String l3 = Component.translatable("gachawaifus.storage.empty_l3").getString();
+            String l4 = Component.translatable("gachawaifus.storage.empty_l4").getString();
+            String l5 = Component.translatable("gachawaifus.storage.empty_l5").getString();
 
             int maxTextW = Math.max(this.font.width(l1),
                     Math.max(this.font.width(l2), Math.max(this.font.width(l3), Math.max(this.font.width(l4), this.font.width(l5)))));
@@ -500,7 +515,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         pillButton(graphics, nextBtn[0], nextBtn[1], nextBtn[2], nextBtn[3], "»", canNext, accentColor(), mouseX, mouseY);
 
         // Caja responsiva para el indicador de página
-        String pageText = "Pág. " + (this.page + 1) + " / " + maxPages;
+        String pageText = Component.translatable("gachawaifus.storage.page", this.page + 1, maxPages).getString();
         int pageTextW = this.font.width(pageText);
         int pagePillW = pageTextW + 12;
         int pagePillX = prevBtn[0] + prevBtn[2] + (nextBtn[0] - (prevBtn[0] + prevBtn[2]) - pagePillW) / 2;
@@ -513,10 +528,12 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         int footY = top + 196;
         String stats;
         if (this.activeTab == WaifuStorageMenu.TAB_CAPSULE) {
-            stats = "§a" + this.menu.storedWaifus() + " vivas §7· §c" + this.menu.fallenWaifus() + " caídas";
+            stats = Component.translatable("gachawaifus.storage.capsule_stats",
+                    this.menu.storedWaifus(), this.menu.fallenWaifus()).getString();
         } else {
             int pct = (this.menu.ownedWaifus() * 100) / Math.max(1, WaifuRoster.ROTATION.size());
-            stats = "§6" + this.menu.ownedWaifus() + " / " + WaifuRoster.ROTATION.size() + " (" + pct + "%)";
+            stats = Component.translatable("gachawaifus.storage.owned_stats",
+                    this.menu.ownedWaifus(), WaifuRoster.ROTATION.size(), pct).getString();
         }
 
         int statsW = this.font.width(stats) + 12;
@@ -559,7 +576,7 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         ChatFormatting nameFormat = waifuColor == null ? ChatFormatting.WHITE : waifuColor.format();
 
         if (waifuColor != null) {
-            String colName = waifuColor.name();
+            String colName = waifuColor.displayName().getString();
             int badgeW = this.font.width(colName) + 10;
             int badgeX = left + W - 14 - badgeW;
 
@@ -586,8 +603,12 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
         int[] t3d = getToggle3DBounds(left, top);
         int[] tart = getToggleArtBounds(left, top);
 
-        drawViewToggle(graphics, t3d[0], t3d[1], t3d[2], t3d[3], "3D VIVO", this.viewMode == VIEW_3D, accent, mouseX, mouseY);
-        drawViewToggle(graphics, tart[0], tart[1], tart[2], tart[3], "ARTE 128px", this.viewMode == VIEW_PIXEL_ART, accent, mouseX, mouseY);
+        drawViewToggle(graphics, t3d[0], t3d[1], t3d[2], t3d[3],
+                Component.translatable("gachawaifus.storage.view_3d").getString(),
+                this.viewMode == VIEW_3D, accent, mouseX, mouseY);
+        drawViewToggle(graphics, tart[0], tart[1], tart[2], tart[3],
+                Component.translatable("gachawaifus.storage.view_art").getString(),
+                this.viewMode == VIEW_PIXEL_ART, accent, mouseX, mouseY);
 
         // Marco Multimedia 128x128
         int fx = left + FRAME_X;
@@ -682,8 +703,8 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
 
             WaifuColor wc = WaifuColors.of(this.selectedEntry.id());
             if (wc != null) {
-                tip.add(Component.literal("Clasificación: ").withStyle(ChatFormatting.GRAY)
-                        .append(Component.literal(wc.name()).withStyle(wc.format())));
+                tip.add(Component.translatable("gui.gachawaifus.waifu_storage.2").withStyle(ChatFormatting.GRAY)
+                        .append(wc.styledName()));
             }
 
             tip.add(Component.translatable("item.gachawaifus." + this.selectedEntry.id() + "_token.desc")
@@ -719,13 +740,13 @@ public class WaifuStorageScreen extends AbstractContainerScreen<WaifuStorageMenu
                 tip.add(Component.literal(e.name()).withStyle(ChatFormatting.WHITE));
 
                 if (fallen) {
-                    tip.add(Component.literal("§c✖ Caída en combate (Revivir en Cápsula)"));
+                    tip.add(Component.translatable("gui.gachawaifus.waifu_storage.3"));
                 } else if (stored) {
-                    tip.add(Component.literal("§a✔ Almacenada en Cápsula (Lista para invocar)"));
+                    tip.add(Component.translatable("gui.gachawaifus.waifu_storage.4"));
                 } else if (owned) {
-                    tip.add(Component.literal("§6★ Desbloqueada"));
+                    tip.add(Component.translatable("gui.gachawaifus.waifu_storage.5"));
                 } else {
-                    tip.add(Component.literal("§7🔒 Bloqueada"));
+                    tip.add(Component.translatable("gui.gachawaifus.waifu_storage.6"));
                 }
 
                 graphics.renderComponentTooltip(this.font, tip, mouseX, mouseY);

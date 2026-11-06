@@ -108,7 +108,7 @@ public class TobichiOrigamiEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 700;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§7Tobichi Origami §o\"¡Que mi luz sea tu escudo!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.tobichi_origami.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 300, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

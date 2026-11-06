@@ -24,6 +24,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.neoforge.event.entity.player.PlayerInteractEvent;
 import net.neoforged.neoforge.event.level.BlockEvent;
 
 /**
@@ -32,11 +33,10 @@ import net.neoforged.neoforge.event.level.BlockEvent;
  * nueva después, o porque mover la casa es tan fácil como poner otro bloque).
  *
  * <p><b>Clic derecho con un bloque en la mano</b> lo hace imitar: {@link #useItemOn} intercepta el clic
- * antes de que el ítem coloque nada. Es la ruta normal para disfrazar la casa de madera, de vidrio o de
- * lo que haya en el inventario.
- *
- * <p><b>Shift + clic derecho con la mano vacía</b> abre el selector de textura, para cuando no se tiene
- * el bloque a mano. El bloque puede aparentar cualquier otro bloque del mundo
+ * antes de que el ítem coloque nada, y {@link #onRightClickBlock} hace lo mismo cuando vas agachado
+ * (vanilla se salta el hook del bloque en ese caso). Solo se aceptan bloques con modelo estático:
+ * cofres, hornos, carteles y demás BlockEntities no se imitan, para que el hogar nunca herede un
+ * menú ni una animación que no le corresponde. El bloque puede aparentar el bloque elegido
  * ({@link WaifuHomeBlockEntity} guarda cuál, y {@code WaifuHomeBlockRenderer} lo dibuja). Por eso
  * extiende {@link BaseEntityBlock} en vez de {@link Block} — su {@link RenderShape} es
  * {@code INVISIBLE} y quien pinta el cubo es el BlockEntityRenderer.
@@ -69,22 +69,12 @@ public class WaifuHomeBlock extends BaseEntityBlock {
     }
 
     /**
-     * Clic derecho: re-fija el hogar. Shift + clic derecho: abre el selector de textura. Se separan
-     * con {@code isSecondaryUseActive()} (mano vacía agachada) porque con un ítem en la mano agachado
-     * lo que se pone es bloque, no menú.
+     * Clic derecho con la mano vacía: re-fija el hogar. Agachado no hace nada especial; el
+     * camuflaje se hace con un bloque en la mano (ver {@link #onRightClickBlock}).
      */
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                Player player, BlockHitResult hitResult) {
-        if (player.isSecondaryUseActive()) {
-            if (!(level.getBlockEntity(pos) instanceof WaifuHomeBlockEntity home)) {
-                return InteractionResult.FAIL;
-            }
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(home, home::writeToMenuBuf);
-            }
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -100,9 +90,9 @@ public class WaifuHomeBlock extends BaseEntityBlock {
      * rápida, y manda sobre colocar el bloque: el servidor consulta este hook antes de usar el ítem,
      * así que devolver un resultado que consume la acción deja la colocación en nada.
      *
-     * <p>Cualquier otro ítem devuelve {@code PASS} y el clic hace lo de siempre (un token invoca, una
-     * espada ataca). Agachado no se llega aquí: vanilla se salta el hook del bloque y pone el bloque,
-     * que es justo lo que uno quiere cuando va agachado construyendo.
+     * <p>Cualquier otro ítem (o un bloque que no se puede imitar) devuelve {@code PASS} y el clic
+     * hace lo de siempre. Agachado no se llega aquí: vanilla se salta el hook del bloque y pone el
+     * bloque, así que esa variante la cubre {@link #onRightClickBlock}.
      */
     @Override
     protected ItemInteractionResult useItemOn(ItemStack heldItem, BlockState state, Level level,
@@ -113,13 +103,40 @@ public class WaifuHomeBlock extends BaseEntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         Block mimic = blockItem.getBlock();
-        if (mimic == this || level.isClientSide) {
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        if (level.isClientSide) {
+            return WaifuHomeBlockEntity.isMimicable(mimic)
+                    ? ItemInteractionResult.sidedSuccess(true)
+                    : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        home.setMimic(mimic);
+        if (!home.setMimic(mimic)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
         player.displayClientMessage(
                 Component.translatable("gachawaifus.home_block.mimic", home.mimicName()), true);
         return ItemInteractionResult.CONSUME;
+    }
+
+    /**
+     * La misma ruta que {@link #useItemOn}, pero para cuando el jugador va agachado: en 1.21.1
+     * vanilla se salta el hook del bloque si hay un ítem en la mano, así que sin este evento el
+     * bloque se colocaría encima del hogar en vez de camuflarlo.
+     */
+    @SubscribeEvent
+    public static void onRightClickBlock(PlayerInteractEvent.RightClickBlock event) {
+        if (!event.getEntity().isSecondaryUseActive()) {
+            return;
+        }
+        if (!(event.getLevel().getBlockEntity(event.getPos()) instanceof WaifuHomeBlockEntity home)
+                || !(event.getItemStack().getItem() instanceof BlockItem blockItem)
+                || !WaifuHomeBlockEntity.isMimicable(blockItem.getBlock())) {
+            return;
+        }
+        if (!event.getLevel().isClientSide) {
+            home.setMimic(blockItem.getBlock());
+            event.getEntity().displayClientMessage(
+                    Component.translatable("gachawaifus.home_block.mimic", home.mimicName()), true);
+        }
+        event.setCanceled(true);
     }
 
     /** Se coloca y ya es el hogar: no hay que darle ningún otro uso. */

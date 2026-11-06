@@ -87,6 +87,7 @@ public class JaneDoeEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 22;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -96,6 +97,7 @@ public class JaneDoeEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 260;
         target.hurt(this.damageSources().mobAttack(this), 15.0F);
         target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 1));
@@ -106,10 +108,11 @@ public class JaneDoeEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§0Jane Doe §o\"Ocho sonidos para ti, cariño.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.jane_doe.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

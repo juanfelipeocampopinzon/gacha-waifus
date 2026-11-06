@@ -35,8 +35,7 @@ public class ZhaoTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Zhao invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.zhao_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class ZhaoTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.ROSA);
-        tooltipComponents.add(Component.literal("§7Invoca a §fZhao§7 (Rosa / Defense)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.zhao_token.2"));
         tooltipComponents.add(Component.literal("§8Glacial Judgment · Frostflow Tundra · Bunny Barrage"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -184,6 +184,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
      * Cooldown: 25 ticks (1.25 segundos)
      */
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 25; // Cada 1.25 segundos
 
         this.triggerAnim("attack_controller", "attack");
@@ -209,6 +210,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
      * debilidad, que aqui hace de la rotura de DEF de su pasiva. Cooldown: 220 ticks.
      */
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 220; // ~11 segundos
 
         this.triggerAnim("attack_controller", "blackhole_ex");
@@ -237,6 +239,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
      * (4) y mas duracion (8 s), ademas de curar y buffear al dueño. Cooldown: 650 ticks.
      */
     private void performUltimate(LivingEntity target) {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 650; // ~32.7 segundos
 
         this.triggerAnim("attack_controller", "blackhole_ult");
@@ -247,7 +250,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
                 SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 2.0F, 0.8F);
 
         if (this.getOwner() instanceof Player player) {
-            player.sendSystemMessage(Component.literal("§d[Nicole Demara] §o\"¡Todo tiene un precio... y ustedes acaban de pagar la cuenta!\""));
+            player.sendSystemMessage(Component.translatable("message.gachawaifus.nicole_demara.1"));
             // Curación y buffs al dueño
             player.heal(30.0F);
             player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 280, 0)); // 14s

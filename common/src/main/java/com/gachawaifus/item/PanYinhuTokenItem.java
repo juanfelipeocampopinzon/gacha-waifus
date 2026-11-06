@@ -35,8 +35,7 @@ public class PanYinhuTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Pan Yinhu invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.pan_yinhu_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class PanYinhuTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MARRON);
-        tooltipComponents.add(Component.literal("§7Invoca a §6Pan Yinhu§7 (Marrón / Defense)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.pan_yinhu_token.2"));
         tooltipComponents.add(Component.literal("§8Unyielding Strikes · Mountainous Pulse Strike · A Feast Fit for an Emperor!"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

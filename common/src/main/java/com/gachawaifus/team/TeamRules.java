@@ -51,10 +51,8 @@ public final class TeamRules {
 
     /** Mensaje estándar cuando el equipo está lleno (va a la barra de acción). */
     public static void messageFull(Player player) {
-        player.displayClientMessage(Component.literal(
-                "§c[GachaWaifus] Equipo completo: ya tienes §f" + activeCount(player) + "/" + limit()
-                        + "§c waifus activas. Guarda una con la §dCápsula Waifu§c (Shift + clic"
-                        + " sobre ella) e invócala después."), true);
+        player.displayClientMessage(Component.translatable("gachawaifus.team.full",
+                activeCount(player), limit()), true);
     }
 
     private TeamRules() {

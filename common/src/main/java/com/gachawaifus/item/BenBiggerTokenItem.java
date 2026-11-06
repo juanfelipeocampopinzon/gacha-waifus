@@ -35,8 +35,7 @@ public class BenBiggerTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Ben Bigger invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ben_bigger_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class BenBiggerTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);
-        tooltipComponents.add(Component.literal("§7Invoca a §6Ben Bigger§7 (Naranja / Defense)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ben_bigger_token.2"));
         tooltipComponents.add(Component.literal("§8Debt Reconciliation · Cashflow Counter · Complete Payback"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

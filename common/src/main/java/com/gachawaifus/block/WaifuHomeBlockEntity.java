@@ -1,23 +1,20 @@
 package com.gachawaifus.block;
 
-import com.gachawaifus.menu.HomeMimicMenu;
 import com.gachawaifus.registry.ModBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.MenuProvider;
-import net.minecraft.world.entity.player.Inventory;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.RenderShape;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
@@ -36,7 +33,7 @@ import org.jetbrains.annotations.Nullable;
  * {@code sendBlockUpdated} del cambio en vivo. Sin la primera, al volver a entrar el bloque saldría
  * con la textura por defecto hasta que alguien lo vuelva a tocar.
  */
-public class WaifuHomeBlockEntity extends BlockEntity implements MenuProvider {
+public class WaifuHomeBlockEntity extends BlockEntity {
 
     private static final String TAG_MIMIC = "mimic";
 
@@ -47,10 +44,27 @@ public class WaifuHomeBlockEntity extends BlockEntity implements MenuProvider {
         super(ModBlockEntities.WAIFU_HOME.get(), pos, state);
     }
 
+    /**
+     * ¿Se puede imitar este bloque? Solo los que se dibujan con un modelo estático: fuera quedan el
+     * aire, los bloques sin ítem, los que tienen BlockEntity (cofres, hornos, carteles, camas…) y
+     * los que se renderizan de forma invisible o animada. Así el camuflaje es solo una textura y el
+     * Bloque de Hogar nunca hereda menús ni comportamientos raros del bloque imitado.
+     */
+    public static boolean isMimicable(@Nullable Block block) {
+        if (block == null || block.asItem() == Items.AIR) {
+            return false;
+        }
+        return block.defaultBlockState().getRenderShape() == RenderShape.MODEL
+                && !(block instanceof EntityBlock);
+    }
+
     /** El estado que pinta el renderizador. Nunca null: sin imitar, hormigón rosa. */
     public BlockState mimicState() {
         if (this.mimicId != null && BuiltInRegistries.BLOCK.containsKey(this.mimicId)) {
-            return BuiltInRegistries.BLOCK.get(this.mimicId).defaultBlockState();
+            Block block = BuiltInRegistries.BLOCK.get(this.mimicId);
+            if (isMimicable(block)) {
+                return block.defaultBlockState();
+            }
         }
         return Blocks.PINK_CONCRETE.defaultBlockState();
     }
@@ -60,11 +74,18 @@ public class WaifuHomeBlockEntity extends BlockEntity implements MenuProvider {
         return mimicState().getBlock().getName();
     }
 
-    /** Pone la textura a imitar y avisa al cliente. */
-    public void setMimic(Block block) {
-        ResourceLocation id = block == null ? null : BuiltInRegistries.BLOCK.getKey(block);
-        if (id == null ? this.mimicId == null : id.equals(this.mimicId)) {
-            return;
+    /**
+     * Pone la textura a imitar y avisa al cliente.
+     *
+     * @return {@code false} si el bloque no se puede imitar (no se toca el camuflaje actual)
+     */
+    public boolean setMimic(@Nullable Block block) {
+        if (!isMimicable(block)) {
+            return false;
+        }
+        ResourceLocation id = BuiltInRegistries.BLOCK.getKey(block);
+        if (id.equals(this.mimicId)) {
+            return true;
         }
         this.mimicId = id;
         setChanged();
@@ -72,6 +93,7 @@ public class WaifuHomeBlockEntity extends BlockEntity implements MenuProvider {
             this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(),
                     Block.UPDATE_CLIENTS);
         }
+        return true;
     }
 
     @Override
@@ -98,26 +120,5 @@ public class WaifuHomeBlockEntity extends BlockEntity implements MenuProvider {
     @Override
     public Packet<ClientGamePacketListener> getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
-    }
-
-    /* ── El menú del selector de textura ─────────────────────────────────────────────────── */
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("gachawaifus.mimic_screen.title");
-    }
-
-    @Override
-    public @Nullable AbstractContainerMenu createMenu(int containerId, Inventory inventory, Player player) {
-        if (this.level == null) {
-            return null;
-        }
-        return new HomeMimicMenu(containerId, inventory, this.level, this.worldPosition);
-    }
-
-    /** Lo que el cliente lee de los datos extra al abrir el menú. */
-    public void writeToMenuBuf(RegistryFriendlyByteBuf buf) {
-        buf.writeBlockPos(this.worldPosition);
-        buf.writeUtf(this.mimicId == null ? "" : this.mimicId.toString(), 128);
     }
 }

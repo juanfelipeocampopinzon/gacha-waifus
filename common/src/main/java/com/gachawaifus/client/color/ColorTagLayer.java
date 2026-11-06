@@ -16,7 +16,7 @@ import net.minecraft.network.chat.Style;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Enemy;
+import com.gachawaifus.entity.BossEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.phys.HitResult;
@@ -55,7 +55,7 @@ public class ColorTagLayer<T extends LivingEntity, M extends net.minecraft.clien
                        float limbSwing, float limbSwingAmount, float partialTick, float ageInTicks,
                        float netHeadYaw, float headPitch) {
         if (!ColorSettings.ENABLED || !ColorConfig.FLOATING_LABEL.get()) return;
-        if (!(entity instanceof Enemy)) return;
+        if (!(entity instanceof BossEntity)) return;
         if (entity.isInvisible() || entity.isDeadOrDying()) return;
 
         Minecraft minecraft = Minecraft.getInstance();

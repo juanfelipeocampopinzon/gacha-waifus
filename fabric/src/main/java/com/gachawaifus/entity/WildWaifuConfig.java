@@ -9,15 +9,15 @@ public final class WildWaifuConfig {
     }
 
     public static int chance() {
-        return 120;
+        return 40;
     }
 
     public static int interval() {
-        return 400;
+        return 150;
     }
 
     public static int maxNearby() {
-        return 2;
+        return 8;
     }
 
     public static int claimCost() {

@@ -43,6 +43,10 @@ public final class CollectionCommand {
                 .executes(CollectionCommand::summary)
                 .then(Commands.literal("cinco").executes(CollectionCommand::fiveStar))
                 .then(Commands.literal("cuatro").executes(CollectionCommand::fourStar)));
+        event.getDispatcher().register(Commands.literal("collection")
+                .executes(CollectionCommand::summary)
+                .then(Commands.literal("five").executes(CollectionCommand::fiveStar))
+                .then(Commands.literal("four").executes(CollectionCommand::fourStar)));
     }
 
     private static int summary(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
@@ -51,36 +55,33 @@ public final class CollectionCommand {
         List<WaifuRoster.Entry> cinco = list(false, owned);
         List<WaifuRoster.Entry> cuatro = list(true, owned);
 
-        context.getSource().sendSuccess(() -> Component.literal(
-                "§d[GachaWaifus] Colección §f" + (WaifuRoster.ROTATION.size() - cinco.size() - cuatro.size())
-                        + "§7/§f" + WaifuRoster.ROTATION.size()
-                        + " §7· 5★ §a" + (total(false) - cinco.size()) + "/" + total(false)
-                        + " §7· 4★ §e" + (total(true) - cuatro.size()) + "/" + total(true)), false);
+        context.getSource().sendSuccess(() -> Component.translatable(
+                "command.gachawaifus.collection.summary",
+                WaifuRoster.ROTATION.size() - cinco.size() - cuatro.size(), WaifuRoster.ROTATION.size(),
+                total(false) - cinco.size(), total(false),
+                total(true) - cuatro.size(), total(true)), false);
 
         if (cinco.isEmpty() && cuatro.isEmpty()) {
-            context.getSource().sendSuccess(() -> Component.literal(
-                    "§a¡Colección completa! §7El Terminal ya solo da comida de relleno."), false);
+            context.getSource().sendSuccess(() -> Component.translatable("gui.gachawaifus.collection_command.1"), false);
             return 1;
         }
-        print(context, "Faltan 5★", cinco);
-        print(context, "Faltan 4★", cuatro);
-        context.getSource().sendSuccess(() -> Component.literal(
-                "§7Consejo: §f/gwcolor biomas §7dice en qué clima manda cada color y §f/gwcolor aqui"
-                        + " §7qué waifus pueden nacer donde estás."), false);
+        print(context, Component.translatable("command.gachawaifus.collection.missing_five"), cinco);
+        print(context, Component.translatable("command.gachawaifus.collection.missing_four"), cuatro);
+        context.getSource().sendSuccess(() -> Component.translatable("gui.gachawaifus.collection_command.2"), false);
         return WaifuRoster.ROTATION.size() - cinco.size() - cuatro.size();
     }
 
     private static int fiveStar(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        return range(context, false, "5★ §7(salen del §dTerminal Rosa§7 a 1,6 % por tirada, pity 64)");
+        return range(context, false, "command.gachawaifus.collection.five_range");
     }
 
     private static int fourStar(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
-        return range(context, true, "4★ §7(10 % por tirada y pity 32: la vía rápida para completar)");
+        return range(context, true, "command.gachawaifus.collection.four_range");
     }
 
     /** Lista completa de un rango, separada entre lo conseguido y lo que falta. */
     private static int range(CommandContext<CommandSourceStack> context, boolean fourStar,
-                             String title) throws CommandSyntaxException {
+                             String titleKey) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Set<String> owned = WaifuRoster.ownedIds(player);
         List<WaifuRoster.Entry> todas = new ArrayList<>();
@@ -93,22 +94,24 @@ public final class CollectionCommand {
             todas.add(entry);
             (owned.contains(entry.id()) ? conseguidas : faltan).add(entry);
         }
-        context.getSource().sendSuccess(() -> Component.literal(
-                "§d[GachaWaifus] §f" + title + " §7· " + todas.size()), false);
-        print(context, "Conseguidas", conseguidas);
-        print(context, "Faltan", faltan);
+        context.getSource().sendSuccess(() -> Component.translatable("command.gachawaifus.collection.range_head")
+                .append(Component.translatable(titleKey))
+                .append(Component.translatable("command.gachawaifus.collection.range_count", todas.size())), false);
+        print(context, Component.translatable("command.gachawaifus.collection.conseguidas"), conseguidas);
+        print(context, Component.translatable("command.gachawaifus.collection.faltan"), faltan);
         return todas.size();
     }
 
     // ---------------------------------------------------------------------
 
     /** Una línea por grupo; si el grupo está vacío no se pinta, para no sacar "Faltan: 0". */
-    private static void print(CommandContext<CommandSourceStack> context, String title,
+    private static void print(CommandContext<CommandSourceStack> context, Component label,
                               List<WaifuRoster.Entry> entries) {
         if (entries.isEmpty()) {
             return;
         }
-        final Component line = Component.literal("§7" + title + " §f(" + entries.size() + "§7): §r")
+        final Component line = label.copy()
+                .append(Component.translatable("command.gachawaifus.collection.group_count", entries.size()))
                 .append(names(entries));
         context.getSource().sendSuccess(() -> line, false);
     }

@@ -62,6 +62,17 @@ public final class WaifuBustLayers {
     public static final ModelLayerLocation TUBE_WIDE = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust_wide"), "main");
 
+    /**
+     * Malla de Promeia: la pieza normal más la cola de caballo. Va en capa propia para que la cola
+     * no se le pegue a las demás waifus que comparten {@link #TUBE}.
+     */
+    public static final ModelLayerLocation PROMEIA = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "promeia"), "main");
+
+    /** Cola de caballo del {@code promeia.geo.json}: caja 2x18x2 colgando de la nuca. */
+    private static final int TAIL_UV_U = 0;
+    private static final int TAIL_UV_V = 69;
+
     private WaifuBustLayers() {
     }
 
@@ -77,10 +88,19 @@ public final class WaifuBustLayers {
 
     /** Pieza normal sobre malla ancha: 8x2x2 (Soldier 11). */
     public static LayerDefinition createWide() {
-        return build(PIVOT_Y_NORMAL, 2.0F, false);
+        return build(PIVOT_Y_NORMAL, 2.0F, false, false);
+    }
+
+    /** Promeia: pieza normal sobre malla slim más la cola de caballo colgada de la cabeza. */
+    public static LayerDefinition createPromeia() {
+        return build(PIVOT_Y_NORMAL, 2.0F, true, true);
     }
 
     private static LayerDefinition build(float pivotY, float section, boolean slim) {
+        return build(pivotY, section, slim, false);
+    }
+
+    private static LayerDefinition build(float pivotY, float section, boolean slim, boolean ponytail) {
         MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, slim);
         PartDefinition body = mesh.getRoot().getChild("body");
 
@@ -91,6 +111,15 @@ public final class WaifuBustLayers {
 
         body.addOrReplaceChild("breasts", tube, PartPose.offsetAndRotation(
                 0.0F, pivotY, PIVOT_Z, TILT_DEGREES * Mth.DEG_TO_RAD, 0.0F, 0.0F));
+
+        if (ponytail) {
+            // Pivote en la nuca (y=0 del modelo de jugador) y caja hacia abajo y atrás, igual que
+            // el hueso "cola de caballo" del .geo.json: origen [-1,6,3], tamaño [2,18,2].
+            CubeListBuilder tail = CubeListBuilder.create()
+                    .texOffs(TAIL_UV_U, TAIL_UV_V)
+                    .addBox(-1.0F, 0.0F, 3.0F, 2.0F, 18.0F, 2.0F);
+            mesh.getRoot().getChild("head").addOrReplaceChild("ponytail", tail, PartPose.ZERO);
+        }
 
         // La capa declara alto 128: la mitad de arriba es la skin de siempre y la de abajo
         // lleva el desplegado de la pieza.

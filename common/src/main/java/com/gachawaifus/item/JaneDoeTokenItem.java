@@ -35,8 +35,7 @@ public class JaneDoeTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Jane Doe invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.jane_doe_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class JaneDoeTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);
-        tooltipComponents.add(Component.literal("§7Invoca a §0Jane Doe§7 (Negro / Anomaly)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.jane_doe_token.2"));
         tooltipComponents.add(Component.literal("§8Dancing Blades · Aerial Sweep - Clearout · Eight Sounds of Ganzhou"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

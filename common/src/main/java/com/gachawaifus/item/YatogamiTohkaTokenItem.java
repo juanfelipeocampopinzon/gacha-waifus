@@ -36,7 +36,7 @@ public class YatogamiTohkaTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Ya tienes una Yatogami Tohka activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.yatogami_tohka_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -48,7 +48,7 @@ public class YatogamiTohkaTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§5[GachaWaifus] ¡Yatogami Tohka ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.yatogami_tohka_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -65,7 +65,7 @@ public class YatogamiTohkaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MORADO);
-        tooltipComponents.add(Component.literal("§7Invoca a §5Yatogami Tohka§7 (Morado / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.yatogami_tohka_token.3"));
         tooltipComponents.add(Component.literal("§8Corte Espiritual · Sandalphon · Halvanhelev"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

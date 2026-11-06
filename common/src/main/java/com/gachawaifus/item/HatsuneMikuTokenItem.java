@@ -36,7 +36,7 @@ public class HatsuneMikuTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Ya tienes una Hatsune Miku activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.hatsune_miku_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -48,7 +48,7 @@ public class HatsuneMikuTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§b[GachaWaifus] ¡Hatsune Miku ha subido al escenario!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.hatsune_miku_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -65,8 +65,8 @@ public class HatsuneMikuTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.VERDE);
-        tooltipComponents.add(Component.literal("§7Invoca a §bHatsune Miku§7 (Verde / Support)."));
-        tooltipComponents.add(Component.literal("§8Melodía Resonante · World is Mine · Live Stage"));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.hatsune_miku_token.3"));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.hatsune_miku_token.4"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

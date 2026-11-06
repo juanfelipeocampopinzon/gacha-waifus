@@ -59,5 +59,443 @@
         "pitch": 1.0
       }
     ]
+  },
+  "entity/anby_demara/attack": {
+    "sounds": [
+      "gachawaifus:entity/anby_demara/attack1",
+      "gachawaifus:entity/anby_demara/attack2",
+      "gachawaifus:entity/anby_demara/attack3"
+    ]
+  },
+  "entity/anby_demara/death": {
+    "sounds": [
+      "gachawaifus:entity/anby_demara/death1"
+    ]
+  },
+  "entity/anby_demara/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/anby_demara/feed"
+    ]
+  },
+  "entity/anby_demara/hurt": {
+    "sounds": [
+      "gachawaifus:entity/anby_demara/hurt1",
+      "gachawaifus:entity/anby_demara/hurt2",
+      "gachawaifus:entity/anby_demara/hurt3"
+    ]
+  },
+  "entity/anby_demara/idle": {
+    "sounds": [
+      "gachawaifus:entity/anby_demara/idle1",
+      "gachawaifus:entity/anby_demara/idle2",
+      "gachawaifus:entity/anby_demara/idle3",
+      "gachawaifus:entity/anby_demara/idle4",
+      "gachawaifus:entity/anby_demara/idle5"
+    ]
+  },
+  "entity/aqua/attack": {
+    "sounds": [
+      "gachawaifus:entity/aqua/attack1",
+      "gachawaifus:entity/aqua/attack2",
+      "gachawaifus:entity/aqua/attack3"
+    ]
+  },
+  "entity/aqua/death": {
+    "sounds": [
+      "gachawaifus:entity/aqua/death1"
+    ]
+  },
+  "entity/aqua/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/aqua/feed"
+    ]
+  },
+  "entity/aqua/hurt": {
+    "sounds": [
+      "gachawaifus:entity/aqua/hurt1",
+      "gachawaifus:entity/aqua/hurt2",
+      "gachawaifus:entity/aqua/hurt3"
+    ]
+  },
+  "entity/aqua/idle": {
+    "sounds": [
+      "gachawaifus:entity/aqua/idle1",
+      "gachawaifus:entity/aqua/idle2",
+      "gachawaifus:entity/aqua/idle3",
+      "gachawaifus:entity/aqua/idle4"
+    ]
+  },
+  "entity/darkness/attack": {
+    "sounds": [
+      "gachawaifus:entity/darkness/attack1",
+      "gachawaifus:entity/darkness/attack2",
+      "gachawaifus:entity/darkness/attack3"
+    ]
+  },
+  "entity/darkness/death": {
+    "sounds": [
+      "gachawaifus:entity/darkness/death1",
+      "gachawaifus:entity/darkness/death2"
+    ]
+  },
+  "entity/darkness/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/darkness/feed"
+    ]
+  },
+  "entity/darkness/hurt": {
+    "sounds": [
+      "gachawaifus:entity/darkness/hurt1",
+      "gachawaifus:entity/darkness/hurt2",
+      "gachawaifus:entity/darkness/hurt3"
+    ]
+  },
+  "entity/darkness/idle": {
+    "sounds": [
+      "gachawaifus:entity/darkness/idle1",
+      "gachawaifus:entity/darkness/idle2",
+      "gachawaifus:entity/darkness/idle3",
+      "gachawaifus:entity/darkness/idle4",
+      "gachawaifus:entity/darkness/idle5"
+    ]
+  },
+  "entity/ellen_joe/attack": {
+    "sounds": [
+      "gachawaifus:entity/ellen_joe/attack1",
+      "gachawaifus:entity/ellen_joe/attack2",
+      "gachawaifus:entity/ellen_joe/attack3"
+    ]
+  },
+  "entity/ellen_joe/death": {
+    "sounds": [
+      "gachawaifus:entity/ellen_joe/death1"
+    ]
+  },
+  "entity/ellen_joe/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/ellen_joe/feed"
+    ]
+  },
+  "entity/ellen_joe/hurt": {
+    "sounds": [
+      "gachawaifus:entity/ellen_joe/hurt1",
+      "gachawaifus:entity/ellen_joe/hurt2",
+      "gachawaifus:entity/ellen_joe/hurt3"
+    ]
+  },
+  "entity/ellen_joe/idle": {
+    "sounds": [
+      "gachawaifus:entity/ellen_joe/idle1",
+      "gachawaifus:entity/ellen_joe/idle2",
+      "gachawaifus:entity/ellen_joe/idle3",
+      "gachawaifus:entity/ellen_joe/idle4",
+      "gachawaifus:entity/ellen_joe/idle5"
+    ]
+  },
+  "entity/hatsune_miku/attack": {
+    "sounds": [
+      "gachawaifus:entity/hatsune_miku/attack1",
+      "gachawaifus:entity/hatsune_miku/attack2",
+      "gachawaifus:entity/hatsune_miku/attack3",
+      "gachawaifus:entity/hatsune_miku/attack4",
+      "gachawaifus:entity/hatsune_miku/attack5",
+      "gachawaifus:entity/hatsune_miku/attack6"
+    ]
+  },
+  "entity/hatsune_miku/death": {
+    "sounds": [
+      "gachawaifus:entity/hatsune_miku/death1",
+      "gachawaifus:entity/hatsune_miku/death2"
+    ]
+  },
+  "entity/hatsune_miku/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/hatsune_miku/feed"
+    ]
+  },
+  "entity/hatsune_miku/hurt": {
+    "sounds": [
+      "gachawaifus:entity/hatsune_miku/hurt1",
+      "gachawaifus:entity/hatsune_miku/hurt2",
+      "gachawaifus:entity/hatsune_miku/hurt3",
+      "gachawaifus:entity/hatsune_miku/hurt4",
+      "gachawaifus:entity/hatsune_miku/hurt5"
+    ]
+  },
+  "entity/hatsune_miku/idle": {
+    "sounds": [
+      "gachawaifus:entity/hatsune_miku/idle1",
+      "gachawaifus:entity/hatsune_miku/idle2",
+      "gachawaifus:entity/hatsune_miku/idle3",
+      "gachawaifus:entity/hatsune_miku/idle4",
+      "gachawaifus:entity/hatsune_miku/idle5",
+      "gachawaifus:entity/hatsune_miku/idle6"
+    ]
+  },
+  "entity/jane_doe/attack": {
+    "sounds": [
+      "gachawaifus:entity/jane_doe/attack1",
+      "gachawaifus:entity/jane_doe/attack2",
+      "gachawaifus:entity/jane_doe/attack3"
+    ]
+  },
+  "entity/jane_doe/death": {
+    "sounds": [
+      "gachawaifus:entity/jane_doe/death1"
+    ]
+  },
+  "entity/jane_doe/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/jane_doe/feed"
+    ]
+  },
+  "entity/jane_doe/hurt": {
+    "sounds": [
+      "gachawaifus:entity/jane_doe/hurt1",
+      "gachawaifus:entity/jane_doe/hurt2",
+      "gachawaifus:entity/jane_doe/hurt3"
+    ]
+  },
+  "entity/jane_doe/idle": {
+    "sounds": [
+      "gachawaifus:entity/jane_doe/idle1",
+      "gachawaifus:entity/jane_doe/idle2",
+      "gachawaifus:entity/jane_doe/idle3",
+      "gachawaifus:entity/jane_doe/idle4",
+      "gachawaifus:entity/jane_doe/idle5"
+    ]
+  },
+  "entity/megumin/attack": {
+    "sounds": [
+      "gachawaifus:entity/megumin/attack1",
+      "gachawaifus:entity/megumin/attack2",
+      "gachawaifus:entity/megumin/attack3",
+      "gachawaifus:entity/megumin/attack4"
+    ]
+  },
+  "entity/megumin/death": {
+    "sounds": [
+      "gachawaifus:entity/megumin/death1"
+    ]
+  },
+  "entity/megumin/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/megumin/feed"
+    ]
+  },
+  "entity/megumin/hurt": {
+    "sounds": [
+      "gachawaifus:entity/megumin/hurt1",
+      "gachawaifus:entity/megumin/hurt2",
+      "gachawaifus:entity/megumin/hurt3"
+    ]
+  },
+  "entity/megumin/idle": {
+    "sounds": [
+      "gachawaifus:entity/megumin/idle1",
+      "gachawaifus:entity/megumin/idle2",
+      "gachawaifus:entity/megumin/idle3",
+      "gachawaifus:entity/megumin/idle4",
+      "gachawaifus:entity/megumin/idle5",
+      "gachawaifus:entity/megumin/idle6"
+    ]
+  },
+  "entity/miyabi/attack": {
+    "sounds": [
+      "gachawaifus:entity/miyabi/attack1",
+      "gachawaifus:entity/miyabi/attack2",
+      "gachawaifus:entity/miyabi/attack3"
+    ]
+  },
+  "entity/miyabi/death": {
+    "sounds": [
+      "gachawaifus:entity/miyabi/death1"
+    ]
+  },
+  "entity/miyabi/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/miyabi/feed"
+    ]
+  },
+  "entity/miyabi/hurt": {
+    "sounds": [
+      "gachawaifus:entity/miyabi/hurt1",
+      "gachawaifus:entity/miyabi/hurt2",
+      "gachawaifus:entity/miyabi/hurt3"
+    ]
+  },
+  "entity/miyabi/idle": {
+    "sounds": [
+      "gachawaifus:entity/miyabi/idle1",
+      "gachawaifus:entity/miyabi/idle2",
+      "gachawaifus:entity/miyabi/idle3",
+      "gachawaifus:entity/miyabi/idle4",
+      "gachawaifus:entity/miyabi/idle5"
+    ]
+  },
+  "entity/nicole_demara/attack": {
+    "sounds": [
+      "gachawaifus:entity/nicole_demara/attack1",
+      "gachawaifus:entity/nicole_demara/attack2",
+      "gachawaifus:entity/nicole_demara/attack3"
+    ]
+  },
+  "entity/nicole_demara/death": {
+    "sounds": [
+      "gachawaifus:entity/nicole_demara/death1"
+    ]
+  },
+  "entity/nicole_demara/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/nicole_demara/feed"
+    ]
+  },
+  "entity/nicole_demara/hurt": {
+    "sounds": [
+      "gachawaifus:entity/nicole_demara/hurt1",
+      "gachawaifus:entity/nicole_demara/hurt2",
+      "gachawaifus:entity/nicole_demara/hurt3"
+    ]
+  },
+  "entity/nicole_demara/idle": {
+    "sounds": [
+      "gachawaifus:entity/nicole_demara/idle1",
+      "gachawaifus:entity/nicole_demara/idle2",
+      "gachawaifus:entity/nicole_demara/idle3",
+      "gachawaifus:entity/nicole_demara/idle4",
+      "gachawaifus:entity/nicole_demara/idle5"
+    ]
+  },
+  "entity/qingyi/attack": {
+    "sounds": [
+      "gachawaifus:entity/qingyi/attack1",
+      "gachawaifus:entity/qingyi/attack2",
+      "gachawaifus:entity/qingyi/attack3"
+    ]
+  },
+  "entity/qingyi/death": {
+    "sounds": [
+      "gachawaifus:entity/qingyi/death1"
+    ]
+  },
+  "entity/qingyi/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/qingyi/feed"
+    ]
+  },
+  "entity/qingyi/hurt": {
+    "sounds": [
+      "gachawaifus:entity/qingyi/hurt1",
+      "gachawaifus:entity/qingyi/hurt2",
+      "gachawaifus:entity/qingyi/hurt3"
+    ]
+  },
+  "entity/qingyi/idle": {
+    "sounds": [
+      "gachawaifus:entity/qingyi/idle1",
+      "gachawaifus:entity/qingyi/idle2",
+      "gachawaifus:entity/qingyi/idle3",
+      "gachawaifus:entity/qingyi/idle4",
+      "gachawaifus:entity/qingyi/idle5"
+    ]
+  },
+  "entity/tokisaki_kurumi/attack": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/attack1",
+      "gachawaifus:entity/tokisaki_kurumi/attack2",
+      "gachawaifus:entity/tokisaki_kurumi/attack3",
+      "gachawaifus:entity/tokisaki_kurumi/attack4"
+    ]
+  },
+  "entity/tokisaki_kurumi/death": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/death1"
+    ]
+  },
+  "entity/tokisaki_kurumi/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/feed"
+    ]
+  },
+  "entity/tokisaki_kurumi/hurt": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/hurt1",
+      "gachawaifus:entity/tokisaki_kurumi/hurt2",
+      "gachawaifus:entity/tokisaki_kurumi/hurt3"
+    ]
+  },
+  "entity/tokisaki_kurumi/idle": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/idle1",
+      "gachawaifus:entity/tokisaki_kurumi/idle2",
+      "gachawaifus:entity/tokisaki_kurumi/idle3",
+      "gachawaifus:entity/tokisaki_kurumi/idle4",
+      "gachawaifus:entity/tokisaki_kurumi/idle5",
+      "gachawaifus:entity/tokisaki_kurumi/idle6"
+    ]
+  },
+  "entity/tokisaki_kurumi/musket_shot.ogg": {
+    "sounds": [
+      "gachawaifus:entity/tokisaki_kurumi/musket_shot"
+    ]
+  },
+  "entity/vivian/attack": {
+    "sounds": [
+      "gachawaifus:entity/vivian/attack1",
+      "gachawaifus:entity/vivian/attack2",
+      "gachawaifus:entity/vivian/attack3"
+    ]
+  },
+  "entity/vivian/death": {
+    "sounds": [
+      "gachawaifus:entity/vivian/death1"
+    ]
+  },
+  "entity/vivian/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/vivian/feed"
+    ]
+  },
+  "entity/vivian/hurt": {
+    "sounds": [
+      "gachawaifus:entity/vivian/hurt1",
+      "gachawaifus:entity/vivian/hurt2",
+      "gachawaifus:entity/vivian/hurt3"
+    ]
+  },
+  "entity/vivian/idle": {
+    "sounds": [
+      "gachawaifus:entity/vivian/idle1",
+      "gachawaifus:entity/vivian/idle2",
+      "gachawaifus:entity/vivian/idle3",
+      "gachawaifus:entity/vivian/idle4",
+      "gachawaifus:entity/vivian/idle5"
+    ]
+  },
+  "entity/zhu_yuan/death": {
+    "sounds": [
+      "gachawaifus:entity/zhu_yuan/death1"
+    ]
+  },
+  "entity/zhu_yuan/feed.ogg": {
+    "sounds": [
+      "gachawaifus:entity/zhu_yuan/feed"
+    ]
+  },
+  "entity/zhu_yuan/hurt": {
+    "sounds": [
+      "gachawaifus:entity/zhu_yuan/hurt1",
+      "gachawaifus:entity/zhu_yuan/hurt2",
+      "gachawaifus:entity/zhu_yuan/hurt3"
+    ]
+  },
+  "entity/zhu_yuan/idle": {
+    "sounds": [
+      "gachawaifus:entity/zhu_yuan/idle1",
+      "gachawaifus:entity/zhu_yuan/idle2",
+      "gachawaifus:entity/zhu_yuan/idle3",
+      "gachawaifus:entity/zhu_yuan/idle4",
+      "gachawaifus:entity/zhu_yuan/idle5"
+    ]
   }
 }

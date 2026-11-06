@@ -121,7 +121,7 @@ public class YixuanEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§2Yixuan §o\"La Cima Yunkui me respalda.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.yixuan.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

@@ -33,9 +33,9 @@ public class MiyabiMisiramaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("★★★★★ S-Rank — Hoshimi Miyabi").withStyle(ChatFormatting.AQUA));
-        tooltipComponents.add(Component.literal("La Dama de la Luz | Jefa de la Sección 6").withStyle(ChatFormatting.GRAY));
-        tooltipComponents.add(Component.literal("Color: Azul | Katana Ancestral del Zorro").withStyle(ChatFormatting.WHITE));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.miyabi_misirama_token.1").withStyle(ChatFormatting.AQUA));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.miyabi_misirama_token.2").withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.miyabi_misirama_token.3").withStyle(ChatFormatting.WHITE));
         tooltipComponents.add(Component.translatable("item.gachawaifus.miyabi_token.desc").withStyle(ChatFormatting.DARK_AQUA));
     }
 
@@ -54,9 +54,7 @@ public class MiyabiMisiramaTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Hoshimi Miyabi activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.miyabi_misirama_token.4"), true);
                 return InteractionResult.FAIL;
             }
         }

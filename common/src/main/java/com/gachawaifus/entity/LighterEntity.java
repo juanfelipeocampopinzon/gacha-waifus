@@ -109,7 +109,7 @@ public class LighterEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§6Lighter §o\"¡Puño de fuego, nocaut!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.lighter.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

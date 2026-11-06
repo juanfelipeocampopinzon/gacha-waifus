@@ -35,8 +35,7 @@ public class TriggerTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Trigger invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.trigger_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class TriggerTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AMARILLO);
-        tooltipComponents.add(Component.literal("§7Invoca a §8Trigger§7 (Amarillo / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.trigger_token.2"));
         tooltipComponents.add(Component.literal("§8Cold-Bore Shot · Flash Burial · Underworld Requiem"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

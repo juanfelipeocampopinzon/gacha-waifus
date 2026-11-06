@@ -33,9 +33,9 @@ public class YeShunguangTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MARRON);
-        tooltipComponents.add(Component.literal("★★★★★ S-Rank — Ye Shunguang (Yixuan)").withStyle(ChatFormatting.LIGHT_PURPLE));
-        tooltipComponents.add(Component.literal("Alto Preceptor de la Cumbre de Yunkui").withStyle(ChatFormatting.GRAY));
-        tooltipComponents.add(Component.literal("Color: Marrón | Arte de Tinta Áurica").withStyle(ChatFormatting.WHITE));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ye_shunguang_token.1").withStyle(ChatFormatting.LIGHT_PURPLE));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ye_shunguang_token.2").withStyle(ChatFormatting.GRAY));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ye_shunguang_token.3").withStyle(ChatFormatting.WHITE));
         tooltipComponents.add(Component.translatable("item.gachawaifus.ye_shunguang_token.desc").withStyle(ChatFormatting.DARK_PURPLE));
     }
 
@@ -54,9 +54,7 @@ public class YeShunguangTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Ye Shunguang activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ye_shunguang_token.4"), true);
                 return InteractionResult.FAIL;
             }
         }

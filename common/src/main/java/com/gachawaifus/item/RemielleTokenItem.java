@@ -36,8 +36,7 @@ public class RemielleTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Remielle activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.remielle_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -49,7 +48,7 @@ public class RemielleTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§6[GachaWaifus] ¡Remielle ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.remielle_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -66,7 +65,7 @@ public class RemielleTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);
-        tooltipComponents.add(Component.literal("§7Invoca a §6Remielle§7 (Negro / Anomaly DPS)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.remielle_token.3"));
         tooltipComponents.add(Component.literal("§8Rainbow's End · Ode to Dawn · Dazzling Curtain Call"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

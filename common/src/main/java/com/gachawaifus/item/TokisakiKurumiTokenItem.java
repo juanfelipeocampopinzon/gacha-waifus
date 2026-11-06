@@ -37,8 +37,7 @@ public class TokisakiKurumiTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Tokisaki Kurumi activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.tokisaki_kurumi_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class TokisakiKurumiTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.ROSA);
-        tooltipComponents.add(Component.literal("§7Invoca a §9Tokisaki Kurumi§7 (Rosa / Anomaly)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.tokisaki_kurumi_token.2"));
         tooltipComponents.add(Component.literal("§8Shadow Strike · Temporal Stasis · Zafkiel: Clockwork Demon"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

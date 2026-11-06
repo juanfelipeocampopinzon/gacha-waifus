@@ -109,7 +109,7 @@ public class ZhaoEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
 if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§fZhao §o\"Justicia conejil: ¡a juicio!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.zhao.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
         }
         AABB area = this.getBoundingBox().inflate(8.0D);

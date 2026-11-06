@@ -137,7 +137,7 @@ public class NekomataEntity extends AbstractWaifuEntity implements GeoEntity {
         this.ultimateCooldown = 600;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§8Nekomiya Mana §o\"¿Te gustaron mis garras, nya?\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.nekomata.1"));
         }
         this.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
 

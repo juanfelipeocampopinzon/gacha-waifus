@@ -35,8 +35,7 @@ public class TsukishiroYanagiTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Tsukishiro Yanagi invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.tsukishiro_yanagi_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class TsukishiroYanagiTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.MORADO);
-        tooltipComponents.add(Component.literal("§7Invoca a §5Tsukishiro Yanagi§7 (Morado / Anomaly)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.tsukishiro_yanagi_token.2"));
         tooltipComponents.add(Component.literal("§8Tsukuyomi Kagura · Gekka Ruten · Raiei Tenge"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -67,11 +67,11 @@ public final class WildWaifuSpawner {
      * esta única vez que se escribe y el comando la enseña tal cual la usa el spawn.
      */
     public enum Climate {
-        FRIO("clima frío", "nieve, tundras y montañas"),
-        TEMPLADO("clima templado", "bosques, llanuras, ríos y junglas"),
-        CALIDO("clima cálido", "desiertos, sabanas y mesetas"),
-        NETHER("el Nether", "cualquier bioma del Nether"),
-        END("el End", "las islas de End y sus costas");
+        FRIO("gachawaifus.climate.frio", "gachawaifus.climate.frio_where"),
+        TEMPLADO("gachawaifus.climate.templado", "gachawaifus.climate.templado_where"),
+        CALIDO("gachawaifus.climate.calido", "gachawaifus.climate.calido_where"),
+        NETHER("gachawaifus.climate.nether", "gachawaifus.climate.nether_where"),
+        END("gachawaifus.climate.end", "gachawaifus.climate.end_where");
 
         private final String name;
         private final String where;
@@ -81,12 +81,12 @@ public final class WildWaifuSpawner {
             this.where = where;
         }
 
-        /** Cómo se llama el clima en los mensajes. */
+        /** Clave de idioma con el nombre del clima. */
         public String label() {
             return this.name;
         }
 
-        /** Dónde se encuentra, en palabras. */
+        /** Clave de idioma de dónde se encuentra. */
         public String where() {
             return this.where;
         }

@@ -187,7 +187,7 @@ public class KoledaEntity extends AbstractWaifuEntity implements GeoEntity {
 
         // Buffs en área: SOLO el dueño y ella misma.
         if (owner instanceof Player player) {
-            player.sendSystemMessage(Component.literal("§cKoleda §o\"¡Sientan el calor del impacto!\""));
+            player.sendSystemMessage(Component.translatable("message.gachawaifus.koleda.1"));
             player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1));
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 0));
         }

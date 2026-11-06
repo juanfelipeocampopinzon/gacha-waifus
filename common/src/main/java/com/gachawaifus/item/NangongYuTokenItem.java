@@ -35,8 +35,7 @@ public class NangongYuTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Nangong Yu invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.nangong_yu_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class NangongYuTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("§7Invoca a §3Nangong Yu§7 (Azul / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.nangong_yu_token.2"));
         tooltipComponents.add(Component.literal("§8Shooting Star Step · The Unbearable Weight of Love · Meteor Shower"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

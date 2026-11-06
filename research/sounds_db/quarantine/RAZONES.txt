@@ -1,0 +1,8 @@
+Audio extraido por coincidencia de nombre PERO del personaje equivocado o sin confirmar.
+Los originales siguen indexados en INDEX_ARCHIVE.csv (re-extraer si algun dia se confirma).
+
+- alice <- nipa:alice — "Alice" a secas: identidad sin confirmar (la mia es Alice Thymefield, ZZZ)
+- lucia <- nipa:lucia — Es Nanami Lucia (Dr. Stone), no Lucia Elowen
+- lucy <- nipa:lucy — Es Lucy Heartfilia (Fairy Tail), no Luciana Lucy de Montefio
+- n_miku <- nipa:n_miku — Es Nakano Miku (5Toubange), no Hatsune Miku
+- vivi <- nipa:vivi — Es Kikirara Vivi, no Vivian Banshee

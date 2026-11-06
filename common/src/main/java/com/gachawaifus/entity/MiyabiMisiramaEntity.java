@@ -207,6 +207,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
      * Corte de katana rápido con partículas de cristal de hielo y copos de nieve.
      */
     private void performKitsuneSlash(LivingEntity target) {
+        this.playVoice("attack");
         this.kitsuneSlashCooldown = 20;
 
         this.triggerAnim("attack_controller", "attack");
@@ -231,6 +232,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
      * Dash de invulnerabilidad con katana espiritual, congelando al objetivo.
      */
     private void performFrostfallStance(LivingEntity target) {
+        this.playVoice("attack");
         this.frostfallStanceCooldown = 200;
 
         this.triggerAnim("attack_controller", "special");
@@ -271,6 +273,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
      *   3. RECUPERACIÓN (36ticks): daño residual de escarcha y liberación del vórtice.
      */
     private void performCherryBlossomFrost() {
+        this.playVoice("attack", true);
         this.cherryBlossomCooldown = 700;
 
         // --- ACTO 1: CARGA ---

@@ -39,8 +39,7 @@ public class NekomataTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Nekomata activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.nekomata_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -52,7 +51,7 @@ public class NekomataTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§8[GachaWaifus] ¡Nekomiya Mana ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.nekomata_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -71,7 +70,7 @@ public class NekomataTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.BLANCO);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §8Nekomiya Mana§7 (Blanco / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.nekomata_token.3"));
         tooltipComponents.add(Component.literal("§8Phantom Double Stab · Cat Step Show · Blade Claw Assault"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

@@ -98,7 +98,8 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
       y los .animation.json los exporta el humano de Blockbench y los coloca la auditora; tú solo das
       el Java. Si el prompt te pide "el geo", di que no y sigue con los puntos Java.
     - `WaifuBustPlayerModel` con `WaifuBustLayers.TUBE` (2.0F) o `TUBE_BIG` (3.0F): waifus con
-      pieza del pecho (skin 64×128). Ejemplos: Promeia/Yuzuha (TUBE), Astra/Remielle (TUBE_BIG).
+      pieza del pecho (skin 64×128). Ejemplos: Yuzuha (TUBE), Astra/Remielle (TUBE_BIG).
+      Promeia usa la capa propia `PROMEIA`, que es TUBE más la cola de caballo y `PromeiaModel`.
       (Rina y Qingyi **ya no** están aquí: migraron a GeckoLib en la 6.5.0.)
     - `PlayerModel(PLAYER_SLIM, true)`: waifus femeninas sin pieza (skin 64×64). Ej: Grace, Koleda.
     - `PlayerModel(PLAYER, false)` (modelo ANCHO, de Steve): personajes masculinos o corpulentos,
@@ -128,9 +129,10 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
     máquinas nuevas, **no te lances por la complicada**: dile primero
     *"hay una forma más fácil: X; la otra es Y"* con el coste de cada una y **deja que él decida**.
     Solo sigue por la difícil si te lo pide. Ejemplo real (2026-10-29): para camuflar el
-    `WaifuHomeBlock` se hizo un menú con selector de bloques (`HomeMimicMenu` + `HomeMimicScreen`)
-    cuando bastaba con clic-derecho llevando el bloque en la mano (`useItemOn`) y copiar su textura;
-    funcionó, pero era mucho más código del necesario.
+    `WaifuHomeBlock` se hizo primero un menú con selector de bloques (`HomeMimicMenu` +
+    `HomeMimicScreen`) cuando bastaba con clic-derecho llevando el bloque en la mano (`useItemOn`) y
+    copiar su textura; funcionó, pero era mucho más código del necesario. En 6.8.0 se borró el menú
+    y se dejó el gesto simple.
 
 ### ¿Se corta a mitad? (se queda sin tokens de salida)
 

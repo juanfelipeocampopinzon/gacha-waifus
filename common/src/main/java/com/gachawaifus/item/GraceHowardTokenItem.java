@@ -42,8 +42,7 @@ public class GraceHowardTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Grace Howard activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.grace_howard_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -74,7 +73,7 @@ public class GraceHowardTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §bGrace Howard§7 (Negro / Anomalía)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.grace_howard_token.2"));
         tooltipComponents.add(Component.literal("§8Charged Bolt · Magnetic Field · Overclocked Barrage"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

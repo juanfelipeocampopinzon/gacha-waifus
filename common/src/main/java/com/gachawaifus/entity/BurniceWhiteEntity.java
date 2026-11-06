@@ -529,7 +529,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.level().playSound(null, this.blockPosition(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 1.4F, 0.9F);
 
         if (this.getOwner() instanceof Player player) {
-            player.displayClientMessage(Component.literal("§c§l🔥 ¡Jet Flamethrower!"), true);
+            player.displayClientMessage(Component.translatable("message.gachawaifus.burnice_white.1"), true);
         }
 
         // Estallido inicial de las boquillas
@@ -562,7 +562,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         LivingEntity owner = this.getOwner();
 
         if (owner instanceof Player player) {
-            player.displayClientMessage(Component.literal("§c§l🔥 ¡BURNICE SUPERNOVA!"), true);
+            player.displayClientMessage(Component.translatable("message.gachawaifus.burnice_white.2"), true);
             player.sendSystemMessage(Component.literal("§c[Burnice White] §o\"Time for a scorching performance!\""));
         }
 

@@ -35,8 +35,7 @@ public class HugoVladTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Hugo Vlad invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.hugo_vlad_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class HugoVladTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NEGRO);
-        tooltipComponents.add(Component.literal("§7Invoca a §0Hugo Vlad§7 (Negro / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.hugo_vlad_token.2"));
         tooltipComponents.add(Component.literal("§8Dark Abyss Quartet · Soul Hunter - Punishment · Blaspheme"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

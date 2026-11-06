@@ -38,8 +38,7 @@ public class PromeiaTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Promeia activa!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.promeia_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -64,7 +63,7 @@ public class PromeiaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.BLANCO);
-        tooltipComponents.add(Component.literal("§7Un token para invocar a la juez del Krampus Compliance Authority (Blanco)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.promeia_token.2"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }
 }

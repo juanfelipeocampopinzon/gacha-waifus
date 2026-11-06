@@ -8,6 +8,9 @@ import software.bernie.geckolib.animation.AnimationState;
 import software.bernie.geckolib.model.GeoModel;
 
 public class YeShunguangModel extends GeoModel<YeShunguangEntity> {
+    private static final ResourceLocation BASE_TEXTURE =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/ye_shunguang.png");
+
     @Override
     public ResourceLocation getModelResource(YeShunguangEntity animatable) {
         return ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "geo/ye_shunguang.geo.json");
@@ -15,7 +18,7 @@ public class YeShunguangModel extends GeoModel<YeShunguangEntity> {
 
     @Override
     public ResourceLocation getTextureResource(YeShunguangEntity animatable) {
-        return ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/ye_shunguang.png");
+        return animatable.skinTexture(BASE_TEXTURE);
     }
 
     @Override

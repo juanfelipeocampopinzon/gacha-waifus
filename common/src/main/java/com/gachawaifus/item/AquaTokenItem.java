@@ -35,8 +35,7 @@ public class AquaTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Aqua invocada! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.aqua_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class AquaTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("§7Invoca a §3Aqua§7 (Azul / Support)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.aqua_token.2"));
         tooltipComponents.add(Component.literal("§8Water Burst · Garland Sleeve · Blessing of the Goddess"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

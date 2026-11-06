@@ -3,7 +3,6 @@ package com.gachawaifus.registry;
 import com.gachawaifus.GachaWaifusMod;
 import com.gachawaifus.menu.GachaMenu;
 import com.gachawaifus.menu.GuideMenu;
-import com.gachawaifus.menu.HomeMimicMenu;
 import com.gachawaifus.menu.WaifuModeMenu;
 import com.gachawaifus.menu.WaifuStorageMenu;
 import net.minecraft.core.registries.Registries;
@@ -36,14 +35,6 @@ public class ModMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<WaifuModeMenu>> WAIFU_MODE =
             MENU_TYPES.register("waifu_mode", () -> new MenuType<>(
                     (IContainerFactory<WaifuModeMenu>) WaifuModeMenu::new, FeatureFlags.VANILLA_SET));
-
-    /**
-     * Selector de textura del Bloque de Hogar: una rejilla de bloques, sin huecos. También va por
-     * fábrica porque el lado cliente necesita la posición del bloque y su imitación actual.
-     */
-    public static final DeferredHolder<MenuType<?>, MenuType<HomeMimicMenu>> HOME_MIMIC =
-            MENU_TYPES.register("home_mimic", () -> new MenuType<>(
-                    (IContainerFactory<HomeMimicMenu>) HomeMimicMenu::new, FeatureFlags.VANILLA_SET));
 
     public static void openWaifuMode(net.minecraft.server.level.ServerPlayer player, com.gachawaifus.entity.AbstractWaifuEntity waifu) {
         int waifuId = waifu.getId();

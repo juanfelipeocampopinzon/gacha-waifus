@@ -27,7 +27,7 @@ public final class ColorConfig {
         builder.push("floating_label");
         FLOATING_LABEL = builder
                 .comment("Etiqueta flotante con el color del mob hostil (el cuadradito sobre su cabeza).")
-                .define("enabled", true);
+                .define("enabled", false);
         LABEL_RANGE = builder
                 .comment("Rango en bloques hasta el que se muestra la etiqueta.",
                         "Por debajo se ve a tamano de nametag; mas alla no se dibuja.")

@@ -29,6 +29,9 @@ public class WaifuModeMenu extends AbstractContainerMenu {
     /** La waifu, en el servidor. En el cliente es nulo: allí solo se dibuja. */
     private final AbstractWaifuEntity waifu;
 
+    /** La misma waifu vista desde el cliente: la afinidad viaja sincronizada en la entidad. */
+    private AbstractWaifuEntity clientWaifu;
+
     /** Dueña que abrió el panel, para el {@link #stillValid(Player)}. */
     private final UUID ownerUuid;
 
@@ -63,9 +66,12 @@ public class WaifuModeMenu extends AbstractContainerMenu {
         this.displayedMode = extraData.readVarInt();
         this.homeText = extraData.readBoolean() ? extraData.readUtf(64) : null;
         Player player = inventory.player;
-        this.waifuName = player.level().getEntity(waifuId) instanceof AbstractWaifuEntity seen
-                ? plain(seen.getDisplayName().getString())
-                : "";
+        if (player.level().getEntity(waifuId) instanceof AbstractWaifuEntity seen) {
+            this.clientWaifu = seen;
+            this.waifuName = plain(seen.getDisplayName().getString());
+        } else {
+            this.waifuName = "";
+        }
     }
 
     /** Abre el panel sobre la waifu. */
@@ -82,7 +88,7 @@ public class WaifuModeMenu extends AbstractContainerMenu {
         }
         this.waifu.setWaifuMode(modes[buttonId]);
         player.displayClientMessage(Component.translatable("gachawaifus.mode_screen.set",
-                this.waifuName, modes[buttonId].plainName()), true);
+                this.waifuName, modes[buttonId].label()), true);
         return true;
     }
 
@@ -112,6 +118,15 @@ public class WaifuModeMenu extends AbstractContainerMenu {
     /** Hogar con el que se abrió el panel, o null si la waifu no tiene. */
     public String homeText() {
         return this.homeText;
+    }
+
+    /**
+     * Afinidad actual (0..100). En el servidor se lee de su copia; en el cliente de la entidad
+     * sincronizada, así que la barra se mueve en vivo si se come delante del panel.
+     */
+    public int affinity() {
+        AbstractWaifuEntity w = this.waifu != null ? this.waifu : this.clientWaifu;
+        return w == null ? 0 : w.affinity();
     }
 
     @Override

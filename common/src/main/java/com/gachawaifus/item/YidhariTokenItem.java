@@ -36,8 +36,7 @@ public class YidhariTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Yidhari Murphy activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.yidhari_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -66,7 +65,7 @@ public class YidhariTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);   // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §bYidhari Murphy§7 (Azul / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.yidhari_token.2"));
         tooltipComponents.add(Component.literal("§8Crushing Strike · Frost Coil · Final Act - Crossing the River of Regret"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

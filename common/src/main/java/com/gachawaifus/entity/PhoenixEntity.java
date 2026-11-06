@@ -129,7 +129,7 @@ public class PhoenixEntity extends AbstractWaifuEntity {
         this.ultimateCooldown = 750;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§cPhoenix §o\"¡Llamas del renacer... calcinad las cenizas!\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.phoenix.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.FIRE_RESISTANCE, 400, 0));
             owner.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 200, 1));
             owner.clearFire();

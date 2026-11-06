@@ -39,8 +39,7 @@ public class YixuanTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Yixuan activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.yixuan_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -71,7 +70,7 @@ public class YixuanTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.VERDE);  // §7Color, fuerte y débil
-        tooltipComponents.add(Component.literal("§7Invoca a §2Yixuan§7 (Verde / Attack), Alta Preceptora de Yunkui."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.yixuan_token.2"));
         tooltipComponents.add(Component.literal("§8Cirrus Strike · Ink Manifestation · Qingming Skyshade"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

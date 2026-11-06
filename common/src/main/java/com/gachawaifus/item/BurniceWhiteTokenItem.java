@@ -43,9 +43,7 @@ public class BurniceWhiteTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Burnice White activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.burnice_white_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -61,7 +59,7 @@ public class BurniceWhiteTokenItem extends Item {
 
             if (player != null) {
                 burniceWhite.tame(player);
-                player.displayClientMessage(Component.literal("§c[GachaWaifus] ¡Burnice White ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.burnice_white_token.2"), true);
             }
 
             level.addFreshEntity(burniceWhite);
@@ -91,7 +89,7 @@ public class BurniceWhiteTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.NARANJA);
-        tooltipComponents.add(Component.literal("§7Invoca a §cBurnice White§7 (Naranja / DPS)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.burnice_white_token.3"));
         tooltipComponents.add(Component.literal("§8Sons of Calydon"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

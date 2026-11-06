@@ -44,9 +44,7 @@ public class EllenJoeTokenItem extends Item {
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
 
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Ellen Joe activa! Solo puedes tener 1 activa a la vez."
-                ), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ellen_joe_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -62,7 +60,7 @@ public class EllenJoeTokenItem extends Item {
 
             if (player != null) {
                 ellenJoe.tame(player);
-                player.displayClientMessage(Component.literal("§b[GachaWaifus] ¡Ellen Joe ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.ellen_joe_token.2"), true);
             }
 
             level.addFreshEntity(ellenJoe);
@@ -92,7 +90,7 @@ public class EllenJoeTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
-        tooltipComponents.add(Component.literal("§7Invoca a §bEllen Joe§7 (Gris / DPS)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.ellen_joe_token.3"));
         tooltipComponents.add(Component.literal("§8Victoria Housekeeping Co."));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

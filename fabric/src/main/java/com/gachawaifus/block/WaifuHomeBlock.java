@@ -42,15 +42,6 @@ public class WaifuHomeBlock extends BaseEntityBlock {
     @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos,
                                                Player player, BlockHitResult hitResult) {
-        if (player.isSecondaryUseActive()) {
-            if (!(level.getBlockEntity(pos) instanceof WaifuHomeBlockEntity home)) {
-                return InteractionResult.FAIL;
-            }
-            if (player instanceof ServerPlayer serverPlayer) {
-                serverPlayer.openMenu(home);
-            }
-            return InteractionResult.sidedSuccess(level.isClientSide);
-        }
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -70,13 +61,47 @@ public class WaifuHomeBlock extends BaseEntityBlock {
             return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
         Block mimic = blockItem.getBlock();
-        if (mimic == this || level.isClientSide) {
-            return ItemInteractionResult.sidedSuccess(level.isClientSide);
+        if (level.isClientSide) {
+            return WaifuHomeBlockEntity.isMimicable(mimic)
+                    ? ItemInteractionResult.sidedSuccess(true)
+                    : ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
         }
-        home.setMimic(mimic);
+        if (!home.setMimic(mimic)) {
+            return ItemInteractionResult.PASS_TO_DEFAULT_BLOCK_INTERACTION;
+        }
         player.displayClientMessage(
                 Component.translatable("gachawaifus.home_block.mimic", home.mimicName()), true);
         return ItemInteractionResult.CONSUME;
+    }
+
+    /**
+     * Ruta para agachado: en 1.21.1 vanilla se salta {@code useItemOn} cuando hay un ítem en la mano,
+     * así que sin esto el bloque se colocaría encima del hogar en vez de camuflarlo. Se registra en
+     * {@code GachaWaifusMod} con {@code UseBlockCallback}.
+     */
+    public static InteractionResult onUseBlock(Player player, Level level, InteractionHand hand,
+                                               BlockHitResult hitResult) {
+        if (!player.isSecondaryUseActive()) {
+            return InteractionResult.PASS;
+        }
+        if (!(level.getBlockEntity(hitResult.getBlockPos()) instanceof WaifuHomeBlockEntity home)) {
+            return InteractionResult.PASS;
+        }
+        ItemStack stack = player.getItemInHand(hand);
+        if (!(stack.getItem() instanceof BlockItem blockItem)) {
+            return InteractionResult.PASS;
+        }
+        if (level.isClientSide) {
+            return WaifuHomeBlockEntity.isMimicable(blockItem.getBlock())
+                    ? InteractionResult.SUCCESS
+                    : InteractionResult.PASS;
+        }
+        if (!home.setMimic(blockItem.getBlock())) {
+            return InteractionResult.PASS;
+        }
+        player.displayClientMessage(
+                Component.translatable("gachawaifus.home_block.mimic", home.mimicName()), true);
+        return InteractionResult.CONSUME;
     }
 
     @Override

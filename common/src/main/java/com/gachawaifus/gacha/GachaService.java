@@ -3,6 +3,7 @@ package com.gachawaifus.gacha;
 import com.gachawaifus.registry.ModItems;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
@@ -85,7 +86,7 @@ public final class GachaService {
         public final Banner banner;
         public boolean success = true;
         @Nullable
-        public String denial;
+        public Component denial;
 
         /** Waifus entregadas, en el orden en que salieron (incluye las de la tirada doble). */
         public final List<WaifuRoster.Entry> waifus = new ArrayList<>();
@@ -105,7 +106,7 @@ public final class GachaService {
             this.banner = banner;
         }
 
-        void deny(String message) {
+        void deny(Component message) {
             this.success = false;
             this.denial = message;
         }
@@ -211,7 +212,7 @@ public final class GachaService {
         // Shift + clic de los terminales y de la Máquina Gacha se saltaba el aviso y el jugador
         // pulsaba sin que pasara nada.
         if (!result.success && result.denial != null) {
-            player.sendSystemMessage(Component.literal(result.denial));
+            player.sendSystemMessage(result.denial);
         }
         return result;
     }
@@ -227,10 +228,9 @@ public final class GachaService {
         if (!hasTargets(player, Banner.PROMO)) {
             // Colección completa: NO se cobra nada ni se toca la pity. Tener a la destacada nunca
             // bloquea (antes bloqueaba todas las tiradas y el terminal quedaba inservible).
-            result.deny("§e[GachaWaifus] Ya tienes a §f" + poolSize(Banner.PROMO)
-                    + "§e waifus del banner: no queda ninguna por conseguir. No se gastan bolitas."
-                    + (GachaConfig.excluded()
-                    ? " §7(Los maridos están excluidos del gacha en la config.)" : ""));
+            result.deny(Component.translatable("gachawaifus.gacha.promo_full", poolSize(Banner.PROMO))
+                    .append(GachaConfig.excluded()
+                            ? Component.translatable("gachawaifus.gacha.excluded_note") : Component.empty()));
             return result;
         }
 
@@ -238,17 +238,13 @@ public final class GachaService {
 
         int balls = countBalls(player, Banner.PROMO);
         if (balls < count) {
-            result.deny("§c[GachaWaifus] Necesitas §f" + count + " Bolita(s) Rosa(s)§c para tirar (tienes "
-                    + balls + "). §7Se craftean con un diamante en el centro y cobre, lapislázuli, hierro y"
-                    + " carbón en cruz, y cada día recibes una gratis al entrar.");
+            result.deny(Component.translatable("gachawaifus.gacha.need_pink", count, balls));
             return result;
         }
         consumeBalls(player, Banner.PROMO, count);
 
         if (WaifuRoster.owns(player, featured)) {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Ya tienes a §f" + featured.name()
-                            + "§7: si sale un 5★ te dará otra que no tengas (o una copia de repuesto)."));
+            player.sendSystemMessage(Component.translatable("gachawaifus.gacha.featured_owned", featured.name()));
         }
 
         List<String> foodNames = new ArrayList<>();
@@ -309,20 +305,27 @@ public final class GachaService {
         data.setDirty();
 
         // Resumen SIEMPRE, en x1 y en x10: antes una tirada simple con 5★ no decía nada.
-        String pityLine = "§7Pity 5★ §b" + state.pity + "/" + HARD_PITY
-                + (state.guaranteed ? "§7 · §e¡la próxima 5★ está garantizada!" : "")
-                + "§7 · 4★ §e" + state.pity4 + "/" + HARD_PITY_FOUR + "§f.";
+        MutableComponent pityLine = Component.translatable("gachawaifus.gacha.pity_start",
+                state.pity, HARD_PITY);
+        if (state.guaranteed) {
+            pityLine.append(Component.translatable("gachawaifus.gacha.pity_guaranteed"));
+        }
+        pityLine.append(Component.translatable("gachawaifus.gacha.pity_four", state.pity4, HARD_PITY_FOUR));
         if (count > 1) {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Tirada x10: §d" + result.fiveStars + "× 5★§7, §e" + result.fourStars
-                            + "× 4★§7" + (wonNames.isEmpty() ? "" : " §f(" + String.join("§7, §f", wonNames) + ")§7")
-                            + ", §f" + result.food.size() + " comida(s)§7. " + pityLine));
+            MutableComponent msg = Component.translatable("gachawaifus.gacha.pull_x10",
+                    result.fiveStars, result.fourStars);
+            if (!wonNames.isEmpty()) {
+                msg.append(Component.translatable("gachawaifus.gacha.pull_names",
+                        String.join("§7, §f", wonNames)));
+            }
+            msg.append(Component.translatable("gachawaifus.gacha.pull_food", result.food.size()));
+            msg.append(pityLine);
+            player.sendSystemMessage(msg);
         } else if (result.fiveStars == 0 && result.fourStars == 0) {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] " + featured.name() + " te cocinó: §f"
-                            + String.join("§7, §f", foodNames) + "§7. " + pityLine));
+            player.sendSystemMessage(Component.translatable("gachawaifus.gacha.pull_cooked",
+                    featured.name(), String.join("§7, §f", foodNames)).append(pityLine));
         } else {
-            player.sendSystemMessage(Component.literal("§7[GachaWaifus] " + pityLine));
+            player.sendSystemMessage(Component.translatable("gachawaifus.gacha.prefix").append(pityLine));
         }
 
         fillPity(result, state);
@@ -359,17 +362,15 @@ public final class GachaService {
         GachaSavedData.PlayerState state = data.state(player.getUUID());
 
         if (!hasTargets(player, Banner.STANDARD)) {
-            result.deny("§e[GachaWaifus] Ya tienes a las §f" + poolSize(Banner.STANDARD)
-                    + "§e waifus estándar: el banner permanente no da más. No se gastan bolitas azules."
-                    + (GachaConfig.excluded()
-                    ? " §7(Los maridos están excluidos del gacha en la config.)" : ""));
+            result.deny(Component.translatable("gachawaifus.gacha.standard_full", poolSize(Banner.STANDARD))
+                    .append(GachaConfig.excluded()
+                            ? Component.translatable("gachawaifus.gacha.excluded_note") : Component.empty()));
             return result;
         }
 
         int balls = countBalls(player, Banner.STANDARD);
         if (balls < count) {
-            result.deny("§c[GachaWaifus] Necesitas §f" + count + " Bolita(s) Azul(es)§c para tirar (tienes "
-                    + balls + "). §7Se craftean con un lingote de hierro en el centro y lapislázuli en cruz.");
+            result.deny(Component.translatable("gachawaifus.gacha.need_blue", count, balls));
             return result;
         }
         consumeBalls(player, Banner.STANDARD, count);
@@ -405,19 +406,21 @@ public final class GachaService {
         data.setDirty();
 
         if (count > 1) {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Tirada permanente x10: §b" + result.fiveStars + "× 5★§7"
-                            + (wonNames.isEmpty() ? "" : " §f(" + String.join("§7, §f", wonNames) + ")§7")
-                            + ", §f" + result.food.size() + " comida(s)§7. Pity: §b"
-                            + state.standardPity + "/" + HARD_PITY));
+            MutableComponent msg = Component.translatable("gachawaifus.gacha.std_x10", result.fiveStars);
+            if (!wonNames.isEmpty()) {
+                msg.append(Component.translatable("gachawaifus.gacha.pull_names",
+                        String.join("§7, §f", wonNames)));
+            }
+            msg.append(Component.translatable("gachawaifus.gacha.std_x10_food", result.food.size()));
+            msg.append(Component.translatable("gachawaifus.gacha.std_pity", state.standardPity, HARD_PITY));
+            player.sendSystemMessage(msg);
         } else if (result.fiveStars == 0) {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] El banner permanente te cocinó: §f"
-                            + String.join("§7, §f", foodNames) + "§7. Pity: §b" + state.standardPity
-                            + "/" + HARD_PITY));
+            player.sendSystemMessage(Component.translatable("gachawaifus.gacha.std_cooked",
+                    String.join("§7, §f", foodNames))
+                    .append(Component.translatable("gachawaifus.gacha.std_pity", state.standardPity, HARD_PITY)));
         } else {
-            player.sendSystemMessage(Component.literal(
-                    "§7[GachaWaifus] Pity: §b" + state.standardPity + "/" + HARD_PITY));
+            player.sendSystemMessage(Component.translatable("gachawaifus.gacha.prefix")
+                    .append(Component.translatable("gachawaifus.gacha.std_pity", state.standardPity, HARD_PITY)));
         }
 
         result.standardPity = state.standardPity;
@@ -495,8 +498,7 @@ public final class GachaService {
 
     /** Aviso de que la tirada ha sido doble: además de la 5★, cae la siguiente de la rotación. */
     private static void announceDouble(ServerLevel level, Player player, WaifuRoster.Entry bonus) {
-        player.sendSystemMessage(Component.literal(
-                "§b§l★★ TIRADA DOBLE ★★ §r§f¡También cae §b" + bonus.name() + "§f!"));
+        player.sendSystemMessage(Component.translatable("gachawaifus.gacha.double", bonus.name()));
         level.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 1.0, player.getZ(),
                 3, 0.3, 0.5, 0.3, 0.0);
         level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(),
@@ -507,8 +509,7 @@ public final class GachaService {
 
     /** Aviso de una 4★: celebra menos que un 5★, pero se nota. */
     private static void announceFourStar(ServerLevel level, Player player, WaifuRoster.Entry won) {
-        player.sendSystemMessage(Component.literal(
-                "§e§l★★★★ §f¡" + won.name() + " §f(4★)§e es tuya!"));
+        player.sendSystemMessage(Component.translatable("gachawaifus.gacha.four_star", won.name()));
         level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(),
                 18, 0.4, 0.6, 0.4, 0.06);
         level.playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_PLING.value(),
@@ -518,10 +519,9 @@ public final class GachaService {
     private static void announceFiveStar(ServerLevel level, Player player, WaifuRoster.Entry won,
                                          WaifuRoster.Entry featured) {
         boolean featuredWin = won.id().equals(featured.id());
-        player.sendSystemMessage(Component.literal(
-                (featuredWin ? "§d§l★★★★★ ¡5★ DESTACADA! " : "§c§l★★★★★ ¡5★! ")
-                        + "§f" + won.name()
-                        + (featuredWin ? "" : " §7(50/50 perdido — la próxima 5★ es garantizada)")));
+        player.sendSystemMessage(Component.translatable(
+                featuredWin ? "gachawaifus.gacha.five_star_featured" : "gachawaifus.gacha.five_star_lost",
+                won.name()));
         level.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 1.0, player.getZ(),
                 2, 0.2, 0.4, 0.2, 0.0);
         level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(),
@@ -535,7 +535,7 @@ public final class GachaService {
     }
 
     private static void announceStandardFiveStar(ServerLevel level, Player player, WaifuRoster.Entry won) {
-        player.sendSystemMessage(Component.literal("§b§l★★★★★ ¡5★ ESTÁNDAR! §f" + won.name()));
+        player.sendSystemMessage(Component.translatable("gachawaifus.gacha.five_star_standard", won.name()));
         level.sendParticles(ParticleTypes.FLASH, player.getX(), player.getY() + 1.0, player.getZ(),
                 2, 0.2, 0.4, 0.2, 0.0);
         level.sendParticles(ParticleTypes.END_ROD, player.getX(), player.getY() + 1.2, player.getZ(),

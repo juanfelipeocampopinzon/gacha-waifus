@@ -35,8 +35,7 @@ public class QingyiTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes una Qingyi activa! Solo puedes tener 1 activa a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.qingyi_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -48,7 +47,7 @@ public class QingyiTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§1[GachaWaifus] ¡Qingyi ha sido invocada!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.qingyi_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -65,7 +64,7 @@ public class QingyiTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.VERDE);
-        tooltipComponents.add(Component.literal("§7Invoca a §1Qingyi§7 (Verde / Stun)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.qingyi_token.3"));
         tooltipComponents.add(Component.literal("§8Moonlit Baton · Voltage Subjugation · Thunderclap"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

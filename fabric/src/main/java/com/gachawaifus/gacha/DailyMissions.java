@@ -51,7 +51,7 @@ public final class DailyMissions {
             if (!(source.getEntity() instanceof ServerPlayer player)) return;
             if (!MissionConfig.active()) return;
             rollDay(player);
-            addProgress(player, ID_KILLS, MissionConfig.kills(), "Combate", 1);
+            addProgress(player, ID_KILLS, MissionConfig.kills(), "mission.gachawaifus.combat", 1);
         });
 
         ServerTickEvents.END_SERVER_TICK.register(server -> {
@@ -59,13 +59,20 @@ public final class DailyMissions {
             for (ServerPlayer player : server.getPlayerList().getPlayers()) {
                 if (player.tickCount % SCAN_PERIOD != 0) continue;
                 rollDay(player);
-                scan(player, ID_FOOD, MissionConfig.food(), "Cocina", DailyMissions::countFood);
-                scan(player, ID_LOGS, MissionConfig.logs(), "Tala", DailyMissions::countLogs);
+                scan(player, ID_FOOD, MissionConfig.food(), "mission.gachawaifus.cocina", DailyMissions::countFood);
+                scan(player, ID_LOGS, MissionConfig.logs(), "mission.gachawaifus.tala", DailyMissions::countLogs);
             }
         });
 
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, env) -> {
             dispatcher.register(Commands.literal("misiones")
+                    .executes(context -> {
+                        ServerPlayer player = context.getSource().getPlayerOrException();
+                        rollDay(player);
+                        listStatus(player);
+                        return 1;
+                    }));
+            dispatcher.register(Commands.literal("missions")
                     .executes(context -> {
                         ServerPlayer player = context.getSource().getPlayerOrException();
                         rollDay(player);
@@ -123,43 +130,49 @@ public final class DailyMissions {
         }
     }
 
-    private static void reward(ServerPlayer player, String label) {
+    private static void reward(ServerPlayer player, String labelKey) {
         ItemStack ball = new ItemStack(ModItems.PINK_BALL.get(), 1);
         if (!player.getInventory().add(ball)) {
             player.drop(ball, false);
         }
-        player.sendSystemMessage(Component.literal(
-                "§d[GachaWaifus] §f¡Misión cumplida! §7(" + label + ") §dHas ganado §f1 Bolita Rosa§d."
-                        + " §7Mira las otras con §f/misiones§d."));
+        player.sendSystemMessage(Component.translatable("gachawaifus.mission.reward_a")
+                .append(Component.translatable(labelKey))
+                .append(Component.translatable("gachawaifus.mission.reward_b")));
         player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP,
                 SoundSource.PLAYERS, 0.7F, 1.5F);
     }
 
     private static void listStatus(ServerPlayer player) {
         if (!MissionConfig.active()) {
-            player.sendSystemMessage(Component.literal(
-                    "§e[GachaWaifus] Las misiones diarias están apagadas en la config (missions.enabled)."));
+            player.sendSystemMessage(Component.translatable("gui.gachawaifus.daily_missions.1"));
             return;
         }
-        player.sendSystemMessage(Component.literal("§d[GachaWaifus] §fMisiones de hoy §7(1 Bolita Rosa cada una)"));
-        line(player, ID_KILLS, "§cCombate", "mobs hostiles abatidos", MissionConfig.kills());
-        line(player, ID_FOOD, "§6Cocina", "comida conseguida", MissionConfig.food());
-        line(player, ID_LOGS, "§aTala", "troncos conseguidos", MissionConfig.logs());
+        player.sendSystemMessage(Component.translatable("gui.gachawaifus.daily_missions.2"));
+        line(player, ID_KILLS, "§c", "mission.gachawaifus.combat", "mission.gachawaifus.combat_desc", MissionConfig.kills());
+        line(player, ID_FOOD, "§6", "mission.gachawaifus.cocina", "mission.gachawaifus.cocina_desc", MissionConfig.food());
+        line(player, ID_LOGS, "§a", "mission.gachawaifus.tala", "mission.gachawaifus.tala_desc", MissionConfig.logs());
     }
 
-    private static void line(ServerPlayer player, String id, String name, String what, int goal) {
+    private static void line(ServerPlayer player, String id, String color, String nameKey, String whatKey, int goal) {
+        Component name = Component.literal(color).append(Component.translatable(nameKey));
         if (goal <= 0) {
-            player.sendSystemMessage(Component.literal("§7" + name + " §7— desactivada"));
+            player.sendSystemMessage(name.copy()
+                    .append(Component.translatable("gachawaifus.mission.disabled")));
             return;
         }
         int done = getData(player).progress.getOrDefault(id, 0);
         if (done >= goal) {
-            player.sendSystemMessage(Component.literal("§2✔ " + name + " §7— " + goal + "/" + goal + " " + what));
+            player.sendSystemMessage(Component.translatable("gachawaifus.mission.done_prefix")
+                    .append(name)
+                    .append(Component.translatable("gachawaifus.mission.done_mid", goal, goal))
+                    .append(Component.translatable(whatKey)));
             return;
         }
-        player.sendSystemMessage(Component.literal(
-                "§f▸ " + name + " §7— §f" + done + "§7/" + goal + " " + what
-                        + " §7(faltan " + (goal - done) + ")"));
+        player.sendSystemMessage(Component.translatable("gachawaifus.mission.prog_prefix")
+                .append(name)
+                .append(Component.translatable("gachawaifus.mission.prog_mid", done, goal))
+                .append(Component.translatable(whatKey))
+                .append(Component.translatable("gachawaifus.mission.prog_remaining", goal - done)));
     }
 
     private static int countFood(ServerPlayer player) {

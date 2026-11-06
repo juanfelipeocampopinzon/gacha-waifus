@@ -35,8 +35,7 @@ public class SethLowellTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Seth Lowell invocado/a! Solo puedes tener 1 activo/a a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.seth_lowell_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -67,7 +66,7 @@ public class SethLowellTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.AZUL);
-        tooltipComponents.add(Component.literal("§7Invoca a §3Seth Lowell§7 (Azul / Defense)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.seth_lowell_token.2"));
         tooltipComponents.add(Component.literal("§8Lightning Strike · Thunder Shield Rush - High Voltage · Justice Prevails"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

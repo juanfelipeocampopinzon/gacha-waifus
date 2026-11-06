@@ -35,9 +35,9 @@ public final class WildWaifuConfig {
     public static ModConfigSpec.IntValue TAME_PITY;
 
     private static final boolean DEFAULT_ENABLED = true;
-    private static final int DEFAULT_CHANCE = 80;
-    private static final int DEFAULT_INTERVAL = 100;
-    private static final int DEFAULT_MAX_NEARBY = 10;
+    private static final int DEFAULT_CHANCE = 40;
+    private static final int DEFAULT_INTERVAL = 150;
+    private static final int DEFAULT_MAX_NEARBY = 8;
     private static final int DEFAULT_CLAIM_COST = 1;
     private static final int DEFAULT_TAME_ODDS = 110;
     private static final int DEFAULT_TAME_PITY = 128;
@@ -51,16 +51,19 @@ public final class WildWaifuConfig {
                 .define("enabled", DEFAULT_ENABLED);
         CHANCE = builder
                 .comment("Probabilidad en % de que nazca una waifu salvaje cuando toca el chequeo.",
-                        "El chequeo tira por jugador, no por mundo.")
+                        "El chequeo tira por jugador, no por mundo.",
+                        "Chance % that a wild waifu spawns when the check rolls. Per player.")
                 .defineInRange("spawn_chance", DEFAULT_CHANCE, 0, 100);
         INTERVAL = builder
                 .comment("Cada cuantos ticks se tira el dado (20 ticks = 1 segundo).",
-                        "100 = un intento cada 5 segundos por jugador. Cada intento que pasa suelta",
-                        "una manada de 2 o 3 waifus, asi que el mundo se puebla como el ganado.")
+                        "300 = un intento cada 15 segundos por jugador. Cada intento que pasa suelta",
+                        "una manada de 2 o 3 waifus, asi que el mundo se puebla como el ganado.",
+                        "Ticks between rolls (20 ticks = 1 s). All three wild values are tunable")
                 .defineInRange("check_interval", DEFAULT_INTERVAL, 20, 6000);
         MAX_NEARBY = builder
                 .comment("Maximo de waifus salvajes que puede haber alrededor de un jugador.",
-                        "Se cuenta en un radio de 96 bloques.")
+                        "Se cuenta en un radio de 96 bloques.",
+                        "Maximum wild waifus around each player, counted in a 96-block radius.")
                 .defineInRange("max_nearby", DEFAULT_MAX_NEARBY, 1, 32);
         CLAIM_COST = builder
                 .comment("Cuantas Bolitas Rosas cuesta CADA intento de doma (un clic con las bolitas",

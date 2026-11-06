@@ -4,6 +4,165 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [7.2.0] — 2026-11-01
+
+### 🔊 Voces de las waifus: 13 personajes con audio propio en combate
+- **177 líneas de voz** (idle / ataque / daño / muerte / comida) para Anby, Aqua, Darkness, Ellen,
+  Miku, Jane Doe, Megumin, Miyabi, Nicole, Qingyi, Kurumi, Vivian y Zhu Yuan. Extraídas de la base
+  `research/sounds_db/shared/` (personajes confirmados como la misma voz); Zhu Yuan no tiene líneas
+  de ataque, así que solo habla en los demás momentos.
+- **Cuándo suenan**: al dar un golpe o disparar, al lanzar especial y ultimate (la ultimate siempre
+  pasa aunque el enfriamiento esté activo), al recibir daño, al morir, al comer y de vez en cuando
+  deambulan por el mapa (1/400 ticks si no están sentadas). Un enfriamiento de 2 s por waifu evita
+  que dos voces se encimen, y cada reproducción varía el tono ±5 % para que no suene a disco rayado.
+- **Arquitectura**: `WaifuVoices` en común lista qué ids tienen voz; los `ModSounds` de cada loader
+  registran los 64 `SoundEvent` desde esa lista (mismo id que `sounds.json`, variantes aleatorias
+  por acción). Los enganches de daño/muerte/comida van en `AbstractWaifuEntity`; los de
+  ataque/especial/ultimate se insertaron en los `perform*` de las 13 entidades. Sin subtítulos.
+- **Panel de modos arreglado**: la barra de afinidad y el rótulo del hogar chocaban (ambos en
+  y=164); el panel gana 12 px de alto y cada cosa ocupa su sitio.
+
+---
+
+## [7.1.0] — 2026-11-01
+
+### 💞 Sistema de amor (fase 1): afinidad por comida
+- **Alimentar a tu waifu** (clic derecho con cualquier comida en mano, siendo su dueño) la **cura**
+  según la nutrición del alimento y **sube su afinidad** (0–100). Enfriamiento de 20 s por waifu para
+  que curar no sea un spam de clics. La comida se consume (en creativo no).
+- **Hitos 25/50/75/100** (Conociéndoos → Simpatía → Amistad → Enamorada → Amor verdadero): al
+  cruzarlos se avisa al dueño con mensaje y tintineo de amatista. El nombre del nivel viaja como
+  `Component` traducido (servidor nunca aplana el texto).
+- **Recompensa al 100**: +15 % de daño. Se aplica sobre la atribución `ATTACK_DAMAGE` en el código
+  común (no vía eventos) a propósito: así ambos loaders calculan el bono exactamente igual.
+- **La afinidad sobrevive a todo**: NBT de la entidad (guardado/carga), cápsula (Shift + clic),
+  caída en combate (`addFallen` guarda el valor con el alma) y resurrección con diamantes. Se ve en
+  el panel de modos con una barra rosada (llegan datos sincronizados, se mueve en vivo).
+- **i18n**: 8 claves nuevas en los 13 archivos de idioma (paridad ES/EN exacta, 935 cada uno).
+
+### 🔧 Paridad Fabric: el multiplicador de colores por fin se aplica
+- **El bug**: `ColorEvents.onIncomingDamage` en Fabric era código muerto — Fabric API no tiene
+  ningún evento de daño modificable (NeoForge parchea `LivingEntity#hurt` para lanzar el suyo), así
+  que el ±33 % de colores y el corte de daño de las waifus salvajes solo funcionaban en NeoForge.
+- **El arreglo**: mixin propio (`LivingEntityHurtMixin`) que entra en el HEAD de
+  `hurt(DamageSource, float)` con `@ModifyVariable` y escala el importe — el mismo punto exacto
+  donde NeoForge lanza su evento. Configuración en `gachawaifus.mixins.json`, declarada en
+  `fabric.mod.json`, con refmap a mano (`gachawaifus-refmap.json`) porque la build va offline y
+  Loom 1.17 remapa las anotaciones él solo durante `remapJar`.
+
+## [7.0.0] — 2026-10-31
+
+### 🌐 Idioma completo: cada mensaje del mod es ahora bilingüe (ES + EN)
+- **Todos los textos que estaban hardcodeados en español pasan a claves de idioma** — comandos
+  (`/gwcolor`, `/coleccion`, `/misiones`, `/tirada`), la pantalla de la Cápsula Waifu, la guía del
+  invocador (18 páginas), el recuerdo automático, el faro de invocación, las waifus salvajes, las
+  misiones diarias, la waifu inicial y los mensajes de combate. Nada de español colado en el código:
+  `es_es.json` y `en_us.json` quedan en **paridad exacta, 922 claves cada uno**.
+  - Regla nueva: un mensaje del servidor nunca se aplana con `getString()` (server-side devolvería la
+    clave cruda); se envían `Component` y solo las pantallas del cliente traducen.
+  - En keys **sin** argumentos el `%` va literal; en keys **con** `%s` se escapa `%%`.
+- **`en_us.json` reescrito casi desde cero** — las ~60 frases de combate de cada waifu, las tooltips
+  de los tokens y las guías de la cápsula tienen ahora su versión inglesa.
+- **Cobertura completa de regiones** — además de `en_us` y `es_es`, el mod trae ahora sus plantillas
+  para `en_au`/`en_ca`/`en_gb`/`en_nz` y `es_ar`/`es_cl`/`es_ec`/`es_mx`/`es_uy`/`es_ve`/`esan`
+  (13 archivos de idioma). Se omiten a propósito `en_pt` (pirata), `en_ud` (invertido), `enp` y
+  `enws` (arcaísmos de broma de vanilla).
+  - Arreglado de paso: la tarjeta de cápsula vacía usaba claves `gachawaifus.storage.empty_l1..l5`
+    que no existían en los lang (mostraba la clave cruda); ya están en los 927 pares ES/EN.
+- **Alias en inglés para todos los comandos** — los literales server-side no se pueden traducir por
+  cliente (el árbol de comandos es único), así que cada comando español registra también su gemelo
+  en inglés: `/start`, `/guide`, `/pull`, `/missions`, `/collection five|four`, `/gwcolor biomes|here`.
+  `/inicio`, `/guia`, `/tirada`, `/misiones`, `/coleccion cinco|cuatro` y `/gwcolor biomas|aqui`
+  siguen funcionando exactamente igual; la página 16 de la guía y los mensajes en inglés ya citan
+  los alias nuevos.
+
+### 🐺 Spawn salvaje mucho más contenido
+- Defaults de la sección `wild` bajados tras las quejas de los reviewers (aparecían ~8 waifus en 5
+  minutos): `spawn_chance` **80 → 20 %**, `check_interval` **100 → 300 ticks** (un dado cada 15 s por
+  jugador) y `max_nearby` **10 → 4** (radio 96 bloques). Fabric sigue los mismos números.
+- Los tres valores son configurables y la guía (página 14) lo dice en los dos idiomas; los comentarios
+  del TOML de `wild` ahora son bilingües.
+
+### ✨ Brillo de Ye Shunguang sin atravesar bloques
+- `YeShunguangGlowLayer` pasa a extender `GeoRenderLayer` y pintarse con
+  `RenderType.entityTranslucentEmissive(GLOW_MASK)` + inflado 1.0125: la luz es propia del pelo,
+  funciona con y sin Iris/shaders y ya no se ve a través de bloques ni de la propia piel.
+
+---
+
+## [6.8.0] — 2026-10-31
+
+### 🎭 Skins por transformación y el Hogar que solo imita bloques
+- **Sistema de skins genérico (`skin/WaifuSkins`, `WaifuSkinProfile`, `WaifuSkinState`)** — cada waifu
+  puede declarar una textura `base` y hasta tres variantes: `combat` (entra en combate), `special`
+  (al usar la habilidad especial) y `ultimate` (al lanzar la ultimate). Solo `base` es obligatoria;
+  una variante sin definir cae en la base, así que una waifu con solo skin de ultimate no parpadea a
+  una textura inexistente al pelear. La prioridad es ULTIMATE &gt; SPECIAL &gt; COMBAT y el estado viaja
+  al cliente como un byte en `SynchedEntityData`, porque el objetivo y los cooldowns solo existen en
+  el servidor.
+  - Añadir una transformación es una línea en `WaifuSkins` más los PNG en `textures/entity/`; el
+    renderizador solo llama a `AbstractWaifuEntity.skinTexture(...)`. Las waifus sin perfil siguen
+    exactamente igual que antes.
+  - `AbstractWaifuEntity` detecta el combate por objetivo vivo **o** por un golpe reciente
+    (`getLastHurtByMob`), y mantiene la skin 100 ticks (5 s) al salir. `PromeiaEntity` avisa de la
+    especial y la ultimate con `notifySpecialUsed()` / `notifyUltimateUsed()` (100 y 140 ticks), hooks
+    listos para las próximas waifus.
+  - La skin de combate se suprime en `PASIVO` y `SENTADA`: si la waifu no puede pelear, no se
+    transforma. `WaifuHomeBlockEntity` no entra aquí; el sistema es solo de entidades.
+- **Promeia estrena skin** — `textures/entity/promeia.png` pasa a ser el aspecto nuevo de reposo y
+  `textures/entity/promeia_combat.png` la forma de combate. Ambas son 64×128 con el parche UV del
+  busto, así que `PromeiaRenderer` las pinta con `PromeiaModel` sobre la capa
+  `WaifuBustLayers.PROMEIA` (la pieza normal más la cola).
+  - **Cola de caballo** — la caja 2×18×2 del hueso `cola de caballo` de los `.geo.json` (UV 0,69)
+    ahora se hornea como hija de la cabeza en la capa propia `WaifuBustLayers.PROMEIA`, así que sigue
+    los giros del cuello y sale en las dos skins. No se añadió a `TUBE` para no pegársela a las demás
+    waifus que comparten esa malla.
+  - **Brazos rígidos sin transformar** — `PromeiaModel` deja los brazos rectos y sin balanceo mientras
+    la skin es la base, aunque camine; al entrar en combate (o usar una habilidad) vuelve la animación
+    normal de vanilla. Sentada conserva la pose de regazo de `WaifuPlayerModel`.
+- **Ye Shunguang: la ultimate enciende la forma blanca y el pelo brillante** — `performUltimate()` llama
+  a `notifyUltimateUsed()`, así que durante 140 ticks (7 s) se pinta
+  `textures/entity/ye_shunguang_ultimate.png`, la skin de pelo blanco; después vuelve a la base marrón.
+  `YeShunguangModel` usa `skinTexture(...)` y `YeShunguangRenderer` suma `YeShunguangGlowLayer`, que
+  solo responde en `ULTIMATE`.
+  - La máscara `ye_shunguang_ultimate_glowmask.png` deja emisivas únicamente las **partes blancas del
+    pelo y las colas** (cabello de la cabeza y los mechones/colas laterales y traseros), no la cara ni
+    la ropa. El resto del cuerpo conserva la iluminación normal.
+  - **Ni `AutoGlowingGeoLayer` ni shaders custom** — la capa de GeckoLib *borra* del texture base los
+    píxeles del glowmask y los repinta con su RenderType propio (`geo_glowing_layer`), que los shader
+    packs no reconocen: con Bliss el pelo quedaba como agujero transparente. La capa ahora deja la
+    base intacta y pinta el glowmask blanco encima con el RenderType **emisivo vanilla**
+    (`RenderType.entityTranslucentEmissive`) — el que Bliss/Complementary/Rethinking Voxels tratan
+    como emisivo real (bloom y luz propia donde el pack lo soporte) — con el modelo ligeramente
+    inflado (1.25 %) para no Z-fightear con la melena y profundidad normal, así que la luz ya no
+    atraviesa bloques ni el propio cuerpo. Si un pack se saltara el overlay, lo peor que pasa es que
+    el pelo no brille, nunca que desaparezca.
+  - La skin base (`ye_shunguang.png`, pelo marrón) no cambia.
+- **Aria: la forma robot es su ultimate** — `performUltimate()` llama a `notifyUltimateUsed()` y durante
+  140 ticks se pinta `textures/entity/aria_robot.png`, la skin robot; al terminar vuelve a `aria.png`.
+  `AriaRenderer` pasa por `skinTexture(...)`, así que el cambio llega también a su modelo slim con
+  pieza del pecho.
+  - La skin robot venía en 64×64; se convirtió a 64×128 conservando la zona original y añadiendo la
+    pieza del pecho (copa 2×2) en la fila UV `(0, 121)`, igual que la base de Aria.
+- **El Bloque de Hogar ya no hereda menús ni comportamientos** — `WaifuHomeBlockEntity.isMimicable`
+  exige ahora un bloque con `RenderShape.MODEL` estático, con ítem propio y sin `EntityBlock`. Eso
+  deja fuera cofres, hornos, mesas de crafteo, camas, carteles, puertas y demás bloques con
+  interfaz o entidad, que antes podían colarse y abrir su GUI o romper el render.
+- **Camuflaje con el bloque en la mano** — se elimina el selector `HomeMimicMenu` /
+  `HomeMimicScreen` (y su registro, pantalla y claves de idioma). Ahora `clic derecho` con un bloque
+  imitable en la mano copia ese bloque; `shift + clic derecho` hace lo mismo sin abrir nada. Funciona
+  en NeoForge (`PlayerInteractEvent.RightClickBlock`) y Fabric (`UseBlockCallback`). La página 12 de
+  la Guía describe el gesto nuevo.
+
+## [6.7.0] — 2026-10-29
+
+### 🖼 Retrato de las tres waifus nuevas (Tohka, Phoenix, Miku)
+- **Arte de panel** — `yatogami_tohka`, `phoenix` y `hatsune_miku` (integradas en `66c2d96`) ya tienen
+  su `assets/gachawaifus/textures/gui/art/<id>.png`, así que `WaifuStorageScreen` deja de mostrar el
+  placeholder de lienzo para ellas. Son tiles **512×512 sin pixelar**, del mismo montaje "aire" con
+  ventana anclada a la cabeza y mate BiRefNet que las otras 61.
+- **Pendiente** — el cuerpo/splash de estas tres no está implementado: solo hay retrato de panel.
+
 ## [6.6.0] — 2026-10-28
 
 ### 🎛 Panel de modos, caminar tipo vanilla, recetario en la guía y el Hogar como bloque

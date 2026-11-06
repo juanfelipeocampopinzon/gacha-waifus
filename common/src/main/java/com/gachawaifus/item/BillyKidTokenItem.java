@@ -36,8 +36,7 @@ public class BillyKidTokenItem extends Item {
                     player.getBoundingBox().inflate(128.0D),
                     e -> e.isAlive() && player.getUUID().equals(e.getOwnerUUID()));
             if (!existing.isEmpty()) {
-                player.displayClientMessage(Component.literal(
-                        "§c[GachaWaifus] ¡Ya tienes a Billy Kid activo! Solo puedes tener 1 activo a la vez."), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.billy_kid_token.1"), true);
                 return InteractionResult.FAIL;
             }
         }
@@ -49,7 +48,7 @@ public class BillyKidTokenItem extends Item {
                     player != null ? player.getYRot() : 0.0F, 0.0F);
             if (player != null) {
                 entity.tame(player);
-                player.displayClientMessage(Component.literal("§4[Gachawaifus] ¡Billy Kid ha sido invocado!"), true);
+                player.displayClientMessage(Component.translatable("item.gachawaifus.billy_kid_token.2"), true);
             }
             level.addFreshEntity(entity);
             level.playSound(null, spawnPos, SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 1.0F, 1.2F);
@@ -66,7 +65,7 @@ public class BillyKidTokenItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltipComponents, TooltipFlag tooltipFlag) {
         ColorTooltip.append(tooltipComponents, WaifuColor.GRIS);
-        tooltipComponents.add(Component.literal("§7Invoca a §4Billy Kid§7 (Gris / Attack)."));
+        tooltipComponents.add(Component.translatable("item.gachawaifus.billy_kid_token.3"));
         tooltipComponents.add(Component.literal("§8Full Firepower · Whirlwind Gambade · Starlight, My Starlight"));
         super.appendHoverText(stack, context, tooltipComponents, tooltipFlag);
     }

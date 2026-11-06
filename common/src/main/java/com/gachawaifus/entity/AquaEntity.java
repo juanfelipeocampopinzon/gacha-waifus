@@ -103,6 +103,7 @@ public class AquaEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 24;
         this.doHurtTarget(target);
         if (this.level() instanceof ServerLevel sl) {
@@ -112,6 +113,7 @@ public class AquaEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 220;
         target.hurt(this.damageSources().mobAttack(this), 11.0F);
         target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 120, 1));
@@ -122,10 +124,11 @@ public class AquaEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 700;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§3Aqua §o\"¡Bendición de la Diosa del Agua! Sanar, sanar y sanar.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.aqua.1"));
             p.heal(14.0F);
             p.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 200, 1));
         }

@@ -109,6 +109,7 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
         }
     }
     private void performNormalAttack(LivingEntity target) {
+        this.playVoice("attack");
         this.normalAttackCooldown = 20;
         this.triggerAnim("attack_controller", "attack");
         this.doHurtTarget(target);
@@ -118,6 +119,7 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
         this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 1.2F);
     }
     private void performSpecialSkill(LivingEntity target) {
+        this.playVoice("attack");
         this.specialSkillCooldown = 200;
         this.triggerAnim("attack_controller", "special");
         target.hurt(this.damageSources().mobAttack(this), 16.0F);
@@ -129,10 +131,11 @@ public class AnbyDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
         this.level().playSound(null, this.blockPosition(), SoundEvents.LIGHTNING_BOLT_THUNDER, SoundSource.PLAYERS, 0.8F, 1.5F);
     }
     private void performUltimate() {
+        this.playVoice("attack", true);
         this.ultimateCooldown = 600;
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
-            p.sendSystemMessage(Component.literal("§e[Anby Demara] §o\"Objetivo fijado... Overdrive activado.\""));
+            p.sendSystemMessage(Component.translatable("message.gachawaifus.anby_demara.1"));
             owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 1));
             owner.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 300, 1));
         }
