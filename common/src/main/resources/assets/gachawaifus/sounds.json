@@ -10,36 +10,6 @@
       }
     ]
   },
-  "entity/burnice/attack": {
-    "subtitle": "Burnice slashes with a blade of fire!",
-    "sounds": [
-      {
-        "name": "gachawaifus:entity/burnice/attack",
-        "volume": 1.5,
-        "pitch": 0.9
-      }
-    ]
-  },
-  "entity/burnice/flamethrower": {
-    "subtitle": "Burnice unleashes a devastating jet of flame!",
-    "sounds": [
-      {
-        "name": "gachawaifus:entity/burnice/flamethrower",
-        "volume": 3.0,
-        "pitch": 1.1
-      }
-    ]
-  },
-  "entity/burnice/supernova": {
-    "subtitle": "SUPERNOVA! Burnice erupts with a blinding fire explosion!",
-    "sounds": [
-      {
-        "name": "gachawaifus:entity/burnice/supernova",
-        "volume": 4.0,
-        "pitch": 1.2
-      }
-    ]
-  },
   "entity/fernanfloo/attack": {
     "subtitle": "gachawaifus.subtitle.fernanfloo_attack",
     "sounds": [
@@ -72,7 +42,7 @@
       "gachawaifus:entity/anby_demara/death1"
     ]
   },
-  "entity/anby_demara/feed.ogg": {
+  "entity/anby_demara/feed": {
     "sounds": [
       "gachawaifus:entity/anby_demara/feed"
     ]
@@ -105,7 +75,7 @@
       "gachawaifus:entity/aqua/death1"
     ]
   },
-  "entity/aqua/feed.ogg": {
+  "entity/aqua/feed": {
     "sounds": [
       "gachawaifus:entity/aqua/feed"
     ]
@@ -138,7 +108,7 @@
       "gachawaifus:entity/darkness/death2"
     ]
   },
-  "entity/darkness/feed.ogg": {
+  "entity/darkness/feed": {
     "sounds": [
       "gachawaifus:entity/darkness/feed"
     ]
@@ -171,7 +141,7 @@
       "gachawaifus:entity/ellen_joe/death1"
     ]
   },
-  "entity/ellen_joe/feed.ogg": {
+  "entity/ellen_joe/feed": {
     "sounds": [
       "gachawaifus:entity/ellen_joe/feed"
     ]
@@ -199,18 +169,22 @@
       "gachawaifus:entity/hatsune_miku/attack3",
       "gachawaifus:entity/hatsune_miku/attack4",
       "gachawaifus:entity/hatsune_miku/attack5",
-      "gachawaifus:entity/hatsune_miku/attack6"
+      "gachawaifus:entity/hatsune_miku/attack6",
+      "gachawaifus:entity/hatsune_miku/attack7"
     ]
   },
   "entity/hatsune_miku/death": {
     "sounds": [
       "gachawaifus:entity/hatsune_miku/death1",
-      "gachawaifus:entity/hatsune_miku/death2"
+      "gachawaifus:entity/hatsune_miku/death2",
+      "gachawaifus:entity/hatsune_miku/death3",
+      "gachawaifus:entity/hatsune_miku/death4"
     ]
   },
-  "entity/hatsune_miku/feed.ogg": {
+  "entity/hatsune_miku/feed": {
     "sounds": [
-      "gachawaifus:entity/hatsune_miku/feed"
+      "gachawaifus:entity/hatsune_miku/feed",
+      "gachawaifus:entity/hatsune_miku/feed2"
     ]
   },
   "entity/hatsune_miku/hurt": {
@@ -219,7 +193,8 @@
       "gachawaifus:entity/hatsune_miku/hurt2",
       "gachawaifus:entity/hatsune_miku/hurt3",
       "gachawaifus:entity/hatsune_miku/hurt4",
-      "gachawaifus:entity/hatsune_miku/hurt5"
+      "gachawaifus:entity/hatsune_miku/hurt5",
+      "gachawaifus:entity/hatsune_miku/hurt6"
     ]
   },
   "entity/hatsune_miku/idle": {
@@ -229,7 +204,9 @@
       "gachawaifus:entity/hatsune_miku/idle3",
       "gachawaifus:entity/hatsune_miku/idle4",
       "gachawaifus:entity/hatsune_miku/idle5",
-      "gachawaifus:entity/hatsune_miku/idle6"
+      "gachawaifus:entity/hatsune_miku/idle6",
+      "gachawaifus:entity/hatsune_miku/idle7",
+      "gachawaifus:entity/hatsune_miku/idle8"
     ]
   },
   "entity/jane_doe/attack": {
@@ -244,7 +221,7 @@
       "gachawaifus:entity/jane_doe/death1"
     ]
   },
-  "entity/jane_doe/feed.ogg": {
+  "entity/jane_doe/feed": {
     "sounds": [
       "gachawaifus:entity/jane_doe/feed"
     ]
@@ -278,7 +255,7 @@
       "gachawaifus:entity/megumin/death1"
     ]
   },
-  "entity/megumin/feed.ogg": {
+  "entity/megumin/feed": {
     "sounds": [
       "gachawaifus:entity/megumin/feed"
     ]
@@ -312,7 +289,7 @@
       "gachawaifus:entity/miyabi/death1"
     ]
   },
-  "entity/miyabi/feed.ogg": {
+  "entity/miyabi/feed": {
     "sounds": [
       "gachawaifus:entity/miyabi/feed"
     ]
@@ -345,7 +322,7 @@
       "gachawaifus:entity/nicole_demara/death1"
     ]
   },
-  "entity/nicole_demara/feed.ogg": {
+  "entity/nicole_demara/feed": {
     "sounds": [
       "gachawaifus:entity/nicole_demara/feed"
     ]
@@ -378,7 +355,7 @@
       "gachawaifus:entity/qingyi/death1"
     ]
   },
-  "entity/qingyi/feed.ogg": {
+  "entity/qingyi/feed": {
     "sounds": [
       "gachawaifus:entity/qingyi/feed"
     ]
@@ -412,7 +389,7 @@
       "gachawaifus:entity/tokisaki_kurumi/death1"
     ]
   },
-  "entity/tokisaki_kurumi/feed.ogg": {
+  "entity/tokisaki_kurumi/feed": {
     "sounds": [
       "gachawaifus:entity/tokisaki_kurumi/feed"
     ]
@@ -434,11 +411,6 @@
       "gachawaifus:entity/tokisaki_kurumi/idle6"
     ]
   },
-  "entity/tokisaki_kurumi/musket_shot.ogg": {
-    "sounds": [
-      "gachawaifus:entity/tokisaki_kurumi/musket_shot"
-    ]
-  },
   "entity/vivian/attack": {
     "sounds": [
       "gachawaifus:entity/vivian/attack1",
@@ -451,7 +423,7 @@
       "gachawaifus:entity/vivian/death1"
     ]
   },
-  "entity/vivian/feed.ogg": {
+  "entity/vivian/feed": {
     "sounds": [
       "gachawaifus:entity/vivian/feed"
     ]
@@ -477,7 +449,7 @@
       "gachawaifus:entity/zhu_yuan/death1"
     ]
   },
-  "entity/zhu_yuan/feed.ogg": {
+  "entity/zhu_yuan/feed": {
     "sounds": [
       "gachawaifus:entity/zhu_yuan/feed"
     ]
