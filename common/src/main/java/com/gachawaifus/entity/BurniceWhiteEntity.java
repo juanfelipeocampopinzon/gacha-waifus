@@ -32,6 +32,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 
@@ -174,46 +175,54 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
             return state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.idle"));
         }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
 
-        // ⚠ Al terminar una habilidad hay que VOLVER a una pose neutra. Si el predicado se quedara
-        // en STOP, la última pose (brazos al frente por el lanzallamas o el salto) se quedaría
-        // pegada al caminar o al atacar después.
+        // ⚠ Al terminar una habilidad hay que VOLVER a una pose neutra, y eso lo hace el clip
+        // "recovery" (0,4 s = RECOVERY_LENGTH ticks), que termina en [0,0,0] en todos sus huesos;
+        // "attack" y "flame_channel" también terminan en neutro. Sin habilidad se devuelve STOP y
+        // manda "movement": antes se empalmaba aquí un clip "rest" que no anima nada (un solo
+        // fotograma a cero en 13 huesos) y, al aplicarse después del de movimiento, pisaba el
+        // "idle" — de pie se le quedaban brazos y coletos congelados.
         controllers.add(new AnimationController<>(this, "attack_controller", 3, state -> {
             if (!this.isAlive()) return PlayState.STOP;
 
             // El clip sale del estado de acción, no de un triggerAnim: así no hay dos fuentes de
             // verdad peleándose (antes se disparaba la animación y además el predicado decidía).
-            switch (this.getAction()) {
-                case ACTION_FLAME_CHANNEL:
-                    return state.setAndContinue(RawAnimation.begin()
-                            .thenPlay("animation.burnice_white.flame_channel"));
-                case ACTION_LEAP:
-                    return state.setAndContinue(RawAnimation.begin()
-                            .thenPlay("animation.burnice_white.leap"));
-                case ACTION_FLAME_RAIN:
-                    // Lluvia de fuego con el chorro al frente; al final, pose de reposo del chorro.
-                    return this.ultimateTicks <= AIR_RAIN_LENGTH - 2
-                            ? state.setAndContinue(RawAnimation.begin()
-                                    .thenLoop("animation.burnice_white.flame_rain"))
-                            : state.setAndContinue(RawAnimation.begin()
-                                    .thenLoop("animation.burnice_white.flame_rest"));
-                case ACTION_RECOVERY:
-                    return state.setAndContinue(RawAnimation.begin()
-                            .thenPlay("animation.burnice_white.recovery"));
-                case ACTION_ATTACK:
-                    return state.setAndContinue(RawAnimation.begin()
-                            .thenPlay("animation.burnice_white.attack"));
-                default:
-                    break;
+            ActionClip clip = this.actionClip();
+            if (clip == null) {
+                return PlayState.STOP;
             }
-
-            // ⚠ Caminando NO se devuelve la pose neutra: este controlador se registra después del
-            // de movimiento y GeckoLib los aplica en orden sin mezclar, así que la pose neutra
-            // pisaría la animación de caminar (piernas rígidas deslizándose, el fallo reportado).
-            if (state.isMoving()) return PlayState.STOP;
-
-            // Sin habilidad activa: volver a la pose neutra de brazos (no a la última pose de la skill).
-            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.burnice_white.rest"));
+            return clip.loop() ? state.setAndContinue(RawAnimation.begin().thenLoop(clip.name()))
+                    : state.setAndContinue(RawAnimation.begin().thenPlay(clip.name()));
         }));
+    }
+
+    /** Un clip de {@code attack_controller}: su nombre y si se repite o se toca una vez. */
+    private record ActionClip(String name, boolean loop) {
+    }
+
+    /** El clip que le toca a {@code attack_controller}, o {@code null} si no hay habilidad activa. */
+    @Nullable
+    private ActionClip actionClip() {
+        return switch (this.getAction()) {
+            case ACTION_FLAME_CHANNEL -> new ActionClip("animation.burnice_white.flame_channel", false);
+            case ACTION_LEAP -> new ActionClip("animation.burnice_white.leap", false);
+            // Lluvia de fuego con el chorro al frente; al final, pose de reposo del chorro.
+            case ACTION_FLAME_RAIN -> new ActionClip(this.ultimateTicks <= AIR_RAIN_LENGTH - 2
+                    ? "animation.burnice_white.flame_rain" : "animation.burnice_white.flame_rest", true);
+            case ACTION_RECOVERY -> new ActionClip("animation.burnice_white.recovery", false);
+            case ACTION_ATTACK -> new ActionClip("animation.burnice_white.attack", false);
+            default -> null;
+        };
+    }
+
+    /**
+     * Nombre del clip que suena ahora mismo por habilidad, o {@code null} si Burnice está en
+     * idle/walk/run. Lo pregunta el modelo para saber si el clip ya se ocupa de la cabeza y no hay
+     * que pintarle el giro encima.
+     */
+    @Nullable
+    public String currentActionClip() {
+        ActionClip clip = this.actionClip();
+        return clip == null ? null : clip.name();
     }
 
     @Override

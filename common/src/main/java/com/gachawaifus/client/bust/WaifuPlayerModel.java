@@ -3,6 +3,7 @@ package com.gachawaifus.client.bust;
 import com.gachawaifus.entity.AbstractWaifuEntity;
 import net.minecraft.client.model.PlayerModel;
 import net.minecraft.client.model.geom.ModelPart;
+import net.minecraft.util.Mth;
 import net.minecraft.world.entity.LivingEntity;
 
 /**
@@ -62,6 +63,10 @@ public class WaifuPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
         float hip = HIP_PIVOT_X + (sitting ? LEGS_APART_X : 0.0F);
         this.leftLeg.setPos(hip, HIP_PIVOT_Y, 0.0F);
         this.rightLeg.setPos(-hip, HIP_PIVOT_Y, 0.0F);
+        if (waifu.isSinging()) {
+            this.applySingingPose(ageInTicks);
+            return;
+        }
         if (!sitting) {
             return;
         }
@@ -96,6 +101,53 @@ public class WaifuPlayerModel<T extends LivingEntity> extends PlayerModel<T> {
         this.rightArm.zRot = -ARMS_RELAX_Z;
 
         // PlayerModel ya copió las capas cuando estaba de pie: hay que volver a copiarlas.
+        this.hat.copyFrom(this.head);
+        this.jacket.copyFrom(this.body);
+        this.leftSleeve.copyFrom(this.leftArm);
+        this.rightSleeve.copyFrom(this.rightArm);
+        this.leftPants.copyFrom(this.leftLeg);
+        this.rightPants.copyFrom(this.rightLeg);
+    }
+
+    /**
+     * Pose de concierto: micrófono imaginario en la mano izquierda, la derecha abierta al público y
+     * un balanceo suave al ritmo. Se recalcula cada frame porque {@code super.setupAnim} deja los
+     * huesos en neutro; las capas (manga, chaqueta, pelo del sombrero) se copian al final.
+     */
+    private void applySingingPose(float ageInTicks) {
+        float t = ageInTicks * 0.12F;
+        float sway = Mth.sin(t);
+        float bounce = Mth.sin(t * 2.0F);
+        float beat = Mth.sin(t * 1.5F);
+
+        // Torso y cabeza: vaivén de idol, nunca quieta del todo.
+        this.body.xRot = 0.02F + bounce * 0.015F;
+        this.body.yRot = sway * 0.07F;
+        this.body.zRot = sway * 0.035F;
+
+        this.head.xRot = -0.10F + bounce * 0.06F;
+        this.head.yRot = sway * 0.14F;
+        this.head.zRot = -sway * 0.05F;
+
+        // Brazo izquierdo: mano delante de la boca, como sujetando el micro.
+        this.leftArm.xRot = -1.95F + beat * 0.07F;
+        this.leftArm.yRot = 0.55F;
+        this.leftArm.zRot = -0.35F + beat * 0.03F;
+
+        // Brazo derecho: extendido hacia el público, marcando el compás.
+        this.rightArm.xRot = -0.55F + Mth.sin(t * 1.3F + 0.8F) * 0.18F;
+        this.rightArm.yRot = -0.45F;
+        this.rightArm.zRot = 0.65F + sway * 0.12F;
+
+        // Piernas ligeramente abiertas y con un pequeño rebote.
+        this.leftLeg.xRot = beat * 0.02F;
+        this.rightLeg.xRot = -beat * 0.02F;
+        this.leftLeg.yRot = 0.06F;
+        this.rightLeg.yRot = -0.06F;
+        this.leftLeg.zRot = -0.055F;
+        this.rightLeg.zRot = 0.055F;
+
+        // PlayerModel copió las capas cuando estaba de pie: hay que volver a copiarlas.
         this.hat.copyFrom(this.head);
         this.jacket.copyFrom(this.body);
         this.leftSleeve.copyFrom(this.leftArm);

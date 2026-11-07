@@ -487,7 +487,9 @@ public class ModEntities {
                             .build("nangong_yu"));
     public static final Supplier<EntityType<com.gachawaifus.entity.PyroisEntity>> PYROIS =
             register("pyrois", () ->
-                    EntityType.Builder.of(com.gachawaifus.entity.PyroisEntity::new, MobCategory.CREATURE)
+                    // Criatura de Belle, no waifu y no spawnnable: con MISC el NaturalSpawner la salta
+                    // y no come cupo de monstruos, y sigue sin entrar en el roster.
+                    EntityType.Builder.of(com.gachawaifus.entity.PyroisEntity::new, MobCategory.MISC)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("pyrois"));
@@ -560,4 +562,25 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("hatsune_miku"));
+
+    public static final Supplier<EntityType<com.gachawaifus.entity.KasaneTetoEntity>> KASANE_TETO =
+            register("kasane_teto", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.KasaneTetoEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("kasane_teto"));
+
+    public static final Supplier<EntityType<com.gachawaifus.entity.AkitaNeruEntity>> AKITA_NERU =
+            register("akita_neru", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.AkitaNeruEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("akita_neru"));
+
+    public static final Supplier<EntityType<com.gachawaifus.entity.BelleEntity>> BELLE =
+            register("belle", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.BelleEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("belle"));
 }

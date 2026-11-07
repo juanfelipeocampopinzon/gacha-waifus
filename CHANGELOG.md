@@ -4,6 +4,269 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [7.4.0] — 2026-11-06
+
+### 🔥 Burnice vuelve a respirar de pie (y la cabeza dejó de chasquear)
+- **`attack_controller` → `PlayState.STOP`** (`entity/BurniceWhiteEntity.java`). El `default`
+  devolvía `animation.burnice_white.rest`, un clip de **un solo fotograma en [0,0,0] sobre 13
+  huesos**: no anima nada, pone todo a cero, y como se registra después del controlador `movement`
+  **pisaba el `idle`** (que sí keya brazos y coletos). Resultado: de pie, Burnice quedaba congelada.
+  Con STOP la pose neutra la aporta el propio `idle`, que empieza y termina en [0,0,0]. Verificado
+  fotograma a fotograma que `attack`, `flame_channel`, `recovery` (0,4 s = los 8 ticks de
+  `RECOVERY_LENGTH`) y `flame_rest` (0,5 s) terminan en neutro, así que STOP no deja pose pegada.
+  20 de las 22 waifus con `attack_controller` ya usaban STOP: Burnice era la excepción.
+- **`entity/client/BoneTurn.java`** (nuevo, compartido como `BustBones`/`WaifuGeoWalk`): dos
+  arreglos sobre el giro de cabeza. El objetivo se persigue con aproximación exponencial (0,22 por
+  fotograma) en vez de saltar, y el giro solo se aplica cuando el clip activo **no keya `head`** —
+  la lista se deriva del propio `animations/burnice_white.animation.json`, no está hardcodeada. Antes
+  se apagaba durante `attack` (que no keya la cabeza) y se encendía encima de clips que sí la keyan.
+- **Miyabi se queda con `rest`, y está dicho por qué** (`entity/MiyabiMisiramaEntity.java:99-105`):
+  sus `attack`/`special` terminan con `katana_drawn` en [90,0,0], así que STOP dejaría la katana
+  desenvainada para siempre. El coste es que de parada no se le mueven las orejas.
+
+### 🎫 Los 67 tokens se generan igual, desde la skin del mod
+- **`tools/token_icon.py --generar-todos`**: el estándar pasó de *repintar el anillo sobre lo que
+  hubiera* a **generar la ficha entera** — silueta de la casa, anillo del color del personaje y la
+  cara **encima** del anillo. Antes `restyle` pintaba las bandas al final y en las waifus cuyo
+  retrato llenaba el círculo el anillo se comía pelo y mentón (`akita_neru`, `banyue`, `caesar`,
+  `cissia`, `claret`, `darkness`, `evelyn_chevalier`, `grace_howard`, `ben_bigger`…). Ahora las 67
+  salen del mismo procedimiento y ninguna queda mordida.
+- **La cara se toma de `textures/entity/<id>.png`, no de `chicas/<id>/`**: la textura de entidad es
+  la que renderiza el modelo en juego, tiene un nombre único por id y la cara está en (8,8) en los
+  tres formatos que hay (64×64, 64×128 con busto y 64×192). `chicas/` tiene nombres sueltos y a
+  veces otra paleta.
+- **`--cara 24|26|28`** eligió 26: con 24 el retrato flota dentro de la línea oscura, con 28 la cara
+  se come el anillo brilloso. Con 26 quedan los 2 px de color intactos y la cara tapa solo la línea
+  interior. Los pixeles transparentes de la skin (flequillo, mechones) se rellenan con el color
+  medio de la propia cara para que no se vea el anillo a través del pelo.
+- **`--check` comprueba la generación**, no las piezas: tamano + silueta + color del anillo +
+  igualdad pixel a pixel con lo que sale de la skin. La línea interior ya no se valida aparte
+  porque la cara la cubre por diseño. **67/67 conformes**, backup del estado anterior en
+  `tools/backups/tokens/<id>.pre-gen.png` y hoja de contacto antes/después.
+
+### 🎒 Los tokens llevan el pelo: la segunda capa de la skin
+- **`tools/token_icon.py` compone las dos capas de la cabeza**. La capa exterior de la cabeza vive
+  32 px a la derecha de la cara (`(8,8)` → `(40,8)`) y el generador la descartaba: los 67 salían con
+  la frente pelada y el flequillo cortado, que en `akita_neru` era literalmente su mechón. `retrato()`
+  la pega con `alpha_composite`, así que los mechones semitransparentes siguen siéndolo, igual que en
+  el render del juego. Relleno de píxeles transparentes sigue detrás, con la cara ya compuesta.
+- **El recorte malo de Seed no era el token, es el arte del glosario**: `textures/gui/art/seed.png`
+  (512×512 con marco redondeado de 416 px) es un recorte de una ilustración más grande donde el
+  mecha ocupa las tres cuartas partes y la chica sale cortada por el borde izquierdo del marco.
+  `WaifuStorageScreen.drawPixelArtViewport` la blitea entera en el hueco de 128×128, o sea que no
+  hay zoom que reencuadre: hace falta el arte original. El token de Seed se queda con la caja
+  estándar `(8,8)` y solo gana el pelo → `python3 tools/token_icon.py --generar seed`.
+- **`--check` compara el anillo con el del token generado, no con el color nominal**: el retrato va
+  ENCIMA del anillo y en `orphie` el pelo rojo cubre más bandas de las que deja el naranja, así que
+  la dominante medida en las profundidades 1-2 nunca podía ser `#FF3B3B`. Tras regenerar las 67:
+  **67/67 conformes**, con hoja de contacto antes/después y backup en `pre-gen.png`.
+
+### 🖼️ El glosario: Belle, Teto y Neru con arte propio y Seed con los dos en cuadro
+- **`textures/gui/art/{belle,kasane_teto,akita_neru}.png`** (nuevos): las tres waifus que entraron en
+  7.3.0 no tenian arte y el glosario les pintaba el hueco de marcador. Ya salen de sus LoRA de Civitai
+  (1443745 Belle, 1228590 Kasane Teto, 1510592 Akita Neru) con el GLoRA de estilo del pipeline; las
+  tomas elegidas son `kasane_teto_portrait_s1003` y `akita_neru_portrait_s1003`.
+- **Belle cambia de LoRA y se redibuja entera** (`belle_portrait_s8004`, red **439177 All-in-1 v2-IL**):
+  con el LoRA de JN (1443745) y con el 2430219 salia el traje inventado y las dos manos fusionadas
+  delante del pecho, y ninguna de las dos redes publica tags de diseño. La All-in-1 si los publica
+  (`letter hairclip, sleeveless hooded jacket, single fingerless glove, asymmetrical legwear…`) y el
+  guante unico es canon, no un fallo. Quedan 8 rondas documentadas en `clean/overrides.json`: el
+  encuadre que funciona es **cabeza entera + brazos anclados a los hombros y por debajo de su altura**
+  — mientras se pidi6 "other arm hanging" el modelo metia un brazo sin cuerpo que entraba por el borde
+  de arriba (s6001, s7004, s7005, s7006, s8002). La red nueva queda alambreada en
+  `loras/{selection,plan,installed}.json` y en `clean/overrides.json` (trigger escapado
+  `belle \(zenless zone zero\)`, que "belle" pelado no activa la identidad).
+- **Caesar se redibuja con otra red y con CERO instrucciones de ropa** (`caesar_noobai_portrait_s6001`,
+  red **1051715 NoobAI XL**): el LoRA que estaba usado (1874643) publica tags de booru y entre ellos
+  `3d`, que es lo que daba a las tomas ese render satinado a medio camino de un modelado. Sobre él escribí
+  una lista de ropa que estaba **mal** (`red cropped jacket`, `black corset`, `king text on shirt`) y el
+  modelo obedecia: chaqueta roja. El traje real es chaqueta **negra** con cuello de piel y forro rojo,
+  **banda roja del cuello con "KING"**, bodysuit **gris** con cordones y escote en V, cinturon blanco con
+  remaches y hebilla estrella. Confrontado con la galeria del propio model: **sin un solo tag de ropa** la
+  red 1051715 saca el traje canon entero y bien puesto, asi que `clean/overrides.json` se queda solo con
+  encuadre y pose. El 766708 (Goofy AI) queda descartado: es **Pony-only** y fuera de su base saca chaleco
+  rojo, falda blanca o directamente se salta el traje.
+- **`seed.png` reencuadrada**: el arte viejo venia de una pasada en la que el mecha ocupaba tres
+  cuartas partes y Seed salia cortada por el borde izquierdo. No era un recorte corregible en el
+  juego — `WaifuStorageScreen.drawPixelArtViewport` blitea la textura entera (UV 0..1) en el hueco de
+  128×128 — asi que hacia falta un dibujo nuevo: `seed_portrait_s3002` pide el duo explicitamente
+  (`two characters, 1girl and 1robot, height difference`) y suelta el `multiple characters` del
+  negativo, que era lo que dejaba a la chica fuera.
+- **El token de Seed por fin regenerado** (`tools/token_icon.py --generar seed`): `--check` daba
+  **66/67 conformes** y el unico desajuste era `seed … no generado desde la skin (80 px)`. La ficha
+  estaba pintada a mano de una epoca anterior al generador, y por eso en la capsula salia una Mancha
+  lavada sin ojos mientras las otras cuatro NEGRO (`jane_doe`, `hugo_vlad`, `grace_howard`,
+  `remielle`) salen legibles. Medido el estandar antes de tocar: la cara son las dos capas de la skin
+  `(8,8)` + `(40,8)` escaladas a **26 px centradas** (`inicio = (32-26)//2`) sobre la silueta de la
+  casa, y `restyle` pinta el anillo ANTES de la cara. Tras regenerar, **67/67 conformes** con backup
+  en `tools/backups/tokens/seed.pre-gen.png`. Copia de la ficha vieja en
+  `textures/item/seed_token.png.bak-20261107`.
+
+### 📚 Añadir una waifu deja de ser arqueología
+- **`research/guia-nueva-waifu.md`**: la checklist con las rutas exactas y el porqué de cada paso
+  (talla y `WaifuBustLayers` a 64×128, color **medido** y no adivinado, las dos capas de registro,
+  las 9 claves × 13 idiomas, GeckoLib, voces, y las trampas de NTFS/`build/`).
+- **`tools/nueva_waifu.py`**: andamiaje que hace lo mecánico — copia las 3 clases de la plantilla,
+  inserta las 8 tablas de ambas capas, el json del token, las 9 claves en los 13 lang y la talla, y
+  añade el `import` del renderer (sin él `:neoforge:compileJava` salta con
+  `symbol: class XRenderer`). Probado en un sandbox: una waifu nueva compila en **NeoForge y Fabric**
+  sin tocar nada a mano. Lo que no puede automatizarse (skin pintada, frases, GeckoLib, voces) se
+  imprime como lista de pendientes; `--dry-run` y `--undo` via manifiesto.
+- `MANUAL_IA.md`: §0/§1 corregidos (el montaje `5A66A7D866A7B2E5` ya no existe y el build es
+  multiloader) y §3 enlazado a la guía.
+
+### 🎤 El concierto de Miku
+- **`WaifuSongs`** (nuevo) declara qué waifus tienen canción y cuánto dura (Miku: 600 ticks = 30 s).
+  El evento `entity/hatsune_miku/song` se registra en los dos cargadores y se declara en
+  `sounds.json` con `"stream": true`; el archivo es `song.ogg`, la voz sola sin instrumentos.
+- **Cómo se arranca**: clic derecho con la mano vacía (o con un disco) sobre Miku. Shift + mano
+  vacía sigue abriendo el menú de modos. Se puede cortar con otro clic, al recibir daño, al morir o
+  al cambiar de modo.
+- **Mientras canta** se queda plantada (`isImmobile`, navegación y velocidad horizontal a cero), no
+  ataca, tiene una pose de idol (micro imaginario, brazo abierto al público, balanceo), suelta notas
+  de colores y algún `END_ROD`, y refresca **Regeneración I + Velocidad I + Resistencia I** cada
+  segundo a los jugadores en 12 bloques. La canción se oye a ~64 bloques (volumen 4 en `RECORDS`)
+  y se corta con `ClientboundStopSoundPacket`.
+- **Preparado para Teto y Neru**: basta con su `song.ogg`, su entrada en `sounds.json`/`ModSounds` y
+  su duración en `WaifuSongs`; cada una deberá devolver temprano en su `aiStep` si `isSinging()`,
+  como ya hace Miku.
+
+### 🎧 Voces de Kasane Teto y Akita Neru: 26 clips en registro hablado
+- **Teto se re-renderizó desde su banco oficial** (重音テト OU用日本語統合ライブラリー, gratis y no
+  comercial: solo viajan los `.ogg`, nunca el banco) con `out/teto_spoken.ustx`, generado a partir
+  de `teto_dialogo.ustx`: se conservan posiciones, duraciones, letras, cantante y
+  `JapaneseVCVPhonemizer`, y solo se bajan los tonos a un registro de habla (medianas medidas
+  294–495 Hz). Se capturó con OpenUtau en Xvfb `:99` por un sink nulo dedicado (`ou_cap2`) y el
+  desfase de 1,83 s se recortó con `atrim`.
+- **Neru se bajó y se aplanó con Rubber Band 4.0 `--pitchmap`** sobre `out/neru_dialogo.wav`, sin
+  re-renderizar VOCALOID6: por clip se sigue el contorno de f0 y se lleva a una recta descendente
+  en el registro 432–649 Hz. El `--pitchmap` es absoluto en semitonos y conserva la duración.
+- **Los clips nuevos quedan mono 44,1 kHz, −10,5…−11,3 LUFS y pico ≤ −0,3 dBFS**, medidos en bucle
+  para que los `hurt` cortos no engañen a `ebur128`. Los 26 anteriores están en
+  `backup_teto_neru_7.4.0/`.
+- **Corrección de las notas anteriores**: esta entrada decía que existían
+  `research/voces/teto_neru.md`, `tools/make_dialogo.py` y `tools/voz_waifu.py`, y que Teto usaba
+  subbanks de color de voz. No es cierto: esos archivos no existen en el repo y el `.ustx` no tenía
+  `phoneme_expressions` de color. Lo que sí existe son los artefactos de `out/`
+  (`teto_dialogo.ustx`, `neru_dialogo.vpr`, los WAV y los `*_timing.json`) producidos por scripts
+  puntuales que no se conservaron.
+
+### 🎆 El torso de Burnice gira con las piernas, no contra ellas
+- **`entity/client/BurniceWhiteModel.java`**: el giro de cuerpo se escribía sobre el hueso `body`, pero
+  en el geo las piernas cuelgan de `root` —son hermanas del torso, no hijas suyas—. Con el
+  `BODY_WEIGHT` 0,15 sobre 35° de tope, hasta **5,25°** de torso quedaban girados respecto a una
+  cadera clavada en el yaw de la entidad, y el patrón del vestido, que es continuo a través de la
+  costura, se cortaba ahí: eso era «las piernas desajustadas respecto al torso». Ahora el giro de
+  cuerpo va sobre `root`, torso y piernas apuntan juntos y el cuello hace el resto; el ángulo total de
+  la cabeza no cambia (0,7 + 0,15 = 0,85 del giro). De propina deja de pelear con el `rotY` de `root`
+  que ya traen los clips `run` y `attack`.
+
+### 🔥 Pyrois deja de ser monstruo: es la criatura de Belle, no un enemigo más
+- **`entity/PyroisEntity.java`: `Monster` → `PathfinderMob`**. `Monster` implementa `Enemy`, y las 68
+  waifus deciden a quién morden con la predicate `entity instanceof Enemy` de su
+  `NearestAttackableTargetGoal`: Pyrois entraba en esa lista, las waifus la atacaban y ella les
+  devolvía el golpe con sus skills de fuego —Belle peleando contra su propia criatura y contra el
+  resto del roster—. Cambiar la clase arregla las 68 de una vez (y los golems de hierro y cualquier IA
+  que busque `Monster`); la otra opción, reescribir la lógica de «monstruo invocado» por waifu, eran
+  68 fichas iguales.
+- **Lo que aportaba `Monster` y hubo que devolver a mano**: `getSoundSource()` (`HOSTILE` en vez de
+  `NEUTRAL`), `getHurtSound`/`getDeathSound` (`HOSTILE_HURT`/`HOSTILE_DEATH`; la clase padre trae los
+  `GENERIC_*`, que suenan a jugador), `getSwimSound`/`getSwimSplashSound` y `getFallSounds()`
+  (`HOSTILE_SMALL_FALL`/`HOSTILE_BIG_FALL`). `Attributes.ATTACK_DAMAGE` no hizo falta: la cadena del
+  mod ya la ponía a 10 encima de la del helper.
+- **Categoría `MONSTER` → `MISC`** (los dos `registry/ModEntities.java`): `NaturalSpawner` sale antes
+  con MISC, así que la criatura deja de comer cupo de hostiles y no opta a spawn natural. El
+  `clientTrackingRange(12)` ya estaba explícito, que es lo que evita el rango 4 que MISC trae de casa.
+- **Gana gratis**: en pacífico ya no se despawna (`shouldDespawnInPeaceful`) y no impide dormir
+  (`isPreventingPlayerRest`). Su combate es el mismo: sigue yendo a por `Enemy`, sigue copiándole el
+  objetivo a Belle cada 20 ticks y se apaga si ella falta 100 ticks.
+- **Se queda el filtro de `setTarget`** (`AbstractWaifuEntity` → objetivo `null`) como red: un área de
+  habilidad de una waifu que la roce le deja el agresor registrado en la memoria de
+  `HurtByTargetGoal`, y sin ese filtro la misma waifu recibía el golpe de vuelta.
+
+### 🧵 Fabric: el entrypoint de cliente nunca estuvo declarado
+- **`fabric/src/main/resources/fabric.mod.json`**: añade `"client": ["com.gachawaifus.GachaWaifusClient"]`.
+  La clase existía (y su javadoc ya avisaba: *«sin esta clase el juego arranca sin errores pero no se
+  pinta nada»*), pero sin el entrypoint Fabric jamás la llamaba, así que en Fabric no se registraba ni
+  un solo renderer, ni las mallas del busto (`EntityModelLayerRegistry`), ni las pantallas de menú.
+- **Cómo se veía**: `NullPointerException: EntityRenderer.shouldRender() because "entityRenderer" is
+  null` en `EntityRenderDispatcher:134` —el mapa de renderizadores no tiene fallback, la primera
+  entidad nuestra que entra en pantalla tira el cliente. En el log salía solo el initializer del
+  servidor («Initializing Gacha Waifus Mod for Fabric»), nunca el de cliente.
+- **Alcance**: viene de atrás, no es de 7.4.0 — el json nunca tuvo bloque `client` desde el puerto a
+  Fabric (`67bbc32`). El NeoForge no lo sufre porque ahí el registro va por eventos.
+- **Verificado** con `:fabric:runClient` (Loom): un mundo nuevo con waifus apareciendo aguanta y sale
+  limpio (exit 0). Lo único que queda en el log es `Error while loading the narrator / libflite.so`,
+  que es del TTS de vanilla y depende del sistema, no del mod.
+
+---
+
+## [7.3.0] — 2026-11-06
+
+### 🎤 Tres waifus nuevas: Belle, Kasane Teto y Akita Neru
+- **Belle** (Azul / Support) — invocadora: su ultimate no pega, trae a **Pyrois** (máximo 1 viva a la
+  vez). Si Pyrois ya está en el campo, la ultimate la refuerza en vez de duplicarla.
+- **Kasane Teto** (Rojo / Attack) — la diva rock de UTAU: su especial es una onda sonora que golpea a
+  todo lo que esté a cinco bloques, y su ultimate empuja y desorienta a todo lo que esté a nueve.
+- **Akita Neru** (Naranja / Attack) — la perezosa rápida: doble golpe (el segundo llega 6 ticks
+  después si sigue cerca) y velocidad y resistencia para su dueño.
+- Las tres son de la **familia de modelo de jugador con pieza del pecho**, igual que Miku: skin
+  convertida de 64×64 a 64×128 con el desplegado del busto en UV (0,121) (talla 2), capa `TUBE` con
+  sección 2.0F. Falta por modelar en GeckoLib; las pieles son las bajadas de internet.
+- **Iconos de token**: no existe ningún generador de arte de tokens (los 64 actuales están pintados a
+  mano), así que los tres nuevos son **placeholder** — la cara frontal del skin ampliada a 32×32 con
+  `NEAREST`. Se ven como un retrato pixelado, no como el arte de las demás.
+- **Voces**: pendientes a propósito. Ninguna de las tres está en `WaifuVoices.VOICED`, así que
+  `playVoice` no hace nada y no hay avisos de audio roto. El pipeline (VOCALOID6/OpenUtau + recorte)
+  es el mismo que el de Miku y se aplica cuando se decidan las voces.
+
+### 🔥 Pyrois deja de ser waifu y pasa a ser la criatura de Belle
+- `PyroisEntity` ahora **`extends Monster`** (categoría `MONSTER`): conserva sus números (118 de vida,
+  10 de daño, 6 de armadura) y sus tres skills de fuego, pero ya no se doma, no se sienta y no
+  responde a `getOwner()`. *(7.4.0 le quitó la clase: `Monster` la hacía `Enemy` y las waifus la
+  atacaban; ver «Pyrois deja de ser monstruo» arriba.)* Copia el objetivo de Belle cada 20 ticks y **se apaga sola** (humo y
+  llamas) si lleva 100 ticks sin verla; el id de su invocadora se guarda en NBT.
+- Sale del roster y de la rotación (con las tres nuevas: 65 → **67** waifus), de `WaifuColors` y de los
+  `ids()` de la config de maridos. Su **token se borra** y se sustituye por `pyrois_spawn_egg` (junto
+  al de Wilson) en la pestaña creativa de los dos cargadores.
+- **Ahora sí tiene textura**: `textures/entity/pyrois.png` no existía (el ítem se veía morado por
+  eso). Se genera como placeholder — el skin de Belle virado a tono de llama — hasta que se modelé.
+- Partidas viejas: una `gachawaifus:pyrois` guardada sigue deserializando (el id no se borra) pero ya
+  no es domesticable, y los `pyrois_token` que queden en cofres se convierten en aire.
+
+### 🌀 Burnice ya no se marea
+- La cabeza le daba molinetes porque `BurniceWhiteModel` **sumaba** rotación al hueso cada fotograma
+  (`setRotY(getRotY() + x)`) mientras los clips `idle` y `walk` no keyan `head` ni `body`: al no
+  reescribirlos la animación, el offset se acumulaba sin límite. El comentario que afirmaba que eso
+  no podía pasar describía justo lo contrario de lo que hace GeckoLib.
+- Escrito ahora de forma que el giro se **reescribe** sobre la pose del clip: se recuerda cuánto se
+  giró y qué valor se escribió el fotograma anterior, y si el hueso sigue con ese valor se le quita
+  el giro viejo antes de poner el nuevo. El giro se limita a ±35° y un `instanceId` nuevo reinicia el
+  estado, así que cambiar de clip o de instancia no arrastra restos.
+- No se tocó el `attack_controller`: `idle` no keya las piernas, así que quitar el fallback a `rest`
+  congelaría la pose de la habilidad. (Pendiente de probar visualmente.)
+
+### 🧵 Fabric vuelve a ser una plataforma real
+- El subproyecto Fabric **no inicializaba nada del cliente**: no había ni un `EntityRendererRegistry`,
+  ni capas de modelo, ni pantallas, ni atributos. Las ~66 waifus eran cajas invisibles y el terminal
+  gacha no abría.
+- El registro se extrae a dos tablas compartidas en `common/`: `ModClientBindings` (7 capas de modelo,
+  1 renderer de bloque, 4 pantallas, **76 renderers de entidad**) y `WaifuAttributeBindings` (74
+  entidades con sus atributos). `GachaWaifusMod` de NeoForge pasa de 378 a ~110 líneas y sus cuatro
+  registros son bucles; `GachaWaifusClient` (nuevo) hace los mismos bucles con las APIs de Fabric y
+  `FabricDefaultAttributeRegistry` registra los atributos tras `ModEntities.init()`.
+- `MenuScreens.register` es privado en mojmap 1.21.1: se abre con un **access widener** declarado en
+  `fabric.mod.json` y en `loom { accessWidenerPath }`. Las ligaduras tipográficas de `ScreenConstructor`
+  (cota `Screen & MenuAccess<T>`) se resuelven en el helper `add` de la tabla.
+- A partir de ahora, cada waifu nueva son **tres líneas** (entidad, atributos, renderer) en vez de
+  cuatro bloques duplicados por cargador.
+
+### 🌐 Idiomas
+- 935 → **958 claves** en los 13 archivos (paridad ES/EN exacta): 9 por waifu nueva más el huevo de
+  invocación de Pyrois; se van las 5 claves del token de Pyrois.
+
+---
+
 ## [7.2.0] — 2026-11-01
 
 ### 🔊 Voces de las waifus: 13 personajes con audio propio en combate

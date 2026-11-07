@@ -99,6 +99,13 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
             // movimiento y GeckoLib aplica los controladores en orden sin mezclar, así que si
             // devolviera la pose neutra también caminando, pisaría la animación de caminar y la
             // waifu se deslizaría con las piernas rígidas (el fallo que reportó el usuario).
+            //
+            // A diferencia de Burnice, aquí el "rest" NO se puede quitar devolviendo STOP: medido en
+            // miyabi.animation.json, "attack"/"special" terminan con "katana_drawn" fuera de su pose
+            // base (rotación [90,0,0], posición [0,-200,0]) y la katana se quedaría desenvainada de
+            // pie para siempre. Su coste es que "rest" keya las orejas, igual que "idle", así que de
+            // parada no se le mueven; se deja porque el gesto de la espada pesa más. Para quitarlo
+            // habría que encadenar el "rest" al final de cada triggerableAnim en vez de loopearlo.
             if (this.ultimatePhase == 0 && !state.isMoving()) {
                 return state.setAndContinue(RawAnimation.begin().thenLoop("animation.miyabi.rest"));
             }

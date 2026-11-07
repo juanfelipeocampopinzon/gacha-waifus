@@ -73,6 +73,9 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (this.isSinging()) {
+            return; // en el concierto no ataca: se queda plantada cantando
+        }
         if (this.normalAttackCooldown > 0) this.normalAttackCooldown--;
         if (this.specialSkillCooldown > 0) this.specialSkillCooldown--;
         if (this.ultimateCooldown > 0) this.ultimateCooldown--;

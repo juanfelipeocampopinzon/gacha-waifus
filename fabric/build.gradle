@@ -19,6 +19,9 @@ base {
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
 loom {
+    // MenuScreens.register es privado en vanilla y Fabric API no expone forma de registrar la
+    // pantalla de un menú: ver src/main/resources/gachawaifus.accesswidener.
+    accessWidenerPath = file('src/main/resources/gachawaifus.accesswidener')
     // El código se escribe en mappings de Mojang (los mismos que NeoForge) y Loom lo remapea a
     // intermediary al empaquetar. Por eso common/ compila tal cual, sin traducir nombres.
     // Loom detecta gachawaifus.mixins.json desde el bloque "mixins" de fabric.mod.json y le

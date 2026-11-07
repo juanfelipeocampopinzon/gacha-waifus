@@ -18,6 +18,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtUtils;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
@@ -32,6 +33,8 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.effect.MobEffectInstance;
+import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.AgeableMob;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -46,6 +49,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
@@ -69,6 +73,10 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     private static final EntityDataAccessor<Byte> DATA_SKIN_STATE =
             SynchedEntityData.defineId(AbstractWaifuEntity.class, EntityDataSerializers.BYTE);
 
+    /** Flag del concierto: el cliente lo usa para la pose de cante (ver {@link WaifuSongs}). */
+    private static final EntityDataAccessor<Byte> DATA_SINGING =
+            SynchedEntityData.defineId(AbstractWaifuEntity.class, EntityDataSerializers.BYTE);
+
     /** Ticks que se queda la skin de combate después del último golpe u objetivo. */
     private static final int COMBAT_SKIN_LINGER = 100;
 
@@ -84,6 +92,7 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_SKIN_STATE, (byte) WaifuSkinState.BASE.ordinal());
+        builder.define(DATA_SINGING, (byte) 0);
         builder.define(DATA_AFFINITY, (byte) 0);
     }
 
@@ -172,6 +181,142 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         this.voiceCooldown = VOICE_COOLDOWN;
         this.level().playSound(null, this.blockPosition(), sound, this.getSoundSource(),
                 1.0F, 0.95F + this.random.nextFloat() * 0.1F);
+    }
+
+    // ---------------------------------------------------------------------
+    // Concierto (ver WaifuSongs): se queda quieta, canta, buffa y suelta notas
+    // ---------------------------------------------------------------------
+
+    /** Radio del aura de concierto (jugadores). */
+    private static final double CONCERT_RADIUS = 12.0D;
+
+    /** Ticks de canción restantes; solo corre en el servidor. */
+    private int songTicks;
+
+    public boolean isSinging() {
+        return (this.entityData.get(DATA_SINGING) & 1) != 0;
+    }
+
+    private void setSinging(boolean singing) {
+        this.entityData.set(DATA_SINGING, (byte) (singing ? 1 : 0));
+    }
+
+    /** id del registro si esta waifu tiene canción; null si no canta. */
+    @Nullable
+    private String songId() {
+        String path = BuiltInRegistries.ENTITY_TYPE.getKey(this.getType()).getPath();
+        return WaifuSongs.has(path) ? path : null;
+    }
+
+    /**
+     * Empieza el concierto. Devuelve false si esta waifu no tiene pista. La canción se oye a unos
+     * 64 bloques (volumen 4 sobre un evento de rango variable) y se reproduce en {@code RECORDS}
+     * para poder cortarla con el paquete de parada.
+     */
+    public boolean startSinging() {
+        if (this.level().isClientSide) {
+            return false;
+        }
+        String id = this.songId();
+        SoundEvent song = id == null ? null : WaifuSongs.lookup(id);
+        if (id == null || song == null) {
+            return false;
+        }
+        if (this.isSinging()) {
+            this.stopSinging(); // reinicio limpio: nunca dos pistas superpuestas
+        }
+        if (this.isOrderedToSit()) {
+            // El concierto se hace de pie; levantarla también deja el modo coherente al recargar.
+            this.setWaifuMode(this.modeBeforeSit == null ? WaifuMode.AGRESIVO : this.modeBeforeSit);
+        }
+        this.setTarget(null);
+        this.getNavigation().stop();
+        this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
+        this.songTicks = WaifuSongs.lengthTicks(id);
+        this.setSinging(true);
+        this.level().playSound(null, this.blockPosition(), song, SoundSource.RECORDS, 4.0F, 1.0F);
+        this.applyConcertAura();
+        return true;
+    }
+
+    /** Corta el concierto (si estaba cantando) y manda parar el sonido a los clientes. */
+    public void stopSinging() {
+        if (!this.isSinging()) {
+            this.songTicks = 0;
+            return;
+        }
+        this.setSinging(false);
+        this.songTicks = 0;
+        if (this.level() instanceof ServerLevel level) {
+            String id = this.songId();
+            if (id != null) {
+                ClientboundStopSoundPacket packet = new ClientboundStopSoundPacket(
+                        WaifuSongs.soundId(id), SoundSource.RECORDS);
+                for (ServerPlayer player : level.players()) {
+                    player.connection.send(packet);
+                }
+            }
+        }
+    }
+
+    /** Un tick de canción: aura, partículas y parada al acabar. Solo servidor. */
+    private void tickSinging() {
+        if (this.songTicks <= 0) {
+            this.stopSinging();
+            return;
+        }
+        // Aura cada segundo: dura 3 s, así nunca se cae mientras suena aunque el servidor pierda
+        // algún tick; al terminar se apaga sola en un par de segundos.
+        if (this.songTicks % 20 == 0) {
+            this.applyConcertAura();
+        }
+        if (this.songTicks % 4 == 0 && this.level() instanceof ServerLevel level) {
+            this.spawnConcertParticles(level);
+        }
+        // Plantada: la IA ya está bloqueada por isImmobile(), pero la velocidad residual de un
+        // empujón podría arrastrarla; se cancela solo la componente horizontal.
+        this.getNavigation().stop();
+        this.setDeltaMovement(0.0D, this.getDeltaMovement().y, 0.0D);
+        this.songTicks--;
+        if (this.songTicks <= 0) {
+            this.stopSinging();
+        }
+    }
+
+    /** Regeneración, Velocidad y Resistencia para los jugadores alrededor mientras canta. */
+    private void applyConcertAura() {
+        if (!(this.level() instanceof ServerLevel level)) {
+            return;
+        }
+        AABB area = this.getBoundingBox().inflate(CONCERT_RADIUS);
+        for (Player player : level.getEntitiesOfClass(Player.class, area, Player::isAlive)) {
+            player.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 60, 0, true, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 60, 0, true, false, true));
+            player.addEffect(new MobEffectInstance(MobEffects.DAMAGE_RESISTANCE, 60, 0, true, false, true));
+        }
+    }
+
+    /** Notas de colores sobre la cabeza y algún END_ROD a los pies. */
+    private void spawnConcertParticles(ServerLevel level) {
+        double x = this.getX() + (this.random.nextDouble() - 0.5D) * 2.4D;
+        double y = this.getY() + 1.2D + this.random.nextDouble() * 1.2D;
+        double z = this.getZ() + (this.random.nextDouble() - 0.5D) * 2.4D;
+        // En la partícula NOTE el "xDist" elige el color del arcoíris.
+        level.sendParticles(ParticleTypes.NOTE, x, y, z, 1,
+                0.55D + this.random.nextDouble() * 0.45D, 0.1D, 0.0D, 0.0D);
+        if (this.songTicks % 20 == 0) {
+            level.sendParticles(ParticleTypes.END_ROD, this.getX(), this.getY() + 0.2D, this.getZ(),
+                    2, 0.5D, 0.05D, 0.5D, 0.01D);
+        }
+    }
+
+    /**
+     * Mientras canta no anda ni la empujan: {@code isImmobile()} apaga el {@code serverAiStep} y
+     * los goals de movimiento. El estado llega al cliente, así que la pose también es la correcta.
+     */
+    @Override
+    protected boolean isImmobile() {
+        return super.isImmobile() || this.isSinging();
     }
 
     /**
@@ -370,7 +515,9 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         } else {
             if (this.feedCooldown > 0) this.feedCooldown--;
             if (this.voiceCooldown > 0) this.voiceCooldown--;
-            if (this.random.nextInt(400) == 0 && !this.isOrderedToSit()) {
+            if (this.isSinging()) {
+                this.tickSinging();
+            } else if (this.random.nextInt(400) == 0 && !this.isOrderedToSit()) {
                 this.playVoice("idle");
             }
             this.updateWanderRestriction();
@@ -606,6 +753,10 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         if (mode == this.waifuMode) {
             return;
         }
+        if (this.isSinging()) {
+            // Cambiar de modo (sentarse, guardia, pasivo…) interrumpe el concierto.
+            this.stopSinging();
+        }
         this.modeBeforeSit = mode == WaifuMode.SENTADA ? this.waifuMode : null;
         this.waifuMode = mode;
         this.applyWaifuMode();
@@ -664,6 +815,9 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     }
 
     private boolean acceptsTarget(LivingEntity target) {
+        if (this.isSinging()) {
+            return false; // en el escenario no se pelea
+        }
         return switch (this.waifuMode) {
             case AGRESIVO -> true;
             // PASIVO no ataca y SENTADA tampoco: descansando no se pelea con nadie.
@@ -699,6 +853,25 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
                 return WildWaifus.onInteract(this, player);
             }
             return InteractionResult.sidedSuccess(this.level().isClientSide);
+        }
+        // Concierto: clic derecho con la mano vacía (o con un disco de música) sobre una waifu que
+        // tenga canción. Shift + mano vacía sigue abriendo el menú de modos.
+        if (hand == InteractionHand.MAIN_HAND && this.isOwnedBy(player) && this.songId() != null) {
+            ItemStack held = player.getItemInHand(hand);
+            boolean disc = held.has(net.minecraft.core.component.DataComponents.JUKEBOX_PLAYABLE);
+            if (held.isEmpty() || disc) {
+                if (!this.level().isClientSide) {
+                    if (this.isSinging()) {
+                        this.stopSinging();
+                        player.displayClientMessage(Component.translatable(
+                                "gachawaifus.concert.stop", this.getDisplayName()), true);
+                    } else if (this.startSinging()) {
+                        player.displayClientMessage(Component.translatable(
+                                "gachawaifus.concert.start", this.getDisplayName()), true);
+                    }
+                }
+                return InteractionResult.sidedSuccess(this.level().isClientSide);
+            }
         }
         // Comida en mano del dueño: sistema de amor (cura + afinidad). Las waifus que tienen su
         // propio mobInteract (caricias de Astra y Nicole) caen aquí por super cuando llevan item.
@@ -779,6 +952,9 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
         }
         boolean damaged = super.hurt(source, amount);
         if (damaged) {
+            if (this.isSinging()) {
+                this.stopSinging();
+            }
             this.playVoice("hurt");
         }
         return damaged;
@@ -792,6 +968,7 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     @Override
     public void die(DamageSource source) {
         if (!this.level().isClientSide) {
+            this.stopSinging();
             this.playVoice("death", true);
             LivingEntity owner = this.getOwner();
             Component name = this.getDisplayName();

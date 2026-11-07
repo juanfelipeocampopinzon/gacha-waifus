@@ -9,7 +9,8 @@
   "license": "MIT",
   "environment": "*",
   "entrypoints": {
-    "main": ["com.gachawaifus.GachaWaifusMod"]
+    "main": ["com.gachawaifus.GachaWaifusMod"],
+    "client": ["com.gachawaifus.GachaWaifusClient"]
   },
   "mixins": ["gachawaifus.mixins.json"],
   "depends": {

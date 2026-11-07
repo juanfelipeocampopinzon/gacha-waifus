@@ -28,13 +28,13 @@ public final class GachaConfig {
     /**
      * Por defecto van los masculinos del roster, los mismos que el mod construye con el modelo
      * ANCHO sin pieza del pecho: Anton, Banyue, Ben Bigger, Billy Kid, Harumasa, Hugo Vlad, Lighter,
-     * Manato, Pan Yinhu, Pyrois, Seth Lowell y Von Lycaon. Las waifus femeninas (aunque sean
+     * Manato, Pan Yinhu, Seth Lowell y Von Lycaon. Las waifus femeninas (aunque sean
      * corpulentas) no entran: es más fácil añadir una línea al toml que devolver a la ruleta una
      * waifu que se sacó de ella sin querer.
      */
     private static final List<String> DEFAULT_IDS = List.of(
             "von_lycaon", "billy_kid", "manato", "harumasa", "hugo_vlad", "pan_yinhu", "anton",
-            "ben_bigger", "seth_lowell", "lighter", "banyue", "pyrois");
+            "ben_bigger", "seth_lowell", "lighter", "banyue");
 
     /** La última lista leída y su conjunto ya resuelto, para no reconstruirlo en cada tirada. */
     private static List<? extends String> cachedRaw;

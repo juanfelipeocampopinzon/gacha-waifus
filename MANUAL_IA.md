@@ -1,33 +1,45 @@
 # MANUAL IA — Gacha Waifus (NeoForge 1.21.1)
 
 Manual operativo para sesiones de IA futuras. Leer completo antes de tocar nada.
-Complementa (no reemplaza) a `agents.md`. Última actualización: 5.5.0 (2026-10-20).
+Complementa (no reemplaza) a `agents.md`. Última actualización: 7.4.0 (2026-11-06).
 
 ## 0. Dónde vive todo
 
-- Raíz del proyecto: `/run/media/juan/5A66A7D866A7B2E5/super proyecto de moding gachas minecraft/gachawaifus`
+- Raíz del repo: `/run/media/juan/Windows/mods gacha/super proyecto de moding gachas minecraft/gachawaifus`
+  (el proyecto **es** la raíz git; el disco se montaba como `5A66A7D866A7B2E5` y ese nombre ya no existe).
+- Fuera del git, un nivel arriba: `tools/` (scripts), `chicas/` (skins crudas), `research/` (guías y
+  notas, entre ellas `research/guia-nueva-waifu.md`).
 - Modelos de Blockbench del usuario: `…/super proyecto de moding gachas minecraft/modelos/personajes/<id>/`
 - Skins de jefes crudas: `…/bosses/<nombre>/` (usar **tal cual**, sin retocar, como textura de entidad)
-- JDK: `…/tools/jdk-21-linux` · Java 21 · NeoForge 21.1.233 · GeckoLib 4.9.3 · modid `gachawaifus`
+- Estructura multiloader (1.21.1): `common/` (código y recursos neutrales, compilados dentro de cada
+  capa), `neoforge/` (ModDevGradle) y `fabric/` (Loom). `ModEntities`/`ModItems` están **duplicados a
+  propósito** en las dos capas: hay que tocar los dos.
+- `R/*/build/` y `R/*/bin/` son copias procesadas de los recursos: **no editarlas nunca**.
+- JDK para compilar aquí:
+  `$HOME/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/java/java-runtime-delta`
+  (`tools/jdk-21-linux` existe también; el Java del sistema lo rechaza Gradle).
+- Java 21 · NeoForge 21.1.233 · GeckoLib 4.9.3 · modid `gachawaifus`.
 - Paquetes Java: entidad `com.gachawaifus.entity`, renderers/modelos `entity.client`, items `item`,
   registros `registry`, clientes de item GeckoLib `client`.
 
 ## 1. Compilar, desplegar, probar
 
 ```bash
-cd "/run/media/juan/5A66A7D866A7B2E5/super proyecto de moding gachas minecraft/gachawaifus"
-env JAVA_HOME="…/tools/jdk-21-linux" ./gradlew build \
-  -Dorg.gradle.java.home="…/tools/jdk-21-linux" --no-daemon -q
+cd "/run/media/juan/Windows/mods gacha/super proyecto de moding gachas minecraft/gachawaifus"
+J="$HOME/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/java/java-runtime-delta"
+./gradlew --no-daemon -Dorg.gradle.java.home="$J" :neoforge:build :fabric:build
 ```
 - NUNCA pipear la salida por `tail` (trunca los errores): redirigir a un log y `grep "error:"`.
 - En fish no usar `set var (…)` dentro de comandos en background; rutas literales completas.
-- El jar sale en `build/libs/gachawaifus-<version>.jar`. Desplegar (y **borrar el jar de la versión
-  anterior** para no duplicar):
-  `cp build/libs/*.jar ~/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/instances/1.21.1-neoforge/minecraft/mods/`
+- El jar sale en `neoforge/build/libs/gachawaifus-<version>.jar` (y el de Fabric en
+  `fabric/build/libs/`). Desplegar (y **borrar el jar de la versión anterior** para no duplicar):
+  `rm -f <mods>/gachawaifus-*.jar && cp neoforge/build/libs/gachawaifus-<version>.jar <mods>/`,
+  con `<mods>` = `~/.var/app/org.prismlauncher.PrismLauncher/data/PrismLauncher/instances/1.21.1-neoforge/minecraft/mods`.
+  **Solo esa instancia** es la de pruebas.
 - Lanzar: `flatpak run org.prismlauncher.PrismLauncher --launch "1.21.1-neoforge"` (background).
   Log: `<instancia>/minecraft/logs/latest.log`; esperar línea `Reloading ResourceManager`, luego
   grep de `error|exception` descartando benignos.
-- Warnings benignos conocidos (NO intentar arreglar): `supernova.ogg` de Burnice, `pyrois_token`,
+- Warnings benignos conocidos (NO intentar arreglar): `supernova.ogg` de Burnice,
   refmap de geckolib, OpenAL al apagar, `yggdrasil public key`/skins en offline.
 
 ## 2. Subir de versión
@@ -37,6 +49,13 @@ env JAVA_HOME="…/tools/jdk-21-linux" ./gradlew build \
 3. Build → los dos comandos de despliegue del §1.
 
 ## 3. Agregar una waifu GeckoLib (patrón actual, 16 ya migradas en 6.3.0)
+
+> **7.4.0**: la guía completa y con las rutas multiloader vigentes está en
+> **`../research/guia-nueva-waifu.md`** (skin → talla → `procesar_waifus_pecho.py` → andamiaje →
+> color medido → token → 13 lang → GeckoLib → voces → cierre), y `../tools/nueva_waifu.py` hace lo
+> mecánico de las 16 rutas de registro en un solo paso. Este §3 se queda como referencia del patrón
+> GeckoLib: sus rutas `src/main/resources/...` son **pre-multiloader** (hoy son
+> `common/src/main/resources/...`, y `ModEntities`/`ModItems` existen en `neoforge/` **y** `fabric/`).
 
 Checklist (los 12 puntos de `agents.md` adaptados a GeckoLib):
 

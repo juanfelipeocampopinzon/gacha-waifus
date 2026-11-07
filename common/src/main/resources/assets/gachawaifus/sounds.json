@@ -209,6 +209,16 @@
       "gachawaifus:entity/hatsune_miku/idle8"
     ]
   },
+  "entity/hatsune_miku/song": {
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/hatsune_miku/song",
+        "stream": true,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
   "entity/jane_doe/attack": {
     "sounds": [
       "gachawaifus:entity/jane_doe/attack1",
@@ -468,6 +478,72 @@
       "gachawaifus:entity/zhu_yuan/idle3",
       "gachawaifus:entity/zhu_yuan/idle4",
       "gachawaifus:entity/zhu_yuan/idle5"
+    ]
+  },
+  "entity/akita_neru/attack": {
+    "sounds": [
+      "gachawaifus:entity/akita_neru/attack1",
+      "gachawaifus:entity/akita_neru/attack2",
+      "gachawaifus:entity/akita_neru/attack3"
+    ]
+  },
+  "entity/akita_neru/death": {
+    "sounds": [
+      "gachawaifus:entity/akita_neru/death1",
+      "gachawaifus:entity/akita_neru/death2"
+    ]
+  },
+  "entity/akita_neru/feed": {
+    "sounds": [
+      "gachawaifus:entity/akita_neru/feed1",
+      "gachawaifus:entity/akita_neru/feed2"
+    ]
+  },
+  "entity/akita_neru/hurt": {
+    "sounds": [
+      "gachawaifus:entity/akita_neru/hurt1",
+      "gachawaifus:entity/akita_neru/hurt2",
+      "gachawaifus:entity/akita_neru/hurt3"
+    ]
+  },
+  "entity/akita_neru/idle": {
+    "sounds": [
+      "gachawaifus:entity/akita_neru/idle1",
+      "gachawaifus:entity/akita_neru/idle2",
+      "gachawaifus:entity/akita_neru/idle3"
+    ]
+  },
+  "entity/kasane_teto/attack": {
+    "sounds": [
+      "gachawaifus:entity/kasane_teto/attack1",
+      "gachawaifus:entity/kasane_teto/attack2",
+      "gachawaifus:entity/kasane_teto/attack3"
+    ]
+  },
+  "entity/kasane_teto/death": {
+    "sounds": [
+      "gachawaifus:entity/kasane_teto/death1",
+      "gachawaifus:entity/kasane_teto/death2"
+    ]
+  },
+  "entity/kasane_teto/feed": {
+    "sounds": [
+      "gachawaifus:entity/kasane_teto/feed1",
+      "gachawaifus:entity/kasane_teto/feed2"
+    ]
+  },
+  "entity/kasane_teto/hurt": {
+    "sounds": [
+      "gachawaifus:entity/kasane_teto/hurt1",
+      "gachawaifus:entity/kasane_teto/hurt2",
+      "gachawaifus:entity/kasane_teto/hurt3"
+    ]
+  },
+  "entity/kasane_teto/idle": {
+    "sounds": [
+      "gachawaifus:entity/kasane_teto/idle1",
+      "gachawaifus:entity/kasane_teto/idle2",
+      "gachawaifus:entity/kasane_teto/idle3"
     ]
   }
 }

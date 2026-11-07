@@ -143,6 +143,14 @@ public class ModItems {
                     ModEntities.WILSON.get(), 0x6E4F35, 0xC8B89A, new Item.Properties()));
 
     /**
+     * Huevo de invocación de Pyrois (la criatura de fuego que Belle saca con su ultimate). Colores:
+     * brasa oscura con la llama.
+     */
+    public static final Supplier<Item> PYROIS_SPAWN_EGG =
+            register("pyrois_spawn_egg", () -> new SpawnEggItem(
+                    ModEntities.PYROIS.get(), 0x3A1F14, 0xFF6A1F, new Item.Properties()));
+
+    /**
      * Huevo de invocación de Fernanfloo (el jefe neutral de los Curlys). Colores: gorra verde
      * con ropa oscura.
      */
@@ -260,8 +268,6 @@ public class ModItems {
             register("cissia_token", () -> new com.gachawaifus.item.CissiaTokenItem(new Item.Properties().stacksTo(1)));
     public static final Supplier<Item> NANGONG_YU_TOKEN =
             register("nangong_yu_token", () -> new com.gachawaifus.item.NangongYuTokenItem(new Item.Properties().stacksTo(1)));
-    public static final Supplier<Item> PYROIS_TOKEN =
-            register("pyrois_token", () -> new com.gachawaifus.item.PyroisTokenItem(new Item.Properties().stacksTo(1)));
     public static final Supplier<Item> NORMA_TOKEN =
             register("norma_token", () -> new com.gachawaifus.item.NormaTokenItem(new Item.Properties().stacksTo(1)));
     public static final Supplier<Item> VELINA_TOKEN =
@@ -284,6 +290,12 @@ public class ModItems {
             register("phoenix_token", () -> new com.gachawaifus.item.PhoenixTokenItem(new Item.Properties().stacksTo(1)));
     public static final Supplier<Item> HATSUNE_MIKU_TOKEN =
             register("hatsune_miku_token", () -> new com.gachawaifus.item.HatsuneMikuTokenItem(new Item.Properties().stacksTo(1)));
+    public static final Supplier<Item> KASANE_TETO_TOKEN =
+            register("kasane_teto_token", () -> new com.gachawaifus.item.KasaneTetoTokenItem(new Item.Properties().stacksTo(1)));
+    public static final Supplier<Item> AKITA_NERU_TOKEN =
+            register("akita_neru_token", () -> new com.gachawaifus.item.AkitaNeruTokenItem(new Item.Properties().stacksTo(1)));
+    public static final Supplier<Item> BELLE_TOKEN =
+            register("belle_token", () -> new com.gachawaifus.item.BelleTokenItem(new Item.Properties().stacksTo(1)));
 
     /** Baliza de Hogar: mando de recall y asignación de hogar de las waifus. */
     public static final Supplier<WaifuBeaconItem> WAIFU_BEACON =

@@ -1,6 +1,7 @@
 package com.gachawaifus.registry;
 
 import com.gachawaifus.GachaWaifusMod;
+import com.gachawaifus.entity.WaifuSongs;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -45,6 +46,13 @@ public class ModSounds {
                 Registry.register(BuiltInRegistries.SOUND_EVENT, voiceId,
                         SoundEvent.createVariableRangeEvent(voiceId));
             }
+        }
+
+        // Canciones de concierto (una pista por waifu, se reproduce entera).
+        for (String id : WaifuSongs.SINGERS) {
+            ResourceLocation songId = WaifuSongs.soundId(id);
+            Registry.register(BuiltInRegistries.SOUND_EVENT, songId,
+                    SoundEvent.createVariableRangeEvent(songId));
         }
     }
 

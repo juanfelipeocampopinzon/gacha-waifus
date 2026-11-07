@@ -7,6 +7,7 @@ import com.gachawaifus.command.ColorCommand;
 import com.gachawaifus.entity.BossSpawnHandler;
 import com.gachawaifus.entity.WaifuRecallHandler;
 import com.gachawaifus.entity.WanderGoalsHandler;
+import com.gachawaifus.entity.WaifuAttributeBindings;
 import com.gachawaifus.entity.WildWaifuSpawner;
 import com.gachawaifus.entity.WildWaifus;
 import com.gachawaifus.gacha.DailyMissions;
@@ -23,6 +24,7 @@ import com.gachawaifus.registry.ModSounds;
 import com.gachawaifus.team.TeamEvents;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
+import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,6 +41,11 @@ public class GachaWaifusMod implements ModInitializer {
         UseBlockCallback.EVENT.register(WaifuHomeBlock::onUseBlock);
         ModBlockEntities.init();
         ModEntities.init();
+        // Sin esto toda entidad nace con cero atributos y el juego revienta al spawnearla
+        // ("Supplier has not been registered"). La tabla es la misma que consume NeoForge.
+        for (WaifuAttributeBindings.Binding binding : WaifuAttributeBindings.ATTRIBUTES) {
+            FabricDefaultAttributeRegistry.register(binding.type(), binding.attributes().get());
+        }
         ModItems.init();
         ModCreativeTabs.init();
         ModMenuTypes.init();

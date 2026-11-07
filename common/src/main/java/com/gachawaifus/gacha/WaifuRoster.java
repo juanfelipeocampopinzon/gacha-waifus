@@ -64,7 +64,6 @@ public final class WaifuRoster {
 
     public static final Entry ZHU_YUAN = new Entry("zhu_yuan", () -> ModEntities.ZHU_YUAN.get(), () -> ModItems.ZHU_YUAN_TOKEN.get(), "Zhu Yuan");
 
-    public static final Entry PYROIS = new Entry("pyrois", () -> ModEntities.PYROIS.get(), () -> ModItems.PYROIS_TOKEN.get(), "Pyrois");
     public static final Entry NORMA = new Entry("norma", () -> ModEntities.NORMA.get(), () -> ModItems.NORMA_TOKEN.get(), "Norma Hollowell");
     public static final Entry VELINA = new Entry("velina", () -> ModEntities.VELINA.get(), () -> ModItems.VELINA_TOKEN.get(), "Velina Airgid");
     public static final Entry SIGRID = new Entry("sigrid", () -> ModEntities.SIGRID.get(), () -> ModItems.SIGRID_TOKEN.get(), "Sigrid de L'Azur");
@@ -119,8 +118,17 @@ public final class WaifuRoster {
     /** Hatsune Miku (Vocaloid) — Support (Diva virtual / Melodía sónica) */
     public static final Entry HATSUNE_MIKU = new Entry("hatsune_miku", () -> ModEntities.HATSUNE_MIKU.get(), () -> ModItems.HATSUNE_MIKU_TOKEN.get(), "Hatsune Miku");
 
+    /** Kasane Teto (UTAU) — Attack (Rock / Onda sonora) */
+    public static final Entry KASANE_TETO = new Entry("kasane_teto", () -> ModEntities.KASANE_TETO.get(), () -> ModItems.KASANE_TETO_TOKEN.get(), "Kasane Teto");
+
+    /** Akita Neru (Vocaloid) — Attack (Doble golpe / Velocidad) */
+    public static final Entry AKITA_NERU = new Entry("akita_neru", () -> ModEntities.AKITA_NERU.get(), () -> ModItems.AKITA_NERU_TOKEN.get(), "Akita Neru");
+
+    /** Belle (Descendants) — Support (Invocadora de Pyrois) */
+    public static final Entry BELLE = new Entry("belle", () -> ModEntities.BELLE.get(), () -> ModItems.BELLE_TOKEN.get(), "Belle");
+
     /** Orden = rotación del banner */
-    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, PYROIS, NORMA, VELINA, SIGRID, CLARET, ROXY, AQUA, MEGUMIN, DARKNESS, YATOGAMI_TOHKA, PHOENIX, HATSUNE_MIKU);
+    public static final List<Entry> ROTATION = List.of(MIYABI, YE_SHUNGUANG, KOLEDA, NICOLE, ASTRA_YAO, ELLEN_JOE, BURNICE, ANBY, YUZUHA, PROMEIA, REMIELLE, TOKISAKI_KURUMI, YIDHARI, RINA, VON_LYCAON, GRACE_HOWARD, SOLDIER_11, TOBICHI_ORIGAMI, NEKOMATA, BILLY_KID, YIXUAN, ZHU_YUAN, QINGYI, ANTON, BEN_BIGGER, CORIN_WICKES, LUCY, PIPER_WHEEL, SOUKAKU, SETH_LOWELL, JANE_DOE, CAESAR, LIGHTER, TSUKISHIRO_YANAGI, HARUMASA, EVELYN_CHEVALIER, PULCHRA, TRIGGER, HUGO_VLAD, VIVIAN, JU_FUFU, PAN_YINHU, ALICE, ORPHIE, SEED, MANATO, LUCIA, BANYUE, ZHAO, ARIA, SUNNA, CISSIA, NANGONG_YU, NORMA, VELINA, SIGRID, CLARET, ROXY, AQUA, MEGUMIN, DARKNESS, YATOGAMI_TOHKA, PHOENIX, HATSUNE_MIKU, KASANE_TETO, AKITA_NERU, BELLE);
 
     /**
      * Pool fijo del 50/50 perdido (el "banner permanente" de ZZZ): el consuelo solo cae de

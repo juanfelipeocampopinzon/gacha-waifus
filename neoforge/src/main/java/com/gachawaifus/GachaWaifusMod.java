@@ -1,68 +1,8 @@
 package com.gachawaifus;
 
+import com.gachawaifus.client.ModClientBindings;
 import com.gachawaifus.color.ColorConfig;
-import com.gachawaifus.entity.AstraYaoEntity;
-import com.gachawaifus.entity.BurniceWhiteEntity;
-import com.gachawaifus.entity.MiyabiMisiramaEntity;
-import com.gachawaifus.entity.EllenJoeEntity;
-import com.gachawaifus.entity.YeShunguangEntity;
-import com.gachawaifus.entity.AnbyDemaraEntity;
-import com.gachawaifus.entity.NicoleDemaraEntity;
-import com.gachawaifus.entity.UkinamiYuzuhaEntity;
-import com.gachawaifus.entity.PromeiaEntity;
-import com.gachawaifus.entity.RicardoMilosEntity;
-import com.gachawaifus.entity.DoctorHouseEntity;
-import com.gachawaifus.entity.WilsonEntity;
-import com.gachawaifus.entity.FernanflooEntity;
-import com.gachawaifus.entity.client.RicardoMilosRenderer;
-import com.gachawaifus.entity.client.DoctorHouseRenderer;
-import com.gachawaifus.entity.client.WilsonRenderer;
-import com.gachawaifus.entity.client.FernanflooRenderer;
-import com.gachawaifus.entity.client.AstraYaoRenderer;
-import com.gachawaifus.entity.client.BurniceWhiteRenderer;
-import com.gachawaifus.entity.client.MiyabiMisiramaRenderer;
-import com.gachawaifus.entity.client.EllenJoeRenderer;
-import com.gachawaifus.entity.client.YeShunguangRenderer;
-import com.gachawaifus.entity.client.NicoleDemaraRenderer;
-import com.gachawaifus.entity.client.AnbyDemaraRenderer;
-import com.gachawaifus.entity.Soldier11Entity;
-import com.gachawaifus.entity.client.Soldier11Renderer;
-import com.gachawaifus.entity.client.EtherBlastRenderer;
-import com.gachawaifus.entity.client.MusketShotRenderer;
-import com.gachawaifus.entity.client.UkinamiYuzuhaRenderer;
-import com.gachawaifus.entity.client.PromeiaRenderer;
-import com.gachawaifus.entity.RemielleEntity;
-import com.gachawaifus.entity.client.RemielleRenderer;
-import com.gachawaifus.entity.TokisakiKurumiEntity;
-import com.gachawaifus.entity.client.TokisakiKurumiRenderer;
-import com.gachawaifus.entity.YidhariEntity;
-import com.gachawaifus.entity.client.YidhariRenderer;
-import com.gachawaifus.entity.RinaEntity;
-import com.gachawaifus.entity.client.RinaRenderer;
-import com.gachawaifus.entity.GraceHowardEntity;
-import com.gachawaifus.entity.client.GraceHowardRenderer;
-import com.gachawaifus.entity.VonLycaonEntity;
-import com.gachawaifus.entity.client.VonLycaonRenderer;
-import com.gachawaifus.entity.KoledaEntity;
-import com.gachawaifus.entity.client.KoledaRenderer;
-import com.gachawaifus.entity.NekomataEntity;
-import com.gachawaifus.entity.BillyKidEntity;
-import com.gachawaifus.entity.client.BillyKidRenderer;
-import com.gachawaifus.entity.client.NekomataRenderer;
-import com.gachawaifus.entity.YixuanEntity;
-import com.gachawaifus.entity.ZhuYuanEntity;
-import com.gachawaifus.entity.client.ZhuYuanRenderer;
-import com.gachawaifus.entity.client.QingyiRenderer;
-import com.gachawaifus.entity.client.YixuanRenderer;
-import com.gachawaifus.entity.client.TokisakiKurumiModel;
-import com.gachawaifus.entity.client.RemielleModel;
-import com.gachawaifus.entity.client.JaneDoeModel;
-import com.gachawaifus.client.GachaBannerScreen;
-import com.gachawaifus.client.GuideScreen;
-import com.gachawaifus.client.WaifuHomeBlockRenderer;
-import com.gachawaifus.client.WaifuModeScreen;
-import com.gachawaifus.client.WaifuStorageScreen;
-import com.gachawaifus.client.bust.WaifuBustLayers;
+import com.gachawaifus.entity.WaifuAttributeBindings;
 import com.gachawaifus.registry.ModBlockEntities;
 import com.gachawaifus.registry.ModBlocks;
 import com.gachawaifus.registry.ModCreativeTabs;
@@ -71,6 +11,12 @@ import com.gachawaifus.registry.ModItems;
 import com.gachawaifus.registry.ModMenuTypes;
 import com.gachawaifus.registry.ModSounds;
 import com.gachawaifus.team.TeamConfig;
+import net.minecraft.client.gui.screens.MenuScreens;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -122,258 +68,41 @@ public class GachaWaifusMod {
         modEventBus.addListener(this::registerScreens);
     }
 
+    private void registerAttributes(EntityAttributeCreationEvent event) {
+        for (WaifuAttributeBindings.Binding binding : WaifuAttributeBindings.ATTRIBUTES) {
+            event.put(binding.type(), binding.attributes().get().build());
+        }
+    }
+
+    // Las tablas comparten los pares (tipo, proveedor) con Fabric, así que el compilador ya no
+    // puede emparejar los genéricos de cada registro: la correspondencia se garantiza en el
+    // momento de llenar la tabla y aquí se suelta el comodín.
+    @SuppressWarnings({"unchecked", "rawtypes"})
+    private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        for (ModClientBindings.BlockRenderer binding : ModClientBindings.BLOCK_RENDERERS) {
+            event.registerBlockEntityRenderer((BlockEntityType) binding.type(),
+                    (BlockEntityRendererProvider) binding.provider());
+        }
+        for (ModClientBindings.Renderer binding : ModClientBindings.RENDERERS) {
+            event.registerEntityRenderer((EntityType) binding.type(),
+                    (EntityRendererProvider) binding.provider());
+        }
+    }
+
     /**
-     * Mallas con la pieza del pecho para las waifus que usan el modelo de jugador vanilla.
-     * Son capas propias: no se toca la capa compartida de jugador.
+     * Mallas con la pieza del pecho para las waifus que usan el modelo de jugador vanilla, más los
+     * modelos propios de Kurumi, Remielle y Jane Doe.
      */
     private void registerLayers(EntityRenderersEvent.RegisterLayerDefinitions event) {
-        event.registerLayerDefinition(WaifuBustLayers.TUBE, WaifuBustLayers::create);
-        event.registerLayerDefinition(WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
-        event.registerLayerDefinition(WaifuBustLayers.TUBE_WIDE, WaifuBustLayers::createWide);
-        event.registerLayerDefinition(WaifuBustLayers.PROMEIA, WaifuBustLayers::createPromeia);
-        event.registerLayerDefinition(TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
-        event.registerLayerDefinition(RemielleModel.LAYER_LOCATION, RemielleModel::createBodyLayer);
-        event.registerLayerDefinition(JaneDoeModel.LAYER_LOCATION, JaneDoeModel::createBodyLayer);
+        for (ModClientBindings.Layer binding : ModClientBindings.LAYERS) {
+            event.registerLayerDefinition(binding.location(), binding.definition()::get);
+        }
     }
 
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void registerScreens(RegisterMenuScreensEvent event) {
-        event.register(ModMenuTypes.WAIFU_STORAGE.get(), WaifuStorageScreen::new);
-        event.register(ModMenuTypes.GACHA_BANNER.get(), GachaBannerScreen::new);
-        event.register(ModMenuTypes.WAIFU_GUIDE.get(), GuideScreen::new);
-        event.register(ModMenuTypes.WAIFU_MODE.get(), WaifuModeScreen::new);
-    }
-
-    private void registerAttributes(EntityAttributeCreationEvent event) {
-        // ★★★★★ — Hoshimi Miyabi: La Dama de la Luz (Katana / Ice DPS)
-        event.put(ModEntities.MIYABI.get(), MiyabiMisiramaEntity.createAttributes().build());
-        // ★★★★☆ — Astra Yao
-        event.put(ModEntities.ASTRA_YAO.get(), AstraYaoEntity.createAttributes().build());
-        // ★★★☆☆ — Ellen Joe
-        event.put(ModEntities.ELLEN_JOE.get(), EllenJoeEntity.createAttributes().build());
-        // ★★★★★ — Burnice White (Caucasus Analytics / Fire Anomaly)
-        event.put(ModEntities.BURNICE_WHITE.get(), BurniceWhiteEntity.createAttributes().build());
-        // ★★★★★ — Ye Shunguang (Yixuan): Alto Preceptor de Yunkui (Ether / Auric Ink)
-        event.put(ModEntities.YE_SHUNGUANG.get(), YeShunguangEntity.createAttributes().build());
-
-        // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares" (A-Rank / Ether Support & Gravity Control)
-        event.put(ModEntities.NICOLE_DEMARA.get(), NicoleDemaraEntity.createAttributes().build());
-
-        // ★★★★★ Anby Demara — Soldier 0 (Physical / Combatant)
-        event.put(ModEntities.ANBY_DEMARA.get(), AnbyDemaraEntity.createAttributes().build());
-
-        /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
-        event.put(ModEntities.GRACE_HOWARD.get(), GraceHowardEntity.createAttributes().build());
-
-        // ★★★★★ Ukinami Yuzuha — "La Zarigüeya de la Suerte" (Físico / Support)
-        event.put(ModEntities.UKINAMI_YUZUHA.get(), UkinamiYuzuhaEntity.createAttributes().build());
-
-        /** ★★★★★ Promeia — "La Juez del Krampus Compliance Authority" (Hielo / Anomalía) */
-        event.put(ModEntities.PROMEIA.get(), PromeiaEntity.createAttributes().build());
-        // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
-        event.put(ModEntities.REMIELLE.get(), RemielleEntity.createAttributes().build());
-
-        // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
-        event.put(ModEntities.TOKISAKI_KURUMI.get(), TokisakiKurumiEntity.createAttributes().build());
-
-        // ★★★★★ Yidhari Murphy — "Spook Shack" (Hielo / Attack)
-        event.put(ModEntities.YIDHARI.get(), YidhariEntity.createAttributes().build());
-
-        /** Von Lycaon — "Victoria Housekeeping" (Ice / Stun) */
-        event.put(ModEntities.VON_LYCAON.get(), VonLycaonEntity.createAttributes().build());
-
-        // Jefe de recompensa — Ricardo Milos (skin placeholder; el arte se decide más adelante)
-        event.put(ModEntities.RICARDO_MILOS.get(), RicardoMilosEntity.createAttributes().build());
-
-        // Jefe — Doctor House (invoca Wilsons, suelta Bolitas Azules)
-        event.put(ModEntities.DOCTOR_HOUSE.get(), DoctorHouseEntity.createAttributes().build());
-        event.put(ModEntities.WILSON.get(), WilsonEntity.createAttributes().build());
-
-        // Jefe — Fernanfloo (invoca perritos Curly, suelta Bolitas Rosas)
-        event.put(ModEntities.FERNANFLOO.get(), FernanflooEntity.createAttributes().build());
-        event.put(ModEntities.CURLY.get(), com.gachawaifus.entity.CurlyEntity.createAttributes().build());
-
-        // Jefe — Tung Tung Sahur (bate de béisbol que lanza lejos, suelta Bolitas Azules)
-        event.put(ModEntities.TUNG_TUNG_SAHUR.get(),
-                com.gachawaifus.entity.TungTungSahurEntity.createAttributes().build());
-
-        // Rina — "Victoria Housekeeping Co."
-        event.put(ModEntities.RINA_ENTITY.get(), RinaEntity.createAttributes().build());
-
-        // ★★★★★ Koleda Belobog — "Belobog Heavy Industries" (Fuego / Stun)
-        event.put(ModEntities.KOLEDA.get(), KoledaEntity.createAttributes().build());
-
-        /** Soldier 11 — Attack */
-        event.put(ModEntities.SOLDIER_11.get(), Soldier11Entity.createAttributes().build());
-
-        // ★★★★★ Tobichi Origami — "Defense" (White / Defense)
-        event.put(ModEntities.TOBICHI_ORIGAMI.get(), com.gachawaifus.entity.TobichiOrigamiEntity.createAttributes().build());
-
-        // ★★★★★ Nekomiya Mana (Nekomata) — "Cunning Hares" (Physical / Attack)
-        event.put(ModEntities.NEKOMATA.get(), NekomataEntity.createAttributes().build());
-        event.put(ModEntities.BILLY_KID.get(), BillyKidEntity.createAttributes().build());
-        event.put(ModEntities.YIXUAN.get(), YixuanEntity.createAttributes().build());
-        event.put(ModEntities.ZHU_YUAN.get(), ZhuYuanEntity.createAttributes().build());
-
-        // ★★★★★ Qingyi — "Tea Master" (Blue / Stun)
-        event.put(ModEntities.QINGYI.get(), com.gachawaifus.entity.QingyiEntity.createAttributes().build());
-        event.put(ModEntities.PYROIS.get(), com.gachawaifus.entity.PyroisEntity.createAttributes().build());
-        event.put(ModEntities.NORMA.get(), com.gachawaifus.entity.NormaEntity.createAttributes().build());
-        event.put(ModEntities.VELINA.get(), com.gachawaifus.entity.VelinaEntity.createAttributes().build());
-        event.put(ModEntities.SIGRID.get(), com.gachawaifus.entity.SigridEntity.createAttributes().build());
-        event.put(ModEntities.CLARET.get(), com.gachawaifus.entity.ClaretEntity.createAttributes().build());
-        event.put(ModEntities.ROXY.get(), com.gachawaifus.entity.RoxyEntity.createAttributes().build());
-        event.put(ModEntities.ORPHIE.get(), com.gachawaifus.entity.OrphieEntity.createAttributes().build());
-        event.put(ModEntities.SEED.get(), com.gachawaifus.entity.SeedEntity.createAttributes().build());
-        event.put(ModEntities.MANATO.get(), com.gachawaifus.entity.ManatoEntity.createAttributes().build());
-        event.put(ModEntities.LUCIA.get(), com.gachawaifus.entity.LuciaEntity.createAttributes().build());
-        event.put(ModEntities.BANYUE.get(), com.gachawaifus.entity.BanyueEntity.createAttributes().build());
-        event.put(ModEntities.ZHAO.get(), com.gachawaifus.entity.ZhaoEntity.createAttributes().build());
-        event.put(ModEntities.ARIA.get(), com.gachawaifus.entity.AriaEntity.createAttributes().build());
-        event.put(ModEntities.SUNNA.get(), com.gachawaifus.entity.SunnaEntity.createAttributes().build());
-        event.put(ModEntities.CISSIA.get(), com.gachawaifus.entity.CissiaEntity.createAttributes().build());
-        event.put(ModEntities.NANGONG_YU.get(), com.gachawaifus.entity.NangongYuEntity.createAttributes().build());
-        event.put(ModEntities.TSUKISHIRO_YANAGI.get(), com.gachawaifus.entity.TsukishiroYanagiEntity.createAttributes().build());
-        event.put(ModEntities.HARUMASA.get(), com.gachawaifus.entity.HarumasaEntity.createAttributes().build());
-        event.put(ModEntities.EVELYN_CHEVALIER.get(), com.gachawaifus.entity.EvelynChevalierEntity.createAttributes().build());
-        event.put(ModEntities.PULCHRA.get(), com.gachawaifus.entity.PulchraEntity.createAttributes().build());
-        event.put(ModEntities.TRIGGER.get(), com.gachawaifus.entity.TriggerEntity.createAttributes().build());
-        event.put(ModEntities.HUGO_VLAD.get(), com.gachawaifus.entity.HugoVladEntity.createAttributes().build());
-        event.put(ModEntities.VIVIAN.get(), com.gachawaifus.entity.VivianEntity.createAttributes().build());
-        event.put(ModEntities.JU_FUFU.get(), com.gachawaifus.entity.JuFufuEntity.createAttributes().build());
-        event.put(ModEntities.PAN_YINHU.get(), com.gachawaifus.entity.PanYinhuEntity.createAttributes().build());
-        event.put(ModEntities.ALICE.get(), com.gachawaifus.entity.AliceEntity.createAttributes().build());
-        event.put(ModEntities.ANTON.get(), com.gachawaifus.entity.AntonEntity.createAttributes().build());
-        event.put(ModEntities.BEN_BIGGER.get(), com.gachawaifus.entity.BenBiggerEntity.createAttributes().build());
-        event.put(ModEntities.CORIN_WICKES.get(), com.gachawaifus.entity.CorinWickesEntity.createAttributes().build());
-        event.put(ModEntities.LUCY.get(), com.gachawaifus.entity.LucyEntity.createAttributes().build());
-        event.put(ModEntities.PIPER_WHEEL.get(), com.gachawaifus.entity.PiperWheelEntity.createAttributes().build());
-        event.put(ModEntities.SOUKAKU.get(), com.gachawaifus.entity.SoukakuEntity.createAttributes().build());
-        event.put(ModEntities.SETH_LOWELL.get(), com.gachawaifus.entity.SethLowellEntity.createAttributes().build());
-        event.put(ModEntities.JANE_DOE.get(), com.gachawaifus.entity.JaneDoeEntity.createAttributes().build());
-        event.put(ModEntities.CAESAR.get(), com.gachawaifus.entity.CaesarEntity.createAttributes().build());
-        event.put(ModEntities.LIGHTER.get(), com.gachawaifus.entity.LighterEntity.createAttributes().build());
-        event.put(ModEntities.AQUA.get(), com.gachawaifus.entity.AquaEntity.createAttributes().build());
-        event.put(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.MeguminEntity.createAttributes().build());
-        event.put(ModEntities.DARKNESS.get(), com.gachawaifus.entity.DarknessEntity.createAttributes().build());
-        event.put(ModEntities.YATOGAMI_TOHKA.get(), com.gachawaifus.entity.YatogamiTohkaEntity.createAttributes().build());
-        event.put(ModEntities.PHOENIX.get(), com.gachawaifus.entity.PhoenixEntity.createAttributes().build());
-        event.put(ModEntities.HATSUNE_MIKU.get(), com.gachawaifus.entity.HatsuneMikuEntity.createAttributes().build());
-    }
-
-    private void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
-        // El único renderer de bloque: el Bloque de Hogar se pinta imitando otro bloque.
-        event.registerBlockEntityRenderer(ModBlockEntities.WAIFU_HOME.get(), WaifuHomeBlockRenderer::new);
-        // ★★★★★ — Hoshimi Miyabi
-        event.registerEntityRenderer(ModEntities.MIYABI.get(), MiyabiMisiramaRenderer::new);
-        // ★★★★☆ — Astra Yao
-        event.registerEntityRenderer(ModEntities.ASTRA_YAO.get(), AstraYaoRenderer::new);
-        // ★★★☆☆ — Ellen Joe
-        event.registerEntityRenderer(ModEntities.ELLEN_JOE.get(), EllenJoeRenderer::new);
-        // ★★★★★ — Ye Shunguang: Alto Preceptor de Yunkui (Ether / Auric Ink)
-        event.registerEntityRenderer(ModEntities.YE_SHUNGUANG.get(), YeShunguangRenderer::new);
-
-        // ★★★★★ Nicole Demara — "The Sweet Hare of Cunning Hares"
-        event.registerEntityRenderer(ModEntities.NICOLE_DEMARA.get(), NicoleDemaraRenderer::new);
-        // ★★★★★ Anby Demara — Soldier 0 (Physical / Combatant)
-        event.registerEntityRenderer(ModEntities.ANBY_DEMARA.get(), AnbyDemaraRenderer::new);
-        // ★★★★☆ — Burnice White
-        event.registerEntityRenderer(ModEntities.BURNICE_WHITE.get(), BurniceWhiteRenderer::new);
-        event.registerEntityRenderer(ModEntities.ETHER_BLAST.get(), EtherBlastRenderer::new);
-        event.registerEntityRenderer(ModEntities.MUSKET_SHOT.get(), MusketShotRenderer::new);
-        // ★★★★★ Ukinami Yuzuha — "La Zarigüeya de la Suerte"
-        event.registerEntityRenderer(ModEntities.UKINAMI_YUZUHA.get(), UkinamiYuzuhaRenderer::new);
-
-        // ★★★★★ Promeia — "La Juez del Krampus Compliance Authority"
-        event.registerEntityRenderer(ModEntities.PROMEIA.get(), com.gachawaifus.entity.client.PromeiaRenderer::new);
-        // ★★★★★ Remielle — "Void Hunter" (Éter / Anomaly DPS)
-        event.registerEntityRenderer(ModEntities.REMIELLE.get(), RemielleRenderer::new);
-
-        // ★★★★★ Tokisaki Kurumi — "Time and Space" (Éter / Anomaly)
-        event.registerEntityRenderer(ModEntities.TOKISAKI_KURUMI.get(), TokisakiKurumiRenderer::new);
-
-        // ★★★★★ Yidhari Murphy — "Spook Shack" (Hielo / Attack)
-        event.registerEntityRenderer(ModEntities.YIDHARI.get(), YidhariRenderer::new);
-
-        /** Von Lycaon — "Victoria Housekeeping" (Ice / Stun) */
-        event.registerEntityRenderer(ModEntities.VON_LYCAON.get(), VonLycaonRenderer::new);
-
-        // Jefe de recompensa — Ricardo Milos (skin placeholder; el arte se decide más adelante)
-        event.registerEntityRenderer(ModEntities.RICARDO_MILOS.get(), RicardoMilosRenderer::new);
-
-        // Jefe — Doctor House (y su minion Wilson)
-        event.registerEntityRenderer(ModEntities.DOCTOR_HOUSE.get(), DoctorHouseRenderer::new);
-        event.registerEntityRenderer(ModEntities.WILSON.get(), WilsonRenderer::new);
-
-        // Jefe — Fernanfloo (con sus perritos Curly)
-        event.registerEntityRenderer(ModEntities.FERNANFLOO.get(), FernanflooRenderer::new);
-        event.registerEntityRenderer(ModEntities.CURLY.get(), com.gachawaifus.entity.client.CurlyRenderer::new);
-
-        // Jefe — Tung Tung Sahur (con su bate de béisbol GeckoLib en la mano)
-        event.registerEntityRenderer(ModEntities.TUNG_TUNG_SAHUR.get(),
-                com.gachawaifus.entity.client.TungTungSahurRenderer::new);
-
-        // Rina
-        event.registerEntityRenderer(ModEntities.RINA_ENTITY.get(), RinaRenderer::new);
-
-        // ★★★★★ Koleda Belobog — GeckoLib (geo/koleda.geo.json + animaciones propias)
-        event.registerEntityRenderer(ModEntities.KOLEDA.get(), KoledaRenderer::new);
-
-        /** Grace Howard — "Anomaly" (Electric / Support-Anomaly) */
-        event.registerEntityRenderer(ModEntities.GRACE_HOWARD.get(), com.gachawaifus.entity.client.GraceHowardRenderer::new);
-
-        /** Soldier 11 — Attack */
-        event.registerEntityRenderer(ModEntities.SOLDIER_11.get(), Soldier11Renderer::new);
-
-        // ★★★★★ Tobichi Origami — "Defense" (White / Defense)
-        event.registerEntityRenderer(ModEntities.TOBICHI_ORIGAMI.get(), com.gachawaifus.entity.client.TobichiOrigamiRenderer::new);
-
-        // ★★★★★ Nekomiya Mana (Nekomata) — "Cunning Hares" (Physical / Attack)
-        event.registerEntityRenderer(ModEntities.NEKOMATA.get(), NekomataRenderer::new);
-        event.registerEntityRenderer(ModEntities.BILLY_KID.get(), BillyKidRenderer::new);
-        event.registerEntityRenderer(ModEntities.YIXUAN.get(), YixuanRenderer::new);
-        event.registerEntityRenderer(ModEntities.QINGYI.get(), QingyiRenderer::new);
-        event.registerEntityRenderer(ModEntities.PYROIS.get(), com.gachawaifus.entity.client.PyroisRenderer::new);
-        event.registerEntityRenderer(ModEntities.NORMA.get(), com.gachawaifus.entity.client.NormaRenderer::new);
-        event.registerEntityRenderer(ModEntities.VELINA.get(), com.gachawaifus.entity.client.VelinaRenderer::new);
-        event.registerEntityRenderer(ModEntities.SIGRID.get(), com.gachawaifus.entity.client.SigridRenderer::new);
-        event.registerEntityRenderer(ModEntities.CLARET.get(), com.gachawaifus.entity.client.ClaretRenderer::new);
-        event.registerEntityRenderer(ModEntities.ROXY.get(), com.gachawaifus.entity.client.RoxyRenderer::new);
-        event.registerEntityRenderer(ModEntities.ORPHIE.get(), com.gachawaifus.entity.client.OrphieRenderer::new);
-        event.registerEntityRenderer(ModEntities.SEED.get(), com.gachawaifus.entity.client.SeedRenderer::new);
-        event.registerEntityRenderer(ModEntities.MANATO.get(), com.gachawaifus.entity.client.ManatoRenderer::new);
-        event.registerEntityRenderer(ModEntities.LUCIA.get(), com.gachawaifus.entity.client.LuciaRenderer::new);
-        event.registerEntityRenderer(ModEntities.BANYUE.get(), com.gachawaifus.entity.client.BanyueRenderer::new);
-        event.registerEntityRenderer(ModEntities.ZHAO.get(), com.gachawaifus.entity.client.ZhaoRenderer::new);
-        event.registerEntityRenderer(ModEntities.ARIA.get(), com.gachawaifus.entity.client.AriaRenderer::new);
-        event.registerEntityRenderer(ModEntities.SUNNA.get(), com.gachawaifus.entity.client.SunnaRenderer::new);
-        event.registerEntityRenderer(ModEntities.CISSIA.get(), com.gachawaifus.entity.client.CissiaRenderer::new);
-        event.registerEntityRenderer(ModEntities.NANGONG_YU.get(), com.gachawaifus.entity.client.NangongYuRenderer::new);
-        event.registerEntityRenderer(ModEntities.TSUKISHIRO_YANAGI.get(), com.gachawaifus.entity.client.TsukishiroYanagiRenderer::new);
-        event.registerEntityRenderer(ModEntities.HARUMASA.get(), com.gachawaifus.entity.client.HarumasaRenderer::new);
-        event.registerEntityRenderer(ModEntities.EVELYN_CHEVALIER.get(), com.gachawaifus.entity.client.EvelynChevalierRenderer::new);
-        event.registerEntityRenderer(ModEntities.PULCHRA.get(), com.gachawaifus.entity.client.PulchraRenderer::new);
-        event.registerEntityRenderer(ModEntities.TRIGGER.get(), com.gachawaifus.entity.client.TriggerRenderer::new);
-        event.registerEntityRenderer(ModEntities.HUGO_VLAD.get(), com.gachawaifus.entity.client.HugoVladRenderer::new);
-        event.registerEntityRenderer(ModEntities.VIVIAN.get(), com.gachawaifus.entity.client.VivianRenderer::new);
-        event.registerEntityRenderer(ModEntities.JU_FUFU.get(), com.gachawaifus.entity.client.JuFufuRenderer::new);
-        event.registerEntityRenderer(ModEntities.PAN_YINHU.get(), com.gachawaifus.entity.client.PanYinhuRenderer::new);
-        event.registerEntityRenderer(ModEntities.ALICE.get(), com.gachawaifus.entity.client.AliceRenderer::new);
-        event.registerEntityRenderer(ModEntities.ANTON.get(), com.gachawaifus.entity.client.AntonRenderer::new);
-        event.registerEntityRenderer(ModEntities.BEN_BIGGER.get(), com.gachawaifus.entity.client.BenBiggerRenderer::new);
-        event.registerEntityRenderer(ModEntities.CORIN_WICKES.get(), com.gachawaifus.entity.client.CorinWickesRenderer::new);
-        event.registerEntityRenderer(ModEntities.LUCY.get(), com.gachawaifus.entity.client.LucyRenderer::new);
-        event.registerEntityRenderer(ModEntities.PIPER_WHEEL.get(), com.gachawaifus.entity.client.PiperWheelRenderer::new);
-        event.registerEntityRenderer(ModEntities.SOUKAKU.get(), com.gachawaifus.entity.client.SoukakuRenderer::new);
-        event.registerEntityRenderer(ModEntities.SETH_LOWELL.get(), com.gachawaifus.entity.client.SethLowellRenderer::new);
-        event.registerEntityRenderer(ModEntities.JANE_DOE.get(), com.gachawaifus.entity.client.JaneDoeRenderer::new);
-        event.registerEntityRenderer(ModEntities.CAESAR.get(), com.gachawaifus.entity.client.CaesarRenderer::new);
-        event.registerEntityRenderer(ModEntities.LIGHTER.get(), com.gachawaifus.entity.client.LighterRenderer::new);
-        event.registerEntityRenderer(ModEntities.ZHU_YUAN.get(), ZhuYuanRenderer::new);
-        event.registerEntityRenderer(ModEntities.AQUA.get(), com.gachawaifus.entity.client.AquaRenderer::new);
-        event.registerEntityRenderer(ModEntities.MEGUMIN.get(), com.gachawaifus.entity.client.MeguminRenderer::new);
-        event.registerEntityRenderer(ModEntities.DARKNESS.get(), com.gachawaifus.entity.client.DarknessRenderer::new);
-        event.registerEntityRenderer(ModEntities.YATOGAMI_TOHKA.get(), com.gachawaifus.entity.client.YatogamiTohkaRenderer::new);
-        event.registerEntityRenderer(ModEntities.PHOENIX.get(), com.gachawaifus.entity.client.PhoenixRenderer::new);
-        event.registerEntityRenderer(ModEntities.HATSUNE_MIKU.get(), com.gachawaifus.entity.client.HatsuneMikuRenderer::new);
+        for (ModClientBindings.Screen binding : ModClientBindings.SCREENS) {
+            event.register((MenuType) binding.type(), (MenuScreens.ScreenConstructor) binding.screen());
+        }
     }
 }

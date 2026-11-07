@@ -43,7 +43,6 @@ public final class WaifuColors {
         put("yixuan", WaifuColor.VERDE);           // tinta áurica jade de Yunkui
         put("zhu_yuan", WaifuColor.AZUL);          // uniforme del NEPS (Seguridad Pública)
         put("qingyi", WaifuColor.VERDE);   // piel verde jade, el azul no le aparece
-        put("pyrois", WaifuColor.BLANCO);
         put("norma", WaifuColor.NARANJA);
         put("velina", WaifuColor.VERDE);
         put("sigrid", WaifuColor.NARANJA);   // piel naranja al 50 %
@@ -85,6 +84,9 @@ public final class WaifuColors {
         put("yatogami_tohka", WaifuColor.MORADO); // vestido astral púrpura
         put("phoenix", WaifuColor.ROJO);         // llamas eternas y plumaje bermellón
         put("hatsune_miku", WaifuColor.VERDE);   // cabello turquesa / verde azulado
+        put("kasane_teto", WaifuColor.ROJO);   // uniforme rojo-gris: rojo al 46 % de su piel
+        put("akita_neru", WaifuColor.NARANJA);   // melena naranja al 50 % de su piel
+        put("belle", WaifuColor.AZUL);   // vestido azul al 44 %, por encima del dorado del pelo
     }
 
     private WaifuColors() {

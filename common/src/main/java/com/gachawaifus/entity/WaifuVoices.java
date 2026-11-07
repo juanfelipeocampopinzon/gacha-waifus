@@ -23,8 +23,8 @@ public final class WaifuVoices {
 
     /** ids de entidad (path del registro) con voces, idénticos a los de {@code WaifuRoster}. */
     public static final Set<String> VOICED = Set.of(
-            "anby_demara", "aqua", "darkness", "ellen_joe", "hatsune_miku", "jane_doe",
-            "megumin", "miyabi", "nicole_demara", "qingyi", "tokisaki_kurumi", "vivian",
+            "akita_neru", "anby_demara", "aqua", "darkness", "ellen_joe", "hatsune_miku", "jane_doe",
+            "kasane_teto", "megumin", "miyabi", "nicole_demara", "qingyi", "tokisaki_kurumi", "vivian",
             "zhu_yuan");
 
     /** Excepciones: waifus sin audio para alguna action (Zhu Yuan no tiene líneas de ataque). */

@@ -481,7 +481,9 @@ public class ModEntities {
                             .build("nangong_yu"));
     public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.PyroisEntity>> PYROIS =
             ENTITY_TYPES.register("pyrois", () ->
-                    EntityType.Builder.of(com.gachawaifus.entity.PyroisEntity::new, MobCategory.CREATURE)
+                    // Criatura de Belle, no waifu y no spawnnable: con MISC el NaturalSpawner la salta
+                    // y no come cupo de monstruos, y sigue sin entrar en el roster.
+                    EntityType.Builder.of(com.gachawaifus.entity.PyroisEntity::new, MobCategory.MISC)
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("pyrois"));
@@ -554,4 +556,25 @@ public class ModEntities {
                             .sized(0.6F, 1.8F)
                             .clientTrackingRange(12)
                             .build("hatsune_miku"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.KasaneTetoEntity>> KASANE_TETO =
+            ENTITY_TYPES.register("kasane_teto", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.KasaneTetoEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("kasane_teto"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.AkitaNeruEntity>> AKITA_NERU =
+            ENTITY_TYPES.register("akita_neru", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.AkitaNeruEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("akita_neru"));
+
+    public static final DeferredHolder<EntityType<?>, EntityType<com.gachawaifus.entity.BelleEntity>> BELLE =
+            ENTITY_TYPES.register("belle", () ->
+                    EntityType.Builder.of(com.gachawaifus.entity.BelleEntity::new, MobCategory.CREATURE)
+                            .sized(0.6F, 1.8F)
+                            .clientTrackingRange(12)
+                            .build("belle"));
 }

@@ -26,6 +26,7 @@ public class ModCreativeTabs {
                     output.accept(ModItems.RICARDO_MILOS_SPAWN_EGG.get());
                     output.accept(ModItems.DOCTOR_HOUSE_SPAWN_EGG.get());
                     output.accept(ModItems.WILSON_SPAWN_EGG.get());
+                    output.accept(ModItems.PYROIS_SPAWN_EGG.get());
                     output.accept(ModItems.FERNANFLOO_SPAWN_EGG.get());
                     output.accept(ModItems.CURLY_SPAWN_EGG.get());
                     output.accept(ModItems.TUNG_TUNG_SAHUR_SPAWN_EGG.get());

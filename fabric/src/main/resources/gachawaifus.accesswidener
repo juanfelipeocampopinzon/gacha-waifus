@@ -1,0 +1,7 @@
+accessWidener v2 named
+
+# Fabric API no tiene API para registrar la pantalla de un menú: el registro vive en
+# MenuScreens.register, que es privado en vanilla (NeoForge lo envuelve en
+# RegisterMenuScreensEvent). Se abre el método y su interfaz, que es de paquete.
+accessible class net/minecraft/client/gui/screens/MenuScreens$ScreenConstructor
+accessible method net/minecraft/client/gui/screens/MenuScreens register (Lnet/minecraft/world/inventory/MenuType;Lnet/minecraft/client/gui/screens/MenuScreens$ScreenConstructor;)V
