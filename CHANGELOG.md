@@ -94,13 +94,37 @@ Todas las notas de versión del mod en orden cronológico descendente.
   negativo, que era lo que dejaba a la chica fuera.
 - **El token de Seed por fin regenerado** (`tools/token_icon.py --generar seed`): `--check` daba
   **66/67 conformes** y el unico desajuste era `seed … no generado desde la skin (80 px)`. La ficha
-  estaba pintada a mano de una epoca anterior al generador, y por eso en la capsula salia una Mancha
+  estaba pintada a mano de una epoca anterior al generador, y por eso en la capsula salia una mancha
   lavada sin ojos mientras las otras cuatro NEGRO (`jane_doe`, `hugo_vlad`, `grace_howard`,
   `remielle`) salen legibles. Medido el estandar antes de tocar: la cara son las dos capas de la skin
   `(8,8)` + `(40,8)` escaladas a **26 px centradas** (`inicio = (32-26)//2`) sobre la silueta de la
   casa, y `restyle` pinta el anillo ANTES de la cara. Tras regenerar, **67/67 conformes** con backup
-  en `tools/backups/tokens/seed.pre-gen.png`. Copia de la ficha vieja en
-  `textures/item/seed_token.png.bak-20261107`.
+  en `tools/backups/tokens/seed.pre-gen.png`.
+
+### 🔍 El arte del glosario se veia mordido por los lados: el filtro, no el recorte
+- **El tile no es pixel art y el juego lo muestreaba de todos modos.** `drawPixelArtViewport` blitea
+  la textura entera en un hueco de 128 px **de GUI**, o sea `128 × guiScale` px reales. Una textura
+  suelta de mod se carga con `SimpleTexture`, y sin `.mcmeta` el filtro sale de
+  `NativeImage.setFilter(blur=false, mipmap=false)`: **GL_NEAREST en MIN y MAG, sin mipmaps**. El
+  juego pica **un texel de cada (512/(128·escala))²** en lugar de promediarlos. Medido: los tiles
+  tienen 23 000-48 000 colores distintos y solo un 19 % de los bloques 4×4 son constantes (ese 19 %
+  es el margen transparente), o sea que son ilustracion lisa reescalada a 512 por
+  `tile_desde.py` con `pixelar=False`.
+- **Por eso se veia "mal cortado en los lados" y no en el PNG**: con la ventana guardada de la
+  instancia (854×480, FBScale 1) `Window.calculateScale(0)` da **escala 2 → 256 muestras para 512
+  texels: se descarta la mitad de cada fila y columna**. Lo primero que se rompe es lo que mide 1
+  texel: contornos, mechones y el borde recto de la silueta. Solo escala 4 es exacta; a escala 6
+  (auto en 2560×1440) el defecto es otro y tambien existe: amplifica 1,5 y duplica texeles de forma
+  desiguales.
+- **`{"texture": {"blur": true}}` en 67 `.png.mcmeta`** (nuevos, uno por tile de `gui/art/`): cambia
+  el filtro a GL_LINEAR y los 2×2 texels que caen dentro de cada px de GUI se promedian. Cuesta un
+  poco de nitidez y quita las mordidas. Es el trato correcto para ilustracion: los mipmaps reales
+  exigirian meter el arte en su propio atlas porque `SimpleTexture` no los genera.
+- **Se descarto la otra via** (dibujar el tile a 128 con `ZANCA=1`, 1 texel = 1 px de GUI): deja 16
+  veces menos datos y con arte liso se ve borroso al ampliar. Vale solo si el arte volviera a ser
+  rejilla de 128.
+- La guia (`research/guia-nueva-waifu.md` §7) queda con la receta del `.mcmeta` y el porqué: **falta
+  el mcmeta = arte con mordidas**, y ninguna comprobacion del repo lo detecta.
 
 ### 📚 Añadir una waifu deja de ser arqueología
 - **`research/guia-nueva-waifu.md`**: la checklist con las rutas exactas y el porqué de cada paso
