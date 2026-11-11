@@ -27,7 +27,14 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.levelgen.structure.Structure;
 
 /**
  * Waifus salvajes por bioma: de vez en cuando nace una sin dueño, deambulando por un clima que
@@ -110,6 +117,28 @@ public final class WildWaifuSpawner {
                 WaifuColor.GRIS, WaifuColor.AZUL});
     }
 
+    /** Tags de bioma para control de spawn data-driven por el colaborador */
+    public static final TagKey<Biome> TAG_NO_WILD_SPAWNS = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "no_wild_spawns"));
+    public static final TagKey<Biome> TAG_CLIMATE_FRIO = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "climate/frio"));
+    public static final TagKey<Biome> TAG_CLIMATE_TEMPLADO = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "climate/templado"));
+    public static final TagKey<Biome> TAG_CLIMATE_CALIDO = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "climate/calido"));
+    public static final TagKey<Biome> TAG_CLIMATE_NETHER = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "climate/nether"));
+    public static final TagKey<Biome> TAG_CLIMATE_END = TagKey.create(Registries.BIOME,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "climate/end"));
+
+    /** Tag de estructuras donde no deben nacer waifus salvajes */
+    public static final TagKey<Structure> TAG_NO_WILD_SPAWN_STRUCTURES = TagKey.create(Registries.STRUCTURE,
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "no_wild_spawns"));
+
+    private static final Map<String, TagKey<Biome>> BLACKLIST_TAGS = new ConcurrentHashMap<>();
+    private static final Map<String, TagKey<Biome>> WHITELIST_TAGS = new ConcurrentHashMap<>();
+    private static final Map<String, TagKey<Biome>> SPAWN_EXTRA_TAGS = new ConcurrentHashMap<>();
+
     /** Pool por clima, resuelto la primera vez que se necesita (los EntityType aún no existen al cargar la clase). */
     private static Map<Climate, List<WaifuRoster.Entry>> pool;
 
@@ -165,6 +194,13 @@ public final class WildWaifuSpawner {
                 if (spot == null) {
                     continue;
                 }
+                Holder<Biome> biomeHolder = level.getBiome(spot);
+                if (biomeHolder.is(TAG_NO_WILD_SPAWNS)) {
+                    continue;
+                }
+                if (level.structureManager().getStructureWithPieceAt(spot, TAG_NO_WILD_SPAWN_STRUCTURES).isValid()) {
+                    continue;
+                }
                 WaifuRoster.Entry entry = pickEntry(level, spot, random, salvajes, poseidas);
                 if (entry == null) {
                     continue;
@@ -175,6 +211,7 @@ public final class WildWaifuSpawner {
                 }
                 waifu.moveTo(spot.getX() + 0.5D, spot.getY(), spot.getZ() + 0.5D,
                         random.nextFloat() * 360.0F, 0.0F);
+                waifu.setHealth(waifu.getMaxHealth());
                 WildWaifus.markWild(waifu);
                 level.addFreshEntity(waifu);
                 salvajes.add(waifu);
@@ -221,17 +258,61 @@ public final class WildWaifuSpawner {
                 && !level.isWaterAt(pos) && !level.isWaterAt(pos.above());
     }
 
-    /** Elige una waifu del clima del punto, sin repetir una salvaje de la zona ni algo que ya sea tuyo. */
+    /** Elige una waifu para el bioma y clima del punto, respetando tags de whitelist, blacklist y posesión. */
     private static WaifuRoster.Entry pickEntry(ServerLevel level, BlockPos pos, RandomSource random,
                                                List<AbstractWaifuEntity> salvajes, Set<String> poseidas) {
-        WaifuRoster.Entry elegida = alAzar(
-                libres(pool().get(climateOf(level.getBiome(pos), pos)), salvajes, poseidas), random);
+        Holder<Biome> biome = level.getBiome(pos);
+        Climate climate = climateOf(biome, pos);
+        List<WaifuRoster.Entry> candidates = new ArrayList<>(pool().getOrDefault(climate, List.of()));
+
+        // Agregar waifus extras con tag para este bioma (#gachawaifus:spawn_extra/<id>)
+        for (WaifuRoster.Entry entry : WaifuRoster.ROTATION) {
+            TagKey<Biome> extraTag = SPAWN_EXTRA_TAGS.computeIfAbsent(entry.id(),
+                    k -> TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "spawn_extra/" + k)));
+            if (biome.is(extraTag) && !candidates.contains(entry)) {
+                candidates.add(entry);
+            }
+        }
+
+        List<WaifuRoster.Entry> available = libres(candidates, salvajes, poseidas);
+        List<WaifuRoster.Entry> filtered = new ArrayList<>();
+        for (WaifuRoster.Entry entry : available) {
+            if (isAllowedInBiome(level, biome, entry)) {
+                filtered.add(entry);
+            }
+        }
+
+        WaifuRoster.Entry elegida = alAzar(filtered, random);
         if (elegida == null) {
-            // Ninguna del clima está libre (o el clima no tiene fauna apuntada): se tira del
-            // listado completo, que así ningún bioma se queda sin waifus salvajes por casualidad.
-            elegida = alAzar(libres(WaifuRoster.ROTATION, salvajes, poseidas), random);
+            // Fallback a rotación general respetando filtros de bioma
+            List<WaifuRoster.Entry> fallbackLibres = libres(WaifuRoster.ROTATION, salvajes, poseidas);
+            List<WaifuRoster.Entry> fallbackFiltered = new ArrayList<>();
+            for (WaifuRoster.Entry entry : fallbackLibres) {
+                if (isAllowedInBiome(level, biome, entry)) {
+                    fallbackFiltered.add(entry);
+                }
+            }
+            elegida = alAzar(fallbackFiltered, random);
         }
         return elegida;
+    }
+
+    private static boolean isAllowedInBiome(ServerLevel level, Holder<Biome> biome, WaifuRoster.Entry entry) {
+        String id = entry.id();
+        TagKey<Biome> blackTag = BLACKLIST_TAGS.computeIfAbsent(id,
+                k -> TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "blacklist/" + k)));
+        if (biome.is(blackTag)) {
+            return false;
+        }
+
+        TagKey<Biome> whiteTag = WHITELIST_TAGS.computeIfAbsent(id,
+                k -> TagKey.create(Registries.BIOME, ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "whitelist/" + k)));
+        Optional<HolderSet.Named<Biome>> whiteTagSet = level.registryAccess().registryOrThrow(Registries.BIOME).getTag(whiteTag);
+        if (whiteTagSet.isPresent() && whiteTagSet.get().size() > 0) {
+            return biome.is(whiteTag);
+        }
+
+        return true;
     }
 
     /**
@@ -285,14 +366,20 @@ public final class WildWaifuSpawner {
      * vale cualquier {@code BlockPos}: la nieve y la temperatura base no dependen del punto.
      */
     public static Climate climateOf(Holder<Biome> biome, BlockPos pos) {
-        if (biome.is(BiomeTags.IS_NETHER)) {
+        if (biome.is(TAG_CLIMATE_NETHER) || biome.is(BiomeTags.IS_NETHER)) {
             return Climate.NETHER;
         }
-        if (biome.is(BiomeTags.IS_END)) {
+        if (biome.is(TAG_CLIMATE_END) || biome.is(BiomeTags.IS_END)) {
             return Climate.END;
         }
-        if (biome.value().getPrecipitationAt(pos) == Biome.Precipitation.SNOW) {
+        if (biome.is(TAG_CLIMATE_FRIO) || biome.value().getPrecipitationAt(pos) == Biome.Precipitation.SNOW) {
             return Climate.FRIO;
+        }
+        if (biome.is(TAG_CLIMATE_CALIDO)) {
+            return Climate.CALIDO;
+        }
+        if (biome.is(TAG_CLIMATE_TEMPLADO)) {
+            return Climate.TEMPLADO;
         }
         // 1.0 es la frontera que usa vanilla: por encima van desierto, sabana y meseta.
         return biome.value().getBaseTemperature() >= 1.0F ? Climate.CALIDO : Climate.TEMPLADO;

@@ -40,6 +40,7 @@ public final class WildWaifus {
     public static void markWild(AbstractWaifuEntity waifu) {
         waifu.addTag(KEY_WILD);
         waifu.setPersistenceRequired();
+        waifu.setHealth(waifu.getMaxHealth());
         waifu.setCustomName(Component.literal(waifu.getDisplayName().getString() + WILD_SUFFIX));
     }
 

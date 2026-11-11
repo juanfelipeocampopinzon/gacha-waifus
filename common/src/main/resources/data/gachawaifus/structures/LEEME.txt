@@ -1,0 +1,2 @@
+# Carpeta de estructuras .nbt del mod Gacha Waifus
+# Guarda aqui los archivos .nbt exportados con el Structure Block de Minecraft
