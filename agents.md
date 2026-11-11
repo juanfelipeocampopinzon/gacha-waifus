@@ -96,7 +96,9 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
       `PlayState.STOP`), y `this.triggerAnim("attack_controller", "attack"|"special"|"ultimate")` como
       **primera línea** de cada habilidad. ⛔ **Tú NO escribes `geo/` ni `animations/`**: los .geo.json
       y los .animation.json los exporta el humano de Blockbench y los coloca la auditora; tú solo das
-      el Java. Si el prompt te pide "el geo", di que no y sigue con los puntos Java.
+      el Java. Si el prompt te pide "el geo", di que no y sigue con los puntos Java. Quien sí edite
+      geos o animaciones (auditoría, humano): `../research/pivotes.md` (ejes, tabla de signos de la
+      rotación base) y gate `python3 tools/fix_geo_pivots.py --root <ese geo> --check`.
     - `WaifuBustPlayerModel` con `WaifuBustLayers.TUBE` (2.0F) o `TUBE_BIG` (3.0F): waifus con
       pieza del pecho (skin 64×128). Ejemplos: Yuzuha (TUBE), Astra/Remielle (TUBE_BIG).
       Promeia usa la capa propia `PROMEIA`, que es TUBE más la cola de caballo y `PromeiaModel`.
@@ -145,3 +147,53 @@ La IA tiene capacidad para **implementar directamente** las waifus en el código
   con la misma estructura del prompt autoconcluso de esta waifu.
   No compiles.
   ```
+
+## VFX (efectos visuales de habilidades) — añadir a `gachawaifus/agents.md`
+
+> **Estado del motor: FASE 0 — el motor aún NO existe.** No llames a ninguna API de VFX desde Java ni
+> sustituyas `sendParticles` hasta que `agents-bus/STATE.md` diga **FASE 1 completa**. Mientras tanto
+> solo puedes tocar lo que una tarea del bus te permita explícitamente.
+
+### Qué es
+Los efectos son datos: un JSON por habilidad con *stages* (carga, impacto, residual...). Cada stage
+es una lista de capas (emisores, anillos, tajos, cintas, brillo, sacudida, destello). El motor (Java,
+solo lo toca Claude) los dibuja en el cliente. **Los efectos no leen `WaifuColor` ni el sistema de
+colores/roles**: la paleta de cada efecto va escrita en su JSON.
+
+### Dónde vive
+- Efectos: `common/src/main/resources/assets/gachawaifus/vfx/<waifu>/<habilidad>.json`
+  (el `id` interno es `<waifu>/<habilidad>`, igual que la ruta sin `.json`).
+- Disparo: cada stage lleva `"trigger": {"clip": "animation.<waifu>.<clip>", "at": 0.0}`: el motor lo
+  arranca cuando el controlador de ataque empieza ese clip. **Los VFX no se escriben dentro de los
+  `.animation.json`, `.geo.json` ni PNG**: esos archivos los regenera el humano desde el paquete de
+  edición (Blockbench) y se perderían. Si el humano renombra un clip o un hueso, `validate_vfx.py`
+  lo detecta (cruza `trigger.clip` con `animations/<waifu>.animation.json` y `bone:<x>`/`bone` con
+  `geo/<waifu>.geo.json`). Ejemplo canónico: `vfx/miyabi/ultimate.json`.
+- Efectos decididos por el servidor (impactos sobre enemigos, AoE) y waifus que no son GeoEntity:
+  paquete `VfxPacket` (**no existe hasta la FASE 1**); esos stages van sin `trigger`.
+
+### Reglas
+1. **Copia el ejemplo canónico** y cámbialo; no inventes claves. El validador rechaza cualquier clave,
+   textura, forma o ancla que no esté en las listas cerradas:
+   - type: `emitter | ring_wave | telegraph | glow | slash_arc | ribbon | shake | flash`
+   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4`
+   - blend: `additive | alpha` · shape: `point disc ring cone line sphere`
+   - anchor: `entity | ground | target | bone:<hueso>` (el hueso debe existir en el `.geo.json`)
+   - color: degradado `[[0,"#rrggbb",alfa], ..., [1,"#rrggbb",alfa]]` (t ascendente, empieza en 0, acaba en 1)
+2. **Presupuesto:** ≤ 12 capas por stage, ≤ 600 partículas pico por capa, ≤ 1200 por stage. Prefiere
+   pocas partículas grandes y suaves antes que muchas pequeñas.
+3. **Los tiempos salen del clip**, no de los ticks de Java: un stage empieza en su `trigger` y su
+   `duration` debe cubrir ese clip (mira `animation_length`).
+4. **Al migrar `sendParticles`** (solo en FASE 1+ y cuando exista el stage equivalente): quita únicamente
+   las llamadas a partículas; conserva daño, sonidos, efectos de poción y cooldowns. Nunca reescribas
+   el archivo entero: edita bloques concretos.
+5. **No toques** `common/**/vfx/engine/**`, los loaders (`neoforge/`, `fabric/`), `platform-files.txt`,
+   ni los assets de arte (`geo/`, `animations/`, `textures/`) ni `paquete-edicion/`.
+6. Valida siempre antes de dar la tarea por terminada:
+   `python3 tools/validate_vfx.py && python3 tools/fabric_sync.py --check`
+   (y el build si tocaste Java). Pega la salida real, no la inventes.
+
+### Fallos típicos a evitar (heredados del historial del mod)
+Claves o texturas inventadas · reescribir un JSON/Java entero y perder el final · `id` que no coincide
+con la ruta · hueso o clip que no existe (o que el humano renombró) · lanzar `export_editable_pack.py`
+(borra `paquete-edicion/` y puede perder ediciones sin devolver).

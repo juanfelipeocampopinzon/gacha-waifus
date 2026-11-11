@@ -14,3 +14,8 @@ out/
 .vscode/
 COMANDOS_COMPILACION_*.txt
 RESUMEN_COMPILACION_*.txt
+
+# Residuos locales de edicion (copias de geo/animacion, backups, pyc)
+*.bak*
+.backups/
+__pycache__/

@@ -4,6 +4,156 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [7.6.4] — 2026-11-11
+
+### 🔧 Convención de rotación corregida desde el bytecode: las coletas de Miku vuelven a abrirse
+Prueba de la 7.6.3: «la posición superior de las coletas de Miku está bien, pero el movimiento del
+péndulo está mal, se meten hacia el cuerpo; la punta hacia abajo debe estar hacia afuera» y «Roxy: la
+parte de arriba de la capa debe estar metida, la de abajo sí debe salir». La malla ya estaba bien
+colocada; **los signos que invertí en la 7.6.3 estaban invertidos al revés**.
+
+- **Prueba dura** (GeckoLib 4.9.3, `javap` de `BakedModelFactory$Builtin`): `constructBone` llama a
+  `updateRotation(-rotX, -rotY, +rotZ)` y `updatePivot(-pivotX, +pivotY, +pivotZ)`, y `constructCube`
+  construye el origen como `(−(o.x+s.x)/16, o.y/16, o.z/16)`. **El geo se carga en un espacio espejado
+  en X.** Por eso la rotación efectiva en espacio JSON es
+  `R = Rz(−rotZ) · Ry(+rotY) · Rx(−rotX)` — y NO `R = Rz·Ry·Rx` como afirmaban las notas de 7.6.1 a
+  7.6.3. Lo corrobora `RenderUtil.matchModelPartRot` (`updateRotation(-xRot, -yRot, zRot)`).
+- **Consecuencia práctica**: con la rotación base de una pieza colgante, `rx > 0` lleva la punta hacia
+  la **espalda** (+z) y `rz > 0` la lleva **hacia dentro** (−x). Es decir las rotaciones del paquete de
+  edición de siempre eran correctas: **se restauran** `coleta izquierda [7.5, 0, -7.5]` /
+  `coleta derecha [7.5, 0, 7.5]` en Miku y `[15, 0, 0]` en `capa izquierda` / `capa  derecha` de Roxy.
+- **`tools/fix_geo_pivots.py`**: `rot_mat` niega ahora `rx` y `rz`. Como la compensación de cubos
+  (`c = −Rᵗ·(I−R)·Δp`) sale de esa matriz, las bisagras se recalculan con la matemática buena; `--check`
+  devuelve **0 pivotes** en las tres geos editadas.
+- **Medido en espacio de reposo** (sonda propia con la convención corregida): coleta de Miku con punta
+  en `x 6.75..10.76` a `y≈9` — muy fuera del cuerpo, que acaba en `x=4` — y anclaje `x 3.77..6.79` a
+  `y≈32.4`, en la esquina superior del cráneo. Capa de Roxy con el hombro en `z 2.51..3.47` pegado a la
+  espalda (el torso acaba en `z=2`) y el bajo en `z 4.58..5.54`, saliendo.
+- **No tocado a propósito**: el canal `rz` del `walk` de Miku (`+2.1..+5.9` en la coleta `+x`,
+  `−5.9..−2.1` en la `−x`) bajo la convención buena **recorta** el vuelo hacia fuera al andar
+  (`7.5 − 5.9 = 1.6°`). Se deja porque la animación es la que edita el humano en Blockbench; si aún se
+  ven meterse caminando, se niegan solo esos deltas.
+
+---
+
+## [7.6.3] — 2026-11-11
+
+### 🎨 Malla reubicada: la capa de Roxy pasa detrás y las coletas de Miku salen de la cabeza
+El 7.6.2 dejó el eje de giro correcto pero **la malla seguía donde estaba**, y el humano lo vio claro:
+«la capa de Roxy debería estar atrás, está al frente» y «las coletas de Miku están metidas en su
+cabeza y en el cuerpo, deben salir; deberían estar en la parte superior de la cabeza en las dos
+esquinas». Los pivotes no eran el único problema.
+
+- **Convención confirmada**: `+z` es la **espalda** (la cabeza abarca `z −4..4`, el torso `z −2..2`).
+  ⚠ La conclusión de signos de esta entrada era falsa: se volvió a verificar el orden de rotación
+  (`RenderUtil.rotateMatrixAroundBone` → `optionalRotateZYX(rotZ, rotY, rotX)` →
+  `Quaternionf.rotationZYX`) pero **sin tener en cuenta que GeckoLib espeja el geo en X**; lo correcto es
+  `R = Rz(−rotZ)·Ry(+rotY)·Rx(−rotX)` (arreglo en la 7.6.4).
+- **Roxy**: los cuatro cubos de `capa izquierda` / `capa  derecha` estaban en `z −3.6..−2.6`, o sea
+  **delante** del torso. Se espeja el eje `z` (`origin_z = −(origin_z + size_z)` → `z 2.6..3.6`, detrás
+  de la espalda). ⚠ Aquí además se invirtió la rotación a `rx = −15` creyendo que `+15` la inclinaba
+  hacia delante; era al revés y **la 7.6.4 devuelve `rx = +15`**. Bisagra recalculada en la costura de la
+  cintura trasera `[±3, 15.22, 2.51]`. Solape con el torso **0 u³**.
+- **Miku**: las coletas arrancaban en `x 1..4` con la cabeza en `x −4..4` y su techo en `y 30.4`,
+  enterradas en el cráneo. Se trasladan a las **esquinas superiores**: `x 4..7` (+ el mechón fino
+  `7..8`), techo en `y 32` y `z 2..5`. Solape con la cabeza **57–66 → 1.7–4.1 u³** y con el torso
+  **36 → 0.1–0.6 u³** (partiendo de los 231–267 / 286 u³ originales de la 7.6.0).
+- **Alice**: sin tocar, sigue bien.
+- La compensación de cubos del script (`c = −Rᵗ·(I−R)·Δp`) se aplicó también al recolocar las bisagras
+  nuevas, así que el traslado de la malla es exactamente el buscado y no un efecto secundario del pivote.
+
+---
+
+## [7.6.2] — 2026-11-11
+
+### 🩹 Regresión de la 7.6.1 arreglada: Miku, Roxy y Alice, y el `fix_geo_pivots` ya no mueve mallas
+- **Lo que se veía mal** (avisos del humano tras la 7.6.1): las **coletas de Hatsune Miku pegadas a
+  la cabeza**, la **capa de Roxy pegada al cuerpo** y a **Alice** las coletas igual, con el pivote
+  «debiendo estar pegado a la nuca». El resto del roster se declaró bien, así que **solo se tocaron
+  esas tres geos** (y su copia en `modelos/personajes/`).
+- **La causa**: mover el pivote de un hueso **que ya tiene rotación base** desplaza la malla en
+  reposo `d = (I − R)·(p_nuevo − p_viejo)`. La 7.6.1 recolocó pivotes sin compensar y hundió los
+  accesorios dentro del torso y de la cabeza. El docstring del script afirmaba lo contrario
+  («mover un pivote no desplaza nada»), y por eso pasó desapercibido.
+- **Arreglado en el script** (`tools/fix_geo_pivots.py`, reescrito):
+  - La regla de unión se calcula sobre la **caja en reposo** (rotación base aplicada), no sobre los
+    `origin` crudos: `rest_aabb()`, con `rot_mat()`. ⚠ Aquí se afirma `R = Rz·Ry·Rx` «verificado», pero
+    faltaba el espejo en X del cargador; la fórmula buena es
+    `R = Rz(−rotZ)·Ry(+rotY)·Rx(−rotX)` (corregido en la 7.6.4).
+  - `--write` ahora **compensa los cubos** `c = −Rᵗ·d` junto al pivote, de modo que la pose en reposo
+    queda byte a byte como estaba y solo cambia el eje de giro.
+  - La métrica pasó de «pivote → caja» a **«pivote → punto de unión»**: el de Alice estaba *dentro* de
+    su propia caja a media altura, y con la métrica vieja no saltaba como sospechoso.
+  - Los huesos de grupo sin cubos (`coletas`, `capa`, `tentaculos`) heredan la media de los puntos de
+    unión de sus hijos.
+- **Miku**: además del pivote, los `rotation` de `coleta izquierda/derecha` estaban en
+  `[±7.5, 0, ∓7.5]`, es decir **convergiendo hacia la línea media y hacia delante**, cruzándose sobre
+  el torso. Se invierten a `[-7.5, 0, ±7.5]` → abren hacia fuera. Solape con la cabeza
+  **231–267 u³ → 57–66 u³**, con el torso **286 → 36 u³**.
+  ⚠ La lectura de esos signos era inversa (véase 7.6.4): lo que cruzaba las coletas sobre el torso era
+  el `rz`, y la inversión de esta entrada **se revierte** en la 7.6.4, que deja
+  `[7.5, 0, -7.5]` / `[7.5, 0, 7.5]` — el `rx` de las dos igual en positivo porque lo que se busca en
+  ambas es que la punta vaya hacia la espalda, no un espejo.
+- **Roxy**: se conservan los pivotes de la 7.6.1 (bisagra en la costura de la cintura
+  `[±3, 13.82, −2.69]`) y se compensan los cubos con `c = [0, −0.988, −2.503]`, así que la silueta en
+  reposo **vuelve a ser idéntica a la 7.6.0** (el render lateral es byte a byte el mismo PNG, md5
+  `2852397d…`) con el eje de giro correcto. Solape con el torso **12.7 → 0 u³**.
+- **Alice**: pivotes de las dos coletas llevados a la **nuca** `[±3.5, 24, 4.5]` (antes
+  `[3, 15, 4]`, a media melena). Sus huesos no tienen rotación base, así que la pose en reposo no se
+  mueve nada (0.000) y el solape con torso y cabeza es **0 u³**.
+- **Validación**: `fix_geo_pivots.py` reporta **0 pivotes a recolocar** en las tres geos; la copia de
+  `modelos/personajes/` queda idéntica a la del mod; `fabric_sync --check` OK (303 compartidos).
+- **Mochila conocida**: con la métrica nueva el informe global sube a **28 pivotes en 13 geos** (de 27
+  revisados: Ye 4, Burnice 4, Ellen 3, Koleda/Norma/Miyabi/Nicole/Lucia/Claret/Anby 2, Lucy/Ju Fufu/
+  Cissia 1; las mayores distancias son Norma 8,7 y 8,4 y Koleda 6,4). **No se aplicaron**: el humano
+  declaró «el resto están bien». `fix_geo_pivots --check` por tanto ya no sale en 0 sobre el roster
+  completo; sí sale en 0 por fichero en Miku, Roxy y Alice.
+
+---
+
+## [7.6.1] — 2026-11-10
+
+### 🧷 Pivotes de accesorios: coletas, tentáculos, colas y alas ya cuelgan de donde van cosidos
+- **El fallo**: casi todos los huesos de accesorio tenían el pivote en `[0,24,0]` (el centro del
+  pecho) en vez de en su punto de unión. En Bedrock los `origin` de los cubos son absolutos, así que
+  parada la malla se veía bien, pero al girar el accesorio **orbitaba alrededor del torso** y
+  parecía despegarse. Origen: `research/geo/export_editable_pack.py` crea todos los huesos con el
+  pivote del cuerpo, y Blockbench lo conserva si nadie lo mueve.
+- **Corregidos 29 pivotes en 13 waifus**: Hatsune Miku (`coleta izquierda/derecha` estaban a 16,4
+  unidades de su malla), Yidhari (4 tentáculos + grupo `tentaculos`), Nangong Yu (2 coletas + 2
+  alas), Akita Neru, Alice, Nekomata (2 colas), Norma (capa, pelo y `parte superioir`), Qingyi,
+  Rina, Ju Fufu, Roxy (capa y sus dos faldones) y Anby (`cape_tip`), más el grupo `coletas` de Teto.
+- **No se tocó la malla**: los `origin` de los cubos son idénticos (comprobado geo a geo) y ninguna
+  de esas animaciones usa keyframes de `position`, así que en reposo se ven exactamente igual.
+- **Tampoco se tocó** lo que se lleva en la mano (espada, escudo, katana, maletín): su pivote lo
+  decide el arma, no la anatomía.
+- **Herramienta nueva**: `tools/fix_geo_pivots.py` (informe, `--write`, `--check`, `--min-shift`)
+  recalcula el pivote por ejes — cuelga → arriba, sobresale por un lado → cara interior, solapa →
+  centro — y es idempotente. Aplicado también a `modelos/personajes/` para que al reintegrar desde
+  Blockbench no vuelva el fallo.
+
+---
+
+## [7.6.0] — 2026-11-10
+
+### 🐙 Yidhari pasa a GeckoLib con su modelo nuevo
+- **`YidhariRenderer`** deja `WaifuBustPlayerModel` (`TUBE_BIG` 3.0F) y pasa a `GeoEntityRenderer` +
+  `YidhariModel`; `YidhariEntity` ahora `implements GeoEntity` con los controladores `movement`
+  (blend 5, `WaifuGeoWalk::cadence`) y `attack_controller` (blend 2), y `triggerAnim` en las tres
+  habilidades. Deja de usar la pieza del pecho horneada: el `breasts` del geo la sustituye y
+  `BustBones.drive` sigue aplicando la física.
+- **Modelo del humano**: `geo/yidhari.geo.json` sale de `modelos/personajes/yidhari/` y estrena
+  **cuatro tentáculos** (`tentaculos` + 2 superiores + 2 inferiores) con los pivotes en `[0,24,0]`.
+  `textures/entity/yidhari.png` es la skin nueva de 64×128.
+- **Corrección de export**: el cubo `inflate 0.25` del muslo derecho venía colgado del hueso `root`
+  (se arrastró en Blockbench); devuelto a `right_leg` para que acompañe a la pierna.
+- **Clips**: `idle` (2 s, bucle), `walk` (0,48 s, bucle, clon vanilla con
+  `math.clamp(query.ground_speed * 4, 0, 1)`), `attack` (0,5 s), `special` (0,9 s) y `ultimate`
+  (1,2 s). Los tentáculos barren un solo eje con retraso y no se animan `root` ni `breasts`.
+- **El kit de combate no cambia**: mismos cooldowns, daños, partículas y sonidos.
+
+---
+
 ## [7.5.0] — 2026-11-07
 
 ### 🎭 Miku y Teto estrenan modelo Geo y animaciones propias

@@ -1,25 +1,14 @@
 package com.gachawaifus.entity.client;
 
-import com.gachawaifus.GachaWaifusMod;
-import com.gachawaifus.client.bust.WaifuBustLayers;
-import com.gachawaifus.client.bust.WaifuBustPlayerModel;
 import com.gachawaifus.entity.YidhariEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-public class YidhariRenderer extends LivingEntityRenderer<YidhariEntity, WaifuBustPlayerModel<YidhariEntity>> {
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/yidhari.png");
-
+/** Yidhari con GeckoLib (geo/yidhari.geo.json). */
+public class YidhariRenderer extends GeoEntityRenderer<YidhariEntity> {
     public YidhariRenderer(EntityRendererProvider.Context context) {
-        // Modelo de jugador SLIM con la pieza del pecho (la grande, seccion 3x3) en su propia capa.
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE_BIG), true, 3.0F), 0.5F);
-    }
-
-    @Override
-    public ResourceLocation getTextureLocation(YidhariEntity entity) {
-        return TEXTURE;
+        super(context, new YidhariModel());
+        this.shadowRadius = 0.5F;
     }
 
     @Override

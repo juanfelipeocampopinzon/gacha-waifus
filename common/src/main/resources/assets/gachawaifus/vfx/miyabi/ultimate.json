@@ -1,0 +1,530 @@
+{
+  "schema": 1,
+  "id": "miyabi/ultimate",
+  "doc": "BORRADOR v0 (Claude lo congela en la semana 1). Sustituye los sendParticles de MiyabiMisiramaEntity. Cada stage arranca cuando el controlador 'attack_controller' empieza el clip de su trigger; los VFX viven aqui y NO dentro del .animation.json (que se regenera desde el paquete de edicion). charge=ultimate_charge (1.2 s), impact=ultimate_slash (0.55 s), residual=ultimate_recover (0.75 s) + cola de 1.8 s.",
+  "stages": {
+    "charge": {
+      "duration": 1.2,
+      "trigger": {
+        "clip": "animation.miyabi.ultimate_charge",
+        "at": 0.0
+      },
+      "doc": "Telegrafo del circulo de radio 10 + aura que crece. Antes: ~48 particulas/tick por servidor.",
+      "layers": [
+        {
+          "type": "telegraph",
+          "anchor": "ground",
+          "radius": 10,
+          "spin": 3.6,
+          "fill_alpha": 0.1,
+          "fade_in": 0.25,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#d8f6ff",
+              0.9
+            ],
+            [
+              1,
+              "#8fdcff",
+              0.6
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.0,
+            0
+          ],
+          "shape": "disc",
+          "radius": 1.2,
+          "texture": "soft_glow",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              20
+            ],
+            [
+              1,
+              80
+            ]
+          ],
+          "lifetime": [
+            0.8,
+            1.2
+          ],
+          "size": [
+            0.35,
+            0.05
+          ],
+          "speed": [
+            0.8,
+            1.6
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.9
+            ],
+            [
+              0.4,
+              "#9fe4ff",
+              0.7
+            ],
+            [
+              1,
+              "#4fb8ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "ground",
+          "offset": [
+            0,
+            3.0,
+            0
+          ],
+          "shape": "disc",
+          "radius": 10,
+          "texture": "petal",
+          "blend": "alpha",
+          "rate": 25,
+          "lifetime": [
+            2.0,
+            3.5
+          ],
+          "size": [
+            0.18,
+            0.12
+          ],
+          "speed": [
+            0.3,
+            0.8
+          ],
+          "direction": "down",
+          "gravity": 0.1,
+          "swirl": 1.2,
+          "color": [
+            [
+              0,
+              "#ffd0e4",
+              0.0
+            ],
+            [
+              0.2,
+              "#ffc4dc",
+              0.9
+            ],
+            [
+              1,
+              "#ffb0d0",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "glow",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.0,
+            0
+          ],
+          "size": [
+            0.5,
+            3.0
+          ],
+          "duration": 1.2,
+          "texture": "soft_glow",
+          "color": [
+            [
+              0,
+              "#bfefff",
+              0.0
+            ],
+            [
+              1,
+              "#ffffff",
+              0.55
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "anchor": "entity",
+          "amplitude": 0.06,
+          "duration": 1.2,
+          "radius": 12,
+          "falloff": "linear"
+        }
+      ]
+    },
+    "impact": {
+      "duration": 0.55,
+      "trigger": {
+        "clip": "animation.miyabi.ultimate_slash",
+        "at": 0.0
+      },
+      "doc": "Desenvaine giratorio + onda de choque hasta radio 10. Antes: 246 particulas de golpe por servidor.",
+      "layers": [
+        {
+          "type": "flash",
+          "at": 0.0,
+          "intensity": 0.9,
+          "duration": 0.12,
+          "color": "#ffffff",
+          "scope": "world"
+        },
+        {
+          "type": "slash_arc",
+          "at": 0.0,
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.0,
+            0
+          ],
+          "radius": 3.2,
+          "arc_degrees": 300,
+          "width": 1.4,
+          "duration": 0.22,
+          "tilt": 12,
+          "texture": "arc_streak",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.5,
+              "#a8e8ff",
+              0.8
+            ],
+            [
+              1,
+              "#5ec0ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ribbon",
+          "at": 0.0,
+          "bone": "katana_drawn",
+          "lifetime": 0.25,
+          "width": [
+            0.5,
+            0.05
+          ],
+          "duration": 0.4,
+          "texture": "streak",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              1,
+              "#6fd0ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.0,
+          "anchor": "ground",
+          "radius": [
+            0.5,
+            10
+          ],
+          "thickness": [
+            1.2,
+            0.2
+          ],
+          "duration": 0.35,
+          "ease": "out",
+          "y": 0.1,
+          "texture": "ring_soft",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.5,
+              "#9fe4ff",
+              0.8
+            ],
+            [
+              1,
+              "#4fb8ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.08,
+          "anchor": "ground",
+          "radius": [
+            0.5,
+            10
+          ],
+          "thickness": [
+            0.8,
+            0.15
+          ],
+          "duration": 0.4,
+          "ease": "out",
+          "y": 0.15,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#ffe0ee",
+              0.9
+            ],
+            [
+              1,
+              "#ffb0d0",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.0,
+          "anchor": "ground",
+          "offset": [
+            0,
+            0.5,
+            0
+          ],
+          "shape": "point",
+          "texture": "streak",
+          "blend": "additive",
+          "count": 160,
+          "lifetime": [
+            0.3,
+            0.6
+          ],
+          "size": [
+            0.3,
+            0.02
+          ],
+          "speed": [
+            2,
+            14
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              1,
+              "#6fd0ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.0,
+          "anchor": "ground",
+          "offset": [
+            0,
+            0.8,
+            0
+          ],
+          "shape": "disc",
+          "radius": 2,
+          "texture": "petal",
+          "blend": "alpha",
+          "count": 60,
+          "lifetime": [
+            0.8,
+            1.5
+          ],
+          "size": [
+            0.2,
+            0.1
+          ],
+          "speed": [
+            3,
+            9
+          ],
+          "direction": "outward",
+          "gravity": 0.3,
+          "swirl": 4,
+          "color": [
+            [
+              0,
+              "#ffc4dc",
+              1.0
+            ],
+            [
+              1,
+              "#ffb0d0",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "at": 0.0,
+          "anchor": "entity",
+          "amplitude": 0.35,
+          "duration": 0.4,
+          "radius": 20,
+          "falloff": "linear"
+        }
+      ]
+    },
+    "residual": {
+      "duration": 1.8,
+      "trigger": {
+        "clip": "animation.miyabi.ultimate_recover",
+        "at": 0.0
+      },
+      "doc": "Nieve y petalos dentro del vortice. Antes: ~20 particulas/tick durante 36 ticks.",
+      "layers": [
+        {
+          "type": "emitter",
+          "anchor": "ground",
+          "offset": [
+            0,
+            2.5,
+            0
+          ],
+          "shape": "disc",
+          "radius": 10,
+          "texture": "mote",
+          "blend": "additive",
+          "rate": 40,
+          "lifetime": [
+            1.2,
+            1.8
+          ],
+          "size": [
+            0.12,
+            0.04
+          ],
+          "speed": [
+            0.2,
+            0.6
+          ],
+          "direction": "down",
+          "gravity": 0.15,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.0
+            ],
+            [
+              0.2,
+              "#e8f8ff",
+              0.9
+            ],
+            [
+              1,
+              "#9fe4ff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "ground",
+          "offset": [
+            0,
+            2.5,
+            0
+          ],
+          "shape": "disc",
+          "radius": 8,
+          "texture": "petal",
+          "blend": "alpha",
+          "rate": 20,
+          "lifetime": [
+            1.2,
+            1.8
+          ],
+          "size": [
+            0.16,
+            0.1
+          ],
+          "speed": [
+            0.2,
+            0.5
+          ],
+          "direction": "down",
+          "gravity": 0.1,
+          "swirl": 0.8,
+          "color": [
+            [
+              0,
+              "#ffc4dc",
+              0.0
+            ],
+            [
+              0.2,
+              "#ffc4dc",
+              0.8
+            ],
+            [
+              1,
+              "#ffb0d0",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.0,
+          "anchor": "ground",
+          "radius": [
+            10,
+            10.5
+          ],
+          "thickness": [
+            0.3,
+            0.05
+          ],
+          "duration": 1.2,
+          "ease": "linear",
+          "y": 0.1,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#9fe4ff",
+              0.5
+            ],
+            [
+              1,
+              "#9fe4ff",
+              0.0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

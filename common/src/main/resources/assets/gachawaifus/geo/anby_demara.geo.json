@@ -217,9 +217,9 @@
           "name": "cape_tip",
           "parent": "cape_mid",
           "pivot": [
-            -2,
-            14,
-            2.5
+            -2.0,
+            12,
+            3.0
           ],
           "cubes": [
             {
