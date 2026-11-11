@@ -25,9 +25,9 @@ public final class WaifuSongs {
 
     /** Duración en ticks (20 por segundo) de cada concierto, por id de entidad. */
     private static final Map<String, Integer> LENGTH_TICKS = Map.of(
-            "hatsune_miku", 600 // 30 s: prueba_voz_sola.wav
-            // "kasane_teto", 600,
-            // "akita_neru", 600
+            "hatsune_miku", 600, // 30 s: prueba_voz_sola.wav
+            "kasane_teto", 600,  // 30 s: OpenUtau, banco oficial de Teto
+            "akita_neru", 600    // 30 s: OpenUtau, Akita Neru 『NEO』 2.0
     );
 
     /** ids con concierto. */

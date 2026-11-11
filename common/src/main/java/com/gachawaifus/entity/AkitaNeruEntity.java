@@ -27,6 +27,13 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
@@ -34,8 +41,12 @@ import java.util.List;
  * Akita Neru (Vocaloid) — Rol Attack (Color Naranja).
  * La diva perezosa: no le interesa el concierto, pero pega dos veces seguidas y más rápido que
  * nadie, y su reflejo se lo pasa entero a quien la invoca.
+ *
+ * <p>Modelo de Blockbench con GeckoLib (geo/akita_neru.geo.json): la melena lateral del hueso
+ * {@code coleta} solo existe ahí, y con ella el cuerpo deja de ser la malla de jugador.
  */
-public class AkitaNeruEntity extends AbstractWaifuEntity {
+public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 90;
     private int ultimateCooldown = 320;
@@ -48,6 +59,25 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
         this.setTame(true, false);
         this.setCustomName(Component.literal("§6Akita Neru"));
         this.setCustomNameVisible(true);
+    }
+
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.akita_neru.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.akita_neru.idle"));
+        }).setAnimationSpeedHandler(WaifuGeoWalk::cadence));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack", RawAnimation.begin().thenPlay("animation.akita_neru.attack"))
+                .triggerableAnim("special", RawAnimation.begin().thenPlay("animation.akita_neru.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.akita_neru.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return this.cache;
     }
 
     public static AttributeSupplier.Builder createAttributes() {
@@ -77,6 +107,9 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (this.isSinging()) {
+            return; // en el concierto no ataca: se queda plantada cantando
+        }
         if (this.normalAttackCooldown > 0) this.normalAttackCooldown--;
         if (this.specialSkillCooldown > 0) this.specialSkillCooldown--;
         if (this.ultimateCooldown > 0) this.ultimateCooldown--;
@@ -86,6 +119,7 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
                     || this.distanceToSqr(this.pendingFollowUp) > 16.0D) {
                 this.pendingFollowUp = null;
             } else {
+                this.triggerAnim("attack_controller", "attack"); // la segunda pasada se ve como tal
                 this.doHurtTarget(this.pendingFollowUp);
                 if (this.level() instanceof ServerLevel sl) {
                     sl.sendParticles(ParticleTypes.CRIT, this.pendingFollowUp.getX(),
@@ -115,6 +149,7 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
 
     /** Doble golpe: el segundo llega seis ticks después, si Neru sigue lo bastante cerca. */
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
         this.normalAttackCooldown = 26;
         this.doHurtTarget(target);
@@ -129,6 +164,7 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 180;
         target.hurt(this.damageSources().mobAttack(this), 14.0F);
@@ -152,6 +188,7 @@ public class AkitaNeruEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate(LivingEntity target) {
+        this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 620;
         LivingEntity owner = this.getOwner();

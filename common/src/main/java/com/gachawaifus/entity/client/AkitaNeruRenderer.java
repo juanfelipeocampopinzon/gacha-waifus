@@ -1,28 +1,14 @@
 package com.gachawaifus.entity.client;
 
-import com.gachawaifus.GachaWaifusMod;
-import com.gachawaifus.client.bust.WaifuBustLayers;
-import com.gachawaifus.client.bust.WaifuBustPlayerModel;
 import com.gachawaifus.entity.AkitaNeruEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-/**
- * Akita Neru con modelo slim + pieza del pecho ({@code TUBE}, sección 2.0F). Skin 64×128
- * con el desplegado en la mitad inferior.
- */
-public class AkitaNeruRenderer extends LivingEntityRenderer<AkitaNeruEntity, WaifuBustPlayerModel<AkitaNeruEntity>> {
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/akita_neru.png");
-
+/** Akita Neru con GeckoLib (geo/akita_neru.geo.json): melena lateral animada en el hueso {@code coleta}. */
+public class AkitaNeruRenderer extends GeoEntityRenderer<AkitaNeruEntity> {
     public AkitaNeruRenderer(EntityRendererProvider.Context context) {
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE), true, 2.0F), 0.5F);
-    }
-
-    @Override
-    public ResourceLocation getTextureLocation(AkitaNeruEntity entity) {
-        return TEXTURE;
+        super(context, new AkitaNeruModel());
+        this.shadowRadius = 0.5F;
     }
 
     @Override

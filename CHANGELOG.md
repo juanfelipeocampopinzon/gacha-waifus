@@ -4,6 +4,93 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [7.5.0] — 2026-11-07
+
+### 🎭 Miku y Teto estrenan modelo Geo y animaciones propias
+- **`HatsuneMikuModel` y `KasaneTetoModel`** pasan de `WaifuBustPlayerModel` a **GeckoLib `GeoModel`**, con
+  sus `geo/hatsune_miku.geo.json` / `geo/kasane_teto.geo.json`, sus texturas nuevas y sus
+  `animations/*.animation.json`. Los renderers (`HatsuneMikuRenderer`, `KasaneTetoRenderer`) ahora
+  extienden `GeoEntityRenderer` y aplican `WaifuGeoSitPose` al sentarse.
+- **Clips incluidos**: `idle` (2 s, bucle), `walk` (0,48 s, bucle), `attack` (0,5 s), `special` (0,9 s)
+  y `ultimate` (1,2 s), uno por personaje.
+- **El audio no se tocó**: los tres `song.ogg` de concierto y los 26 clips de voz de Teto/Neru siguen
+  en el jar, mono 44,1 kHz. Los `aiStep` de las tres siguen devolviendo temprano mientras `isSinging()`.
+- **Pose de concierto propia**: los clips Geo no traen animación de cante, así que
+  `WaifuGeoConcertPose` (nuevo) pisa el `idle` mientras `isSinging()`: brazo izquierdo con micrófono
+  imaginario delante de la boca, derecho abierto al público, torso y cabeza con vaivén, rebote leve y
+  piernas marcando el compás. Al terminar la canción devuelve los huesos a su snapshot inicial (el
+  `idle` no anima las piernas). Neru entró también en esta pose al migrar a Geo (más abajo).
+
+### 🎀 Akita Neru pasa a GeckoLib y estrena coleta animada
+- **`AkitaNeruRenderer`** deja `WaifuBustPlayerModel` (capa `TUBE` pelada) y pasa a
+  `GeoEntityRenderer` + `AkitaNeruModel`, con `geo/akita_neru.geo.json` y
+  `animations/akita_neru.animation.json` — el mismo vuelo que Miku y Teto, y el modelo ya estaba
+  hecho: venía del geo de Blockbench del humano.
+- **La melena lateral ahora existe**: el geo traía un hueso `coleta` (dos cajas, UV `0,70` y
+  `18,70`) que el modelo de jugador ignoraba. `textures/entity/akita_neru.png` pasa a ser **el PNG
+  completo devuelto de Blockbench** (`modelos/personajes/akita_neru/akita_neru.png`), único con la
+  melena pintada. El round-trip degradó las filas 0-63 (pelo y rostro), y ahí no hay alternativa:
+  `chicas/akita_neru/akita_neru_64x128_pecho.png` nunca pintó la coleta, así que injertar solo su
+  mitad de abajo dejaba el mechón invisible en juego. La textura original queda intacta en `chicas/`.
+- **La pieza del pecho sobrevivió al round-trip**: las 21 filas de la capa `breasts`
+  (UV `1,83`+`1,90`, cajas 4×4 y 3×3) están íntegras en el PNG nuevo, así que `BustBones.drive`
+  sigue pintando ahí y el registro 64×128 con pieza se mantiene.
+- **Cinco clips con la coleta barrenando**: `idle` ±3,5°, `walk` con la zancada vanilla clonada
+  (0,48 s, piernas ±80,2° y brazos ±57,3° con `math.clamp(query.ground_speed * 4, 0, 1)`) y una
+  barrida de ±8,9° en el eje X retrasada 0,7 rad respecto al ciclo de la pierna, `attack` −9/+13°,
+  `special` −13/+19/−6°, `ultimate` −15/+24°. `root` y `breasts` sin animar, como manda la regla.
+- **`WaifuGeoWalk::cadence`** enganchado al controlador `movement` con `.setAnimationSpeedHandler`
+  (22 entidades lo llevaban; Miku y Teto se quedaron fuera en el vuelo anterior y siguen así).
+- **`triggerAnim("attack_controller", ...)`** como primera línea de las tres habilidades y también en
+  la segunda pasada del doble golpe, que hasta ahora era un golpe invisible.
+- El `attack_controller` pisa el `movement` con blend 2; la física del pecho sigue en
+  `BustBones.drive` y el sentarse en `WaifuGeoSitPose`. Nada cambió en stats, cooldowns, sonidos ni
+  en el kit de daños.
+
+### 🎤 Los conciertos de Miku, Teto y Neru
+- **`WaifuSongs`** declara qué waifus tienen canción y cuánto dura (600 ticks = 30 s para las tres).
+  El evento `entity/<id>/song` se registra en los dos cargadores y se declara en `sounds.json` con
+  `"stream": true`; el archivo es `song.ogg`, la voz sola sin instrumentos.
+- **Las tres pistas son de 30 s y comparten la misma melodía** (`v6_prueba_voz.vpr`, 128 BPM), pero
+  cada una la canta su propia voz: Miku desde VOCALOID6, Teto desde su banco oficial de OpenUtau
+  (重音テト OU用日本語統合ライブラリー, `JapaneseVCVPhonemizer`) y Neru desde el banco UTAU real
+  **Akita Neru 『NEO』 2.0** de MisfitKha0s (`JapaneseCVVCPhonemizer`). Ya no se reutiliza la voz de
+  Miku para Neru. Letras del VPR `la`/`ah` adaptadas a `ら`/`あ`; todo mono 44,1 kHz y a −14,7 LUFS
+  como la pista de Miku.
+- **Cómo se arranca**: clic derecho con la mano vacía (o con un disco) sobre cualquiera de las tres.
+  Shift + mano vacía sigue abriendo el menú de modos. Se puede cortar con otro clic, al recibir daño,
+  al morir o al cambiar de modo.
+- **Mientras canta** se queda plantada (`isImmobile`, navegación y velocidad horizontal a cero), no
+  ataca, tiene una pose de idol (micro imaginario, brazo abierto al público, balanceo), suelta notas
+  de colores y algún `END_ROD`, y refresca **Regeneración I + Velocidad I + Resistencia I** cada
+  segundo a los jugadores en 12 bloques. La canción se oye a ~64 bloques (volumen 4 en `RECORDS`)
+  y se corta con `ClientboundStopSoundPacket`. Teto y Neru ya devuelven temprano en su `aiStep`
+  mientras `isSinging()`, igual que Miku.
+
+### 🎧 Voces de Kasane Teto y Akita Neru: 26 clips en registro hablado
+- **Teto se re-renderizó desde su banco oficial** (重音テト OU用日本語統合ライブラリー, gratis y no
+  comercial: solo viajan los `.ogg`, nunca el banco) con `out/teto_spoken.ustx`, generado a partir
+  de `teto_dialogo.ustx`: se conservan posiciones, duraciones, letras, cantante y
+  `JapaneseVCVPhonemizer`, y solo se bajan los tonos a un registro de habla (medianas medidas
+  294–495 Hz). Se capturó con OpenUtau en Xvfb `:99` por un sink nulo dedicado (`ou_cap2`) y el
+  desfase de 1,83 s se recortó con `atrim`.
+- **Neru ya no es Miku pitched**: sus 13 clips se re-renderizaron desde un banco UTAU real,
+  **Akita Neru 『NEO』 2.0** de MisfitKha0s (`JapaneseCVVCPhonemizer`), convirtiendo
+  `out/neru_dialogo.vpr` a un `.ustx` con las mismas 72 notas y bajando 4 semitonos el registro
+  (medianas por clip 464–700 Hz, global ~525 Hz). Antes se obtenía con Rubber Band `--pitchmap`
+  sobre `out/neru_dialogo.wav`, que era la voz de Miku estirada: sonaba a Miku, no a Neru.
+- **Los clips nuevos quedan mono 44,1 kHz, Mmax −9,5 LUFS y pico ≤ −0,6 dBFS**, medidos en bucle
+  para que los `hurt` cortos no engañen a `ebur128`. Los 13 clips viejos de Neru están en
+  `backup_neru_miku_7.4.0/` y los 26 originales en `backup_teto_neru_7.4.0/`.
+- **Crédito del banco de Neru**: voz de a_l_a_i_muwur31, oto y montaje de MisfitKha0s/KuroTrash_Art.
+  El banco no viaja en el mod (solo los `.ogg` renderizados), igual que el de Teto.
+- **Corrección de las notas anteriores**: esta entrada decía que existían
+  `research/voces/teto_neru.md`, `tools/make_dialogo.py` y `tools/voz_waifu.py`, y que Teto usaba
+  subbanks de color de voz. No es cierto: esos archivos no existen en el repo y el `.ustx` no tenía
+  `phoneme_expressions` de color. Lo que sí existe son los artefactos de `out/`
+  (`teto_dialogo.ustx`, `neru_dialogo.vpr`, los WAV y los `*_timing.json`) producidos por scripts
+  puntuales que no se conservaron.
+
 ## [7.4.0] — 2026-11-06
 
 ### 🔥 Burnice vuelve a respirar de pie (y la cabeza dejó de chasquear)
@@ -138,42 +225,6 @@ Todas las notas de versión del mod en orden cronológico descendente.
   imprime como lista de pendientes; `--dry-run` y `--undo` via manifiesto.
 - `MANUAL_IA.md`: §0/§1 corregidos (el montaje `5A66A7D866A7B2E5` ya no existe y el build es
   multiloader) y §3 enlazado a la guía.
-
-### 🎤 El concierto de Miku
-- **`WaifuSongs`** (nuevo) declara qué waifus tienen canción y cuánto dura (Miku: 600 ticks = 30 s).
-  El evento `entity/hatsune_miku/song` se registra en los dos cargadores y se declara en
-  `sounds.json` con `"stream": true`; el archivo es `song.ogg`, la voz sola sin instrumentos.
-- **Cómo se arranca**: clic derecho con la mano vacía (o con un disco) sobre Miku. Shift + mano
-  vacía sigue abriendo el menú de modos. Se puede cortar con otro clic, al recibir daño, al morir o
-  al cambiar de modo.
-- **Mientras canta** se queda plantada (`isImmobile`, navegación y velocidad horizontal a cero), no
-  ataca, tiene una pose de idol (micro imaginario, brazo abierto al público, balanceo), suelta notas
-  de colores y algún `END_ROD`, y refresca **Regeneración I + Velocidad I + Resistencia I** cada
-  segundo a los jugadores en 12 bloques. La canción se oye a ~64 bloques (volumen 4 en `RECORDS`)
-  y se corta con `ClientboundStopSoundPacket`.
-- **Preparado para Teto y Neru**: basta con su `song.ogg`, su entrada en `sounds.json`/`ModSounds` y
-  su duración en `WaifuSongs`; cada una deberá devolver temprano en su `aiStep` si `isSinging()`,
-  como ya hace Miku.
-
-### 🎧 Voces de Kasane Teto y Akita Neru: 26 clips en registro hablado
-- **Teto se re-renderizó desde su banco oficial** (重音テト OU用日本語統合ライブラリー, gratis y no
-  comercial: solo viajan los `.ogg`, nunca el banco) con `out/teto_spoken.ustx`, generado a partir
-  de `teto_dialogo.ustx`: se conservan posiciones, duraciones, letras, cantante y
-  `JapaneseVCVPhonemizer`, y solo se bajan los tonos a un registro de habla (medianas medidas
-  294–495 Hz). Se capturó con OpenUtau en Xvfb `:99` por un sink nulo dedicado (`ou_cap2`) y el
-  desfase de 1,83 s se recortó con `atrim`.
-- **Neru se bajó y se aplanó con Rubber Band 4.0 `--pitchmap`** sobre `out/neru_dialogo.wav`, sin
-  re-renderizar VOCALOID6: por clip se sigue el contorno de f0 y se lleva a una recta descendente
-  en el registro 432–649 Hz. El `--pitchmap` es absoluto en semitonos y conserva la duración.
-- **Los clips nuevos quedan mono 44,1 kHz, −10,5…−11,3 LUFS y pico ≤ −0,3 dBFS**, medidos en bucle
-  para que los `hurt` cortos no engañen a `ebur128`. Los 26 anteriores están en
-  `backup_teto_neru_7.4.0/`.
-- **Corrección de las notas anteriores**: esta entrada decía que existían
-  `research/voces/teto_neru.md`, `tools/make_dialogo.py` y `tools/voz_waifu.py`, y que Teto usaba
-  subbanks de color de voz. No es cierto: esos archivos no existen en el repo y el `.ustx` no tenía
-  `phoneme_expressions` de color. Lo que sí existe son los artefactos de `out/`
-  (`teto_dialogo.ustx`, `neru_dialogo.vpr`, los WAV y los `*_timing.json`) producidos por scripts
-  puntuales que no se conservaron.
 
 ### 🎆 El torso de Burnice gira con las piernas, no contra ellas
 - **`entity/client/BurniceWhiteModel.java`**: el giro de cuerpo se escribía sobre el hueso `body`, pero

@@ -793,6 +793,28 @@ public abstract class AbstractWaifuEntity extends TamableAnimal {
     }
 
     /**
+     * Si la pose de concierto ya se escribió en los huesos del modelo Geo este frame (solo
+     * cliente). Sirve para devolver brazos y piernas a su sitio al terminar la canción: los clips
+     * {@code idle} no animan las piernas, así que sin esta marca se quedarían dobladas.
+     */
+    private boolean modelConcertPose;
+
+    /** Marca que la pose de concierto está aplicada en los huesos. */
+    public void markModelConcertPose() {
+        this.modelConcertPose = true;
+    }
+
+    /** ¿La pose de concierto está aplicada en los huesos? */
+    public boolean hasModelConcertPose() {
+        return this.modelConcertPose;
+    }
+
+    /** Marca que la pose de concierto ya se retiró de los huesos. */
+    public void clearModelConcertPose() {
+        this.modelConcertPose = false;
+    }
+
+    /**
      * Filtro central de objetivos según el modo. Al interceptar {@code setTarget} se controla de
      * golpe a las 19 waifus: sus kits (en {@code aiStep}) solo se disparan con objetivo, y los
      * target goals (agresivos, represalia, defender al dueño) pasan por aquí.

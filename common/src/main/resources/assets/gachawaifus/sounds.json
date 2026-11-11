@@ -219,6 +219,26 @@
       }
     ]
   },
+  "entity/kasane_teto/song": {
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/kasane_teto/song",
+        "stream": true,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
+  "entity/akita_neru/song": {
+    "sounds": [
+      {
+        "name": "gachawaifus:entity/akita_neru/song",
+        "stream": true,
+        "volume": 1.0,
+        "pitch": 1.0
+      }
+    ]
+  },
   "entity/jane_doe/attack": {
     "sounds": [
       "gachawaifus:entity/jane_doe/attack1",

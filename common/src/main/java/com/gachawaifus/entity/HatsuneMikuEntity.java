@@ -27,6 +27,13 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
@@ -34,7 +41,8 @@ import java.util.List;
  * Hatsune Miku (Vocaloid) — Rol Support (Color Verde).
  * La diva virtual número uno: emite ondas melódicas digitales, cura y potencia a su invocador al ritmo de sus conciertos.
  */
-public class HatsuneMikuEntity extends AbstractWaifuEntity {
+public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 100;
     private int ultimateCooldown = 360;
@@ -53,6 +61,26 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
                 .add(Attributes.ATTACK_DAMAGE, 7.0D)
                 .add(Attributes.ARMOR, 7.0D)
                 .add(Attributes.FOLLOW_RANGE, 32.0D);
+    }
+
+    // ── GeoEntity ──────────────────────────────────────────────────────────────
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.hatsune_miku.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.hatsune_miku.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack",  RawAnimation.begin().thenPlay("animation.hatsune_miku.attack"))
+                .triggerableAnim("special",  RawAnimation.begin().thenPlay("animation.hatsune_miku.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.hatsune_miku.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
     }
 
     @Override
@@ -96,6 +124,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
         this.normalAttackCooldown = 20;
         this.doHurtTarget(target);
@@ -107,6 +136,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 220;
         target.hurt(this.damageSources().magic(), 12.0F);
@@ -127,6 +157,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 650;
         LivingEntity owner = this.getOwner();

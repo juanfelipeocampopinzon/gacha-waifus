@@ -1,28 +1,14 @@
 package com.gachawaifus.entity.client;
 
-import com.gachawaifus.GachaWaifusMod;
-import com.gachawaifus.client.bust.WaifuBustLayers;
-import com.gachawaifus.client.bust.WaifuBustPlayerModel;
 import com.gachawaifus.entity.HatsuneMikuEntity;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
-import net.minecraft.client.renderer.entity.LivingEntityRenderer;
-import net.minecraft.resources.ResourceLocation;
+import software.bernie.geckolib.renderer.GeoEntityRenderer;
 
-/**
- * Hatsune Miku con modelo slim + pieza del pecho ({@code TUBE}, sección 2.0F). Skin 64×128
- * con el desplegado en la mitad inferior.
- */
-public class HatsuneMikuRenderer extends LivingEntityRenderer<HatsuneMikuEntity, WaifuBustPlayerModel<HatsuneMikuEntity>> {
-    private static final ResourceLocation TEXTURE =
-            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/hatsune_miku.png");
-
+/** Hatsune Miku con GeckoLib (geo/hatsune_miku.geo.json). */
+public class HatsuneMikuRenderer extends GeoEntityRenderer<HatsuneMikuEntity> {
     public HatsuneMikuRenderer(EntityRendererProvider.Context context) {
-        super(context, new WaifuBustPlayerModel<>(context.bakeLayer(WaifuBustLayers.TUBE), true, 2.0F), 0.5F);
-    }
-
-    @Override
-    public ResourceLocation getTextureLocation(HatsuneMikuEntity entity) {
-        return TEXTURE;
+        super(context, new HatsuneMikuModel());
+        this.shadowRadius = 0.5F;
     }
 
     @Override

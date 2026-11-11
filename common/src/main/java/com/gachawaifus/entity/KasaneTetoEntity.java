@@ -27,6 +27,13 @@ import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.AABB;
+import software.bernie.geckolib.animatable.GeoEntity;
+import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
+import software.bernie.geckolib.animation.AnimatableManager;
+import software.bernie.geckolib.animation.AnimationController;
+import software.bernie.geckolib.animation.PlayState;
+import software.bernie.geckolib.animation.RawAnimation;
+import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
@@ -35,7 +42,8 @@ import java.util.List;
  * La diva de taladros: su voz no es limpia como la de Miku, es rock, y eso es lo que suelta —
  * ondas sonoras que golpean a todo lo que la rodea en vez de curar a quien la invoca.
  */
-public class KasaneTetoEntity extends AbstractWaifuEntity {
+public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
+    private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
     /** Radio (en bloques) de la onda sonora de la habilidad y la ultimate. */
     private static final double SPECIAL_RADIUS = 5.0D;
     private static final double ULTIMATE_RADIUS = 9.0D;
@@ -60,6 +68,26 @@ public class KasaneTetoEntity extends AbstractWaifuEntity {
                 .add(Attributes.FOLLOW_RANGE, 32.0D);
     }
 
+    // ── GeoEntity ──────────────────────────────────────────────────────────────
+    @Override
+    public void registerControllers(AnimatableManager.ControllerRegistrar controllers) {
+        controllers.add(new AnimationController<>(this, "movement", 5, state -> {
+            if (state.isMoving()) {
+                return state.setAndContinue(RawAnimation.begin().thenLoop("animation.kasane_teto.walk"));
+            }
+            return state.setAndContinue(RawAnimation.begin().thenLoop("animation.kasane_teto.idle"));
+        }));
+        controllers.add(new AnimationController<>(this, "attack_controller", 2, state -> PlayState.STOP)
+                .triggerableAnim("attack",  RawAnimation.begin().thenPlay("animation.kasane_teto.attack"))
+                .triggerableAnim("special",  RawAnimation.begin().thenPlay("animation.kasane_teto.special"))
+                .triggerableAnim("ultimate", RawAnimation.begin().thenPlay("animation.kasane_teto.ultimate")));
+    }
+
+    @Override
+    public AnimatableInstanceCache getAnimatableInstanceCache() {
+        return cache;
+    }
+
     @Override
     protected void registerGoals() {
         this.goalSelector.addGoal(1, new FloatGoal(this));
@@ -78,6 +106,9 @@ public class KasaneTetoEntity extends AbstractWaifuEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (this.isSinging()) {
+            return; // en el concierto no ataca: se queda plantada cantando
+        }
         if (this.normalAttackCooldown > 0) this.normalAttackCooldown--;
         if (this.specialSkillCooldown > 0) this.specialSkillCooldown--;
         if (this.ultimateCooldown > 0) this.ultimateCooldown--;
@@ -98,6 +129,7 @@ public class KasaneTetoEntity extends AbstractWaifuEntity {
     }
 
     private void performNormalAttack(LivingEntity target) {
+        this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
         this.normalAttackCooldown = 18;
         this.doHurtTarget(target);
@@ -110,6 +142,7 @@ public class KasaneTetoEntity extends AbstractWaifuEntity {
 
     /** Onda sonora: golpea al objetivo y a todo lo que esté a cinco bloques de Teto. */
     private void performSpecialSkill(LivingEntity target) {
+        this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 200;
         List<LivingEntity> hit = this.level().getEntitiesOfClass(LivingEntity.class,
@@ -130,6 +163,7 @@ public class KasaneTetoEntity extends AbstractWaifuEntity {
     }
 
     private void performUltimate() {
+        this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 680;
         LivingEntity owner = this.getOwner();
