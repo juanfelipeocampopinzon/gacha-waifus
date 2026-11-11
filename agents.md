@@ -197,3 +197,31 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
 Claves o texturas inventadas · reescribir un JSON/Java entero y perder el final · `id` que no coincide
 con la ruta · hueso o clip que no existe (o que el humano renombró) · lanzar `export_editable_pack.py`
 (borra `paquete-edicion/` y puede perder ediciones sin devolver).
+
+---
+
+## Directivas para IAs externas y asistentes de código (Cursor, Claude, Copilot, Windsurf)
+
+Si eres un asistente de IA ayudando a un colaborador a modificar este repositorio:
+
+### 1. Estructuras, Biomas y Spawns (NO programar en Java)
+- **NO modifiques `WildWaifuSpawner.java`** para añadir o quitar waifus de biomas: el sistema es Data-Driven.
+- Para cambiar qué waifu o boss sale en un bioma, usa los tags JSON en `common/src/main/resources/data/gachawaifus/tags/worldgen/biome/`:
+  - Climas: `climate/frio.json`, `climate/calido.json`, `climate/templado.json`, `climate/nether.json`, `climate/end.json`.
+  - Exclusiones de biomas: `no_wild_spawns.json`.
+  - Exclusiones de estructuras: `tags/worldgen/structure/no_wild_spawns.json`.
+  - Por waifu: `whitelist/<id>.json`, `blacklist/<id>.json`, `spawn_extra/<id>.json`.
+- Para estructuras, añade los `.nbt` a `data/gachawaifus/structures/` y configura los JSONs en `data/gachawaifus/worldgen/`.
+- Ejecuta siempre: `python tools/validate_collab_data.py` tras modificar JSONs.
+
+### 2. Si modificas código Java (Reglas estrictas de sincronización)
+- **Frontera obligatoria:** `common/` nunca importa `net.neoforged` ni `net.fabricmc`.
+- **Espejo NeoForge <-> Fabric:** Cada archivo modificado o añadido en `neoforge/src/main/java/...` DEBE tener su equivalente exacto en `fabric/src/main/java/...` y figurar en `fabric/platform-files.txt`.
+- **Validación obligatoria:** Antes de dar cualquier tarea de código por terminada, corre:
+  ```bash
+  python tools/fabric_sync.py --check
+  ```
+- **Salud y atributos (Cero crashes):**
+  - Si añades una nueva entidad: registra sus atributos en `registerAttributes` tanto en `neoforge` como en `fabric`. Sin esto, el servidor crasheará inmediatamente al intentar spawnearla.
+  - Asegura que cualquier método de spawn o doma ejecute `waifu.setHealth(waifu.getMaxHealth())`.
+

@@ -1,0 +1,10 @@
+# Windsurf Rules - Gacha Waifus
+
+- Minecraft 1.21.1 Multi-loader (NeoForge + Fabric, Java 21).
+- `common/`: código compartido neutral sin imports de loaders.
+- `neoforge/` y `fabric/`: módulos espejo. Cualquier clase añadida en NeoForge debe existir en Fabric y estar en `fabric/platform-files.txt`.
+- Para estructuras, biomas y spawns: NO tocar código Java, usar los JSONs y tags en `data/gachawaifus/worldgen/` y `data/gachawaifus/tags/worldgen/`.
+- Verificaciones antes de terminar:
+  1. `python3 tools/fabric_sync.py --check`
+  2. `python3 tools/validate_collab_data.py`
+  3. `./gradlew :neoforge:compileJava :fabric:compileJava`

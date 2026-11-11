@@ -1,0 +1,20 @@
+# Cursor Rules - Gacha Waifus (Minecraft 1.21.1 Multi-loader)
+
+1. ARQUITECTURA:
+- `common/` es neutral: NUNCA importar `net.neoforged` ni `net.fabricmc`.
+- `neoforge/` y `fabric/` son gemelos. Cualquier cambio en uno requiere su gemelo idéntico en el otro.
+- Validar siempre: `python3 tools/fabric_sync.py --check`.
+
+2. ESTRUCTURAS Y SPAWNS:
+- NO tocar `WildWaifuSpawner.java` para configurar waifus o biomas. Usar los tags y JSONs en `data/gachawaifus/tags/worldgen/biome/`.
+- Estructuras en `.nbt` van en `data/gachawaifus/structures/`.
+- Validar siempre: `python3 tools/validate_collab_data.py`.
+
+3. ENTIDADES Y ATRIBUTOS:
+- Toda entidad waifu extiende `AbstractWaifuEntity`.
+- Atributos obligatorios en `registerAttributes` en NeoForge Y Fabric.
+- Salud al spawnear: siempre `waifu.setHealth(waifu.getMaxHealth())`.
+
+4. SINTAXIS 1.21.1:
+- `ResourceLocation.fromNamespaceAndPath(modid, path)`, NUNCA constructor.
+- `TooltipContext` sin import (anidado de `Item`).
