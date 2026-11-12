@@ -37,6 +37,8 @@ import software.bernie.geckolib.util.GeckoLibUtil;
 
 import java.util.List;
 
+import org.jetbrains.annotations.Nullable;
+
 /**
  * Hatsune Miku (Vocaloid) — Rol Support (Color Verde).
  * La diva virtual número uno: emite ondas melódicas digitales, cura y potencia a su invocador al ritmo de sus conciertos.
@@ -46,6 +48,25 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 100;
     private int ultimateCooldown = 360;
+
+    // --- Golpes retrasados: el daño cae en el fotograma del golpe de cada clip, no al empezarlo ---
+    /** Ticks entre el inicio de "attack" (0,6 s) y el barrido de la batuta (0,22 s). */
+    private static final int ATTACK_HIT_DELAY = 4;
+    /** Ticks entre el inicio de "special" (1,4 s) y la proyección de la voz (0,5 s). */
+    private static final int SPECIAL_HIT_DELAY = 10;
+    /** Ticks entre el inicio de "ultimate" (3,0 s) y el drop (1,6 s). Durante ese tiempo no se mueve. */
+    private static final int ULTIMATE_HIT_DELAY = 32;
+    /** Lo que dura el clip "ultimate": queda plantada en el escenario hasta el final de la pose. */
+    private static final int ULTIMATE_LENGTH = 60;
+    private static final double ULTIMATE_RADIUS = 10.0D;
+
+    /** Cuenta atrás hasta el golpe (0 = nada pendiente). */
+    private int attackHitTicks = 0;
+    private int specialHitTicks = 0;
+    /** Ticks transcurridos de la ultimate (0 = inactiva). */
+    private int ultimateTicks = 0;
+    @Nullable
+    private LivingEntity pendingTarget = null;
 
     public HatsuneMikuEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -101,6 +122,9 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
     @Override
     public void aiStep() {
         super.aiStep();
+        if (!this.level().isClientSide && this.tickPendingHits()) {
+            return; // en mitad de una habilidad: no empieza otra ni se mueve durante la ultimate
+        }
         if (this.isSinging()) {
             return; // en el concierto no ataca: se queda plantada cantando
         }
@@ -114,7 +138,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             if (this.ultimateCooldown <= 0 && distSq <= 64.0D) {
-                performUltimate();
+                performUltimate(target);
             } else if (this.specialSkillCooldown <= 0 && distSq <= 36.0D) {
                 performSpecialSkill(target);
             } else if (this.normalAttackCooldown <= 0 && distSq <= 16.0D) {
@@ -123,14 +147,59 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
         }
     }
 
+    /**
+     * Avanza los golpes pendientes y los aplica en su fotograma.
+     *
+     * @return true si hay una habilidad en curso (el resto de la IA de combate espera)
+     */
+    private boolean tickPendingHits() {
+        if (this.attackHitTicks > 0 && --this.attackHitTicks == 0) {
+            this.hitNormalAttack();
+        }
+        if (this.specialHitTicks > 0 && --this.specialHitTicks == 0) {
+            this.hitSpecialSkill();
+        }
+        if (this.ultimateTicks > 0) {
+            this.ultimateTicks++;
+            this.getNavigation().stop();
+            if (this.pendingTarget != null && this.pendingTarget.isAlive()) {
+                this.getLookControl().setLookAt(this.pendingTarget, 30.0F, 30.0F);
+            }
+            if (this.ultimateTicks == ULTIMATE_HIT_DELAY + 1) {
+                this.hitUltimate();
+            }
+            if (this.ultimateTicks > ULTIMATE_LENGTH) {
+                this.ultimateTicks = 0;
+                this.pendingTarget = null;
+            }
+        }
+        return this.attackHitTicks > 0 || this.specialHitTicks > 0 || this.ultimateTicks > 0;
+    }
+
+    /** El objetivo guardado si sigue vivo y cerca; si no, null (el golpe se pierde en el aire). */
+    @Nullable
+    private LivingEntity livePendingTarget(double range) {
+        LivingEntity target = this.pendingTarget;
+        if (target == null || !target.isAlive() || target.level() != this.level()
+                || this.distanceToSqr(target) > range * range) {
+            return null;
+        }
+        return target;
+    }
+
     private void performNormalAttack(LivingEntity target) {
         this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
         this.normalAttackCooldown = 20;
-        this.doHurtTarget(target);
-        if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.NOTE, target.getX(), target.getY() + 1.0, target.getZ(), 6, 0.3, 0.4, 0.3, 0.2);
-            sl.sendParticles(ParticleTypes.HAPPY_VILLAGER, target.getX(), target.getY() + 0.8, target.getZ(), 3, 0.2, 0.2, 0.2, 0.0);
+        this.pendingTarget = target;
+        this.attackHitTicks = ATTACK_HIT_DELAY;
+    }
+
+    /** Barrido de la batuta: los VFX salen del clip "attack" (vfx/hatsune_miku/normal.json). */
+    private void hitNormalAttack() {
+        LivingEntity target = this.livePendingTarget(5.0D);
+        if (target != null) {
+            this.doHurtTarget(target);
         }
         this.level().playSound(null, this.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 1.0F, 1.4F);
     }
@@ -139,8 +208,17 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
         this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 220;
-        target.hurt(this.damageSources().magic(), 12.0F);
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+        this.pendingTarget = target;
+        this.specialHitTicks = SPECIAL_HIT_DELAY;
+    }
+
+    /** Onda de voz: los VFX salen del clip "special" (vfx/hatsune_miku/special.json). */
+    private void hitSpecialSkill() {
+        LivingEntity target = this.livePendingTarget(8.0D);
+        if (target != null) {
+            target.hurt(this.damageSources().magic(), 12.0F);
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+        }
 
         LivingEntity owner = this.getOwner();
         if (owner != null && owner.isAlive()) {
@@ -148,18 +226,19 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
             owner.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 160, 0));
         }
         this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 120, 1));
-
-        if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.NOTE, target.getX(), target.getY() + 1.0, target.getZ(), 16, 0.6, 0.6, 0.6, 0.5);
-            sl.sendParticles(ParticleTypes.GLOW, this.getX(), this.getY() + 1.0, this.getZ(), 12, 0.5, 0.5, 0.5, 0.1);
-        }
         this.level().playSound(null, this.blockPosition(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.PLAYERS, 1.2F, 1.6F);
     }
 
-    private void performUltimate() {
+    private void performUltimate(@Nullable LivingEntity target) {
         this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 650;
+        this.pendingTarget = target;
+        this.ultimateTicks = 1;
+    }
+
+    /** El drop: los VFX salen del clip "ultimate" (vfx/hatsune_miku/ultimate.json, stage "drop"). */
+    private void hitUltimate() {
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
             p.sendSystemMessage(Component.translatable("message.gachawaifus.hatsune_miku.1"));
@@ -171,7 +250,7 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
         this.addEffect(new MobEffectInstance(MobEffects.REGENERATION, 260, 2));
         this.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 300, 1));
 
-        AABB area = this.getBoundingBox().inflate(10.0D);
+        AABB area = this.getBoundingBox().inflate(ULTIMATE_RADIUS);
         List<LivingEntity> enemies = this.level().getEntitiesOfClass(LivingEntity.class, area,
                 e -> e != this && e != owner && !(e instanceof AbstractWaifuEntity));
         for (LivingEntity e : enemies) {
@@ -179,11 +258,6 @@ public class HatsuneMikuEntity extends AbstractWaifuEntity implements GeoEntity 
             e.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 160, 2));
         }
 
-        if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.NOTE, this.getX(), this.getY() + 1.2, this.getZ(), 45, 1.2, 1.0, 1.2, 0.8);
-            sl.sendParticles(ParticleTypes.TOTEM_OF_UNDYING, this.getX(), this.getY() + 1.0, this.getZ(), 30, 0.8, 0.8, 0.8, 0.3);
-            sl.sendParticles(ParticleTypes.HEART, this.getX(), this.getY() + 1.5, this.getZ(), 10, 0.6, 0.4, 0.6, 0.1);
-        }
         this.level().playSound(null, this.blockPosition(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 1.2F, 1.5F);
     }
 }
