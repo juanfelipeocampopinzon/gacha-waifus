@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Validador de efectos VFX (v0). Solo biblioteca estándar.
 
-Comprueba cada JSON de assets/gachawaifus/vfx/**: claves permitidas por tipo de capa, listas
+Comprueba (incluido el estándar de tier S/M/L) cada JSON de assets/gachawaifus/vfx/**: claves permitidas por tipo de capa, listas
 cerradas (texturas, formas, anclas), rangos numéricos, degradados y un presupuesto de partículas.
 Cada stage puede declarar un "trigger": {"clip": "animation.<waifu>.<clip>", "at": segundos}. El
 validador cruza ese clip con animations/<waifu>.animation.json y cada ancla "bone:<x>" con
@@ -22,10 +22,12 @@ ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "common" / "src" / "main" / "resources" / "assets" / "gachawaifus"
 
 TEXTURES = {"soft_glow", "spark", "streak", "petal", "shard", "mote", "smoke",
-            "ring_thin", "ring_soft", "arc_streak", "ribbon_soft", "star4"}
+            "ring_thin", "ring_soft", "arc_streak", "ribbon_soft", "star4", "flame_8f",
+            "flame_puff_8f", "orb", "cube"}
+
 BLENDS = {"additive", "alpha"}
 SHAPES = {"point", "disc", "ring", "cone", "line", "sphere"}
-DIRECTIONS = {"outward", "inward", "up", "down", "random"}
+DIRECTIONS = {"outward", "inward", "up", "down", "forward", "look", "random", "bone"}
 EASES = {"linear", "in", "out"}
 ANCHOR_RE = re.compile(r"^(entity|ground|target|bone:[a-z0-9_]+)$")
 HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
@@ -34,7 +36,10 @@ CLIP_RE = re.compile(r"^animation\.[a-z0-9_]+\.[a-z0-9_]+$")
 
 MAX_LAYERS = 12
 MAX_LAYER_PARTICLES = 600
-MAX_STAGE_PARTICLES = 1200
+# Estándar de calidad por slot: S = golpe, M = habilidad, L = ultimate.
+TIERS = {"S": {"particles": 40, "layers": 3, "duration": 0.6},
+         "M": {"particles": 150, "layers": 5, "duration": 4.0},
+         "L": {"particles": 400, "layers": 8, "duration": 3.5}}
 
 COMMON = {"type": str, "at": "t", "anchor": "anchor", "offset": "vec3"}
 # tipo -> {clave: regla}. Las claves de COMMON se aceptan en todos los tipos.
@@ -43,7 +48,8 @@ SPEC = {
                 "count": ("int", 0, 600), "rate": "curve", "duration": (0.05, 10),
                 "lifetime": ("pair", 0.05, 10), "size": ("pair", 0.01, 12),
                 "color": "gradient", "speed": ("pair", 0, 40), "direction": DIRECTIONS,
-                "gravity": (-2, 2), "swirl": (-20, 20), "fade_in": (0, 5)},
+                "gravity": (-2, 2), "swirl": (0, 20), "fade_in": (0, 5),
+                "stretch": (0, 4), "core": (0, 1)},
     "ring_wave": {"radius": ("pair", 0, 32), "thickness": ("pair", 0.05, 8),
                   "duration": (0.05, 5), "ease": EASES, "y": (-4, 8),
                   "color": "gradient", "texture": {"ring_thin", "ring_soft"}, "blend": BLENDS},
@@ -171,13 +177,20 @@ def validate_file(path, rel, errors):
         sp = f"stages.{sname}"
         if not re.match(r"^[a-z0-9_]+$", sname):
             err(f"{sp}: nombre de stage inválido")
-        if not isinstance(stage, dict) or set(stage) - {"duration", "layers", "doc", "trigger"}:
-            err(f"{sp}: solo admite duration, layers, trigger y doc")
+        if not isinstance(stage, dict) or set(stage) - {"duration", "layers", "doc", "trigger", "tier"}:
+            err(f"{sp}: solo admite tier, duration, layers, trigger y doc")
             continue
         dur = stage.get("duration")
         if not (num(dur) and 0.05 <= dur <= 10):
             err(f"{sp}.duration: número 0.05..10")
             dur = 1.0
+        tier = stage.get("tier")
+        if tier not in TIERS:
+            err(f"{sp}.tier: debe ser uno de {sorted(TIERS)} (S golpe, M habilidad, L ultimate)")
+            tier = "L"
+        lim = TIERS[tier]
+        if num(dur) and dur > lim["duration"]:
+            err(f"{sp}: duración {dur} s supera el máximo del tier {tier} ({lim['duration']} s)")
         trig = stage.get("trigger")
         if trig is not None:
             if not (isinstance(trig, dict) and set(trig) <= {"clip", "at"}
@@ -188,6 +201,8 @@ def validate_file(path, rel, errors):
         if not isinstance(layers, list) or not layers or len(layers) > MAX_LAYERS:
             err(f"{sp}.layers: lista de 1..{MAX_LAYERS} capas")
             continue
+        if len(layers) > lim["layers"]:
+            err(f"{sp}: {len(layers)} capas superan el máximo del tier {tier} ({lim['layers']})")
         total = 0
         for i, layer in enumerate(layers):
             lp = f"{sp}.layers[{i}]"
@@ -213,8 +228,8 @@ def validate_file(path, rel, errors):
             if peak > MAX_LAYER_PARTICLES:
                 err(f"{lp}: pico estimado {int(peak)} > {MAX_LAYER_PARTICLES} partículas")
             total += peak
-        if total > MAX_STAGE_PARTICLES:
-            err(f"{sp}: pico estimado {int(total)} > {MAX_STAGE_PARTICLES} partículas")
+        if total > lim["particles"]:
+            err(f"{sp}: pico estimado {int(total)} supera el máximo del tier {tier} ({lim['particles']} partículas)")
     return data
 
 

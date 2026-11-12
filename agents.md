@@ -176,12 +176,32 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
 1. **Copia el ejemplo canónico** y cámbialo; no inventes claves. El validador rechaza cualquier clave,
    textura, forma o ancla que no esté en las listas cerradas:
    - type: `emitter | ring_wave | telegraph | glow | slash_arc | ribbon | shake | flash`
-   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4`
+   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4 flame_8f flame_puff_8f orb`
+     (en gris de 3 niveles; el motor las tiñe con el degradado. Las `*_8f` son tiras de 8 cuadros 16x16
+     que la partícula recorre **con su edad** (fotograma 0 = recién nacida, 7 = agonía), así que
+     `flame_8f` (lengüeta) y `flame_puff_8f` (bola que se deshilacha) deben ir de caliente a jirón.
+     Se regeneran con `tools/gen_vfx_sprites.py`; NO las edites a mano ni inventes otras)
    - blend: `additive | alpha` · shape: `point disc ring cone line sphere`
-   - anchor: `entity | ground | target | bone:<hueso>` (el hueso debe existir en el `.geo.json`)
+   - direction: `outward inward up down forward random bone` (`forward` = hacia donde mira el ancla;
+     `bone` = por el eje del hueso anclado, del pivote hacia la punta — es el que usa un soplete)
+   - anchor: `entity | ground | target | bone:<hueso>` (el hueso debe existir en el `.geo.json`).
+     En un ancla `bone:` el `offset` va **dentro del hueso** (bloques, misma orientación que el geo):
+     `[0,-0.53,0]` = 0,53 bloques del pivote hacia la punta, que es donde está la boquilla de un soplete.
    - color: degradado `[[0,"#rrggbb",alfa], ..., [1,"#rrggbb",alfa]]` (t ascendente, empieza en 0, acaba en 1)
-2. **Presupuesto:** ≤ 12 capas por stage, ≤ 600 partículas pico por capa, ≤ 1200 por stage. Prefiere
-   pocas partículas grandes y suaves antes que muchas pequeñas.
+   - **solo `emitter`**: `speed` va en **bloques por segundo** (el motor lo pasa a ticks), `stretch`
+     (0..4) alarga el quad en la dirección de la velocidad — es lo que convierte un chorro en veta
+     continua en vez de una fila de bolitas —, `core` (0..1) dibuja dentro un núcleo blanco del tamaño
+     indicado (volumen sin gastar partículas) y `swirl` (0..20, ~2,5 = 5 cm por tick) ondula la
+     trayectoria. Los chorros de un soplete: `flame_puff_8f` + `direction: bone` + `stretch` 1,5-2 +
+     `core` 0,5 + `swirl` 2,5, a 45-55 partículas/s y ~8 bloques de alcance.
+2. **Cada stage declara su `tier`** (el estándar de calidad del mod; el validador lo exige):
+   | tier | slot | partículas pico | capas | duración máx. |
+   |---|---|---|---|---|
+   | S | golpe | 40 | 3 | 0,6 s |
+   | M | habilidad | 150 | 5 | 4 s |
+   | L | ultimate | 400 | 8 | 3,5 s |
+   Prefiere pocas partículas grandes y suaves antes que muchas pequeñas. Todo stage lleva:
+   anticipación, golpe y cola; un degradado con un acento; y contacto con el suelo si aplica.
 3. **Los tiempos salen del clip**, no de los ticks de Java: un stage empieza en su `trigger` y su
    `duration` debe cubrir ese clip (mira `animation_length`).
 4. **Al migrar `sendParticles`** (solo en FASE 1+ y cuando exista el stage equivalente): quita únicamente

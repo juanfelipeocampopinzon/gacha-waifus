@@ -6,6 +6,7 @@ com/gachawaifus/block/WaifuHomeBlock.java
 com/gachawaifus/client/audio/BossThemeWatch.java
 com/gachawaifus/client/BateBeisbolClient.java
 com/gachawaifus/client/color/ColorTagLayerHook.java
+com/gachawaifus/client/vfx/VfxLoaderHooks.java
 com/gachawaifus/client/WaifuNameTagHook.java
 com/gachawaifus/color/ColorConfig.java
 com/gachawaifus/color/ColorEvents.java

@@ -4,6 +4,7 @@
   "doc": "BORRADOR v0 (Claude lo congela en la semana 1). Sustituye los sendParticles de MiyabiMisiramaEntity. Cada stage arranca cuando el controlador 'attack_controller' empieza el clip de su trigger; los VFX viven aqui y NO dentro del .animation.json (que se regenera desde el paquete de edicion). charge=ultimate_charge (1.2 s), impact=ultimate_slash (0.55 s), residual=ultimate_recover (0.75 s) + cola de 1.8 s.",
   "stages": {
     "charge": {
+      "tier": "M",
       "duration": 1.2,
       "trigger": {
         "clip": "animation.miyabi.ultimate_charge",
@@ -169,6 +170,7 @@
       ]
     },
     "impact": {
+      "tier": "L",
       "duration": 0.55,
       "trigger": {
         "clip": "animation.miyabi.ultimate_slash",
@@ -397,6 +399,7 @@
       ]
     },
     "residual": {
+      "tier": "M",
       "duration": 1.8,
       "trigger": {
         "clip": "animation.miyabi.ultimate_recover",

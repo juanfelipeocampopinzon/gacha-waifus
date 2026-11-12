@@ -2,6 +2,7 @@ package com.gachawaifus;
 
 import com.gachawaifus.client.ModClientBindings;
 import com.gachawaifus.client.audio.BossThemeWatch;
+import com.gachawaifus.client.vfx.VfxLoaderHooks;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityModelLayerRegistry;
@@ -47,5 +48,8 @@ public class GachaWaifusClient implements ClientModInitializer {
         // La sintonía del jefe se corta cuando Ricardo Milos muere o sale del rango. NeoForge lo
         // hace un TickEvent subscrito; en Fabric hay que engancharlo a mano.
         BossThemeWatch.init();
+
+        // Prototipo de VFX: tick, dibujo y /gwvfx en el cliente.
+        VfxLoaderHooks.init();
     }
 }
