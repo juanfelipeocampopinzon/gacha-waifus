@@ -1,0 +1,171 @@
+{
+  "schema": 1,
+  "id": "burnice_white/special",
+  "doc": "Especial de Burnice: chorro híbrido 2D+3D (flame_puff + cubos de plasma) desde las dos boquillas. Sin humo para mantener limpia la silueta del chorro. Channel tier M (flame_channel, 3.2 s).",
+  "stages": {
+    "channel": {
+      "tier": "L",
+      "duration": 3.2,
+      "trigger": {
+        "clip": "animation.burnice_white.flame_channel",
+        "at": 0.0
+      },
+      "layers": [
+
+        {
+          "type": "emitter",
+          "anchor": "bone:left_torch",
+          "offset": [0, -0.53, 0],
+          "shape": "cone",
+          "radius": 0.18,
+          "texture": "flame_puff_8f",
+          "blend": "additive",
+          "rate": [[0, 0], [0.05, 50], [0.92, 50], [1, 0]],
+          "lifetime": [0.55, 0.85],
+          "size": [0.3, 1.5],
+          "speed": [9, 13],
+          "direction": "forward",
+          "gravity": -0.12,
+          "stretch": 2.2,
+          "core": 0.6,
+          "swirl": 2.2,
+          "color": [
+            [0,    "#ffffff", 0.85],
+            [0.15, "#fff299", 0.80],
+            [0.45, "#ff7e14", 0.65],
+            [0.80, "#c41818", 0.35],
+            [1,    "#2b080c", 0.0 ]
+          ]
+        },
+
+        {
+          "type": "emitter",
+          "anchor": "bone:right_torch",
+          "offset": [0, -0.53, 0],
+          "shape": "cone",
+          "radius": 0.18,
+          "texture": "flame_puff_8f",
+          "blend": "additive",
+          "rate": [[0, 0], [0.05, 50], [0.92, 50], [1, 0]],
+          "lifetime": [0.55, 0.85],
+          "size": [0.3, 1.5],
+          "speed": [9, 13],
+          "direction": "forward",
+          "gravity": -0.12,
+          "stretch": 2.2,
+          "core": 0.6,
+          "swirl": 2.2,
+          "color": [
+            [0,    "#ffffff", 0.85],
+            [0.15, "#fff299", 0.80],
+            [0.45, "#ff7e14", 0.65],
+            [0.80, "#c41818", 0.35],
+            [1,    "#2b080c", 0.0 ]
+          ]
+        },
+
+        {
+          "type": "emitter",
+          "anchor": "bone:left_torch",
+          "offset": [0, -0.53, 0],
+          "shape": "cone",
+          "radius": 0.15,
+          "texture": "cube",
+          "blend": "additive",
+          "rate": [[0, 0], [0.05, 28], [0.92, 28], [1, 0]],
+          "lifetime": [0.4, 0.70],
+          "size": [0.14, 0.38],
+          "speed": [10, 15],
+          "direction": "forward",
+          "gravity": -0.08,
+          "stretch": 1.8,
+          "swirl": 1.5,
+          "color": [
+            [0,    "#ffffff", 0.90],
+            [0.20, "#fff299", 0.80],
+            [0.55, "#ff7e14", 0.60],
+            [0.85, "#c41818", 0.30],
+            [1,    "#2b080c", 0.0 ]
+          ]
+        },
+
+        {
+          "type": "emitter",
+          "anchor": "bone:right_torch",
+          "offset": [0, -0.53, 0],
+          "shape": "cone",
+          "radius": 0.15,
+          "texture": "cube",
+          "blend": "additive",
+          "rate": [[0, 0], [0.05, 28], [0.92, 28], [1, 0]],
+          "lifetime": [0.4, 0.70],
+          "size": [0.14, 0.38],
+          "speed": [10, 15],
+          "direction": "forward",
+          "gravity": -0.08,
+          "stretch": 1.8,
+          "swirl": 1.5,
+          "color": [
+            [0,    "#ffffff", 0.90],
+            [0.20, "#fff299", 0.80],
+            [0.55, "#ff7e14", 0.60],
+            [0.85, "#c41818", 0.30],
+            [1,    "#2b080c", 0.0 ]
+          ]
+        },
+
+        {
+          "type": "ring_wave",
+          "anchor": "bone:left_torch",
+          "offset": [0, -0.53, 0],
+          "radius": [0.08, 0.55],
+          "thickness": [0.25, 0.05],
+          "duration": 0.18,
+          "at": 0.05,
+          "ease": "out",
+          "texture": "ring_soft",
+          "blend": "additive",
+          "color": [
+            [0,   "#fff6c8", 0.9],
+            [0.5, "#ff9a2e", 0.5],
+            [1,   "#c41818", 0.0]
+          ]
+        },
+
+        {
+          "type": "ring_wave",
+          "anchor": "bone:right_torch",
+          "offset": [0, -0.53, 0],
+          "radius": [0.08, 0.55],
+          "thickness": [0.25, 0.05],
+          "duration": 0.18,
+          "at": 0.05,
+          "ease": "out",
+          "texture": "ring_soft",
+          "blend": "additive",
+          "color": [
+            [0,   "#fff6c8", 0.9],
+            [0.5, "#ff9a2e", 0.5],
+            [1,   "#c41818", 0.0]
+          ]
+        },
+
+        {
+          "type": "glow",
+          "anchor": "entity",
+          "offset": [0, 1.1, 1.1],
+          "size": [0.8, 2.2],
+          "duration": 3.2,
+          "texture": "soft_glow",
+          "color": [
+            [0,   "#ff9a2e", 0.0],
+            [0.1, "#ff9a2e", 0.4],
+            [0.9, "#ff9a2e", 0.4],
+            [1,   "#ff9a2e", 0.0]
+          ]
+        }
+
+      ]
+    }
+  }
+}

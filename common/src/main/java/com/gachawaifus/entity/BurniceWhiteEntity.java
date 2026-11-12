@@ -30,10 +30,12 @@ import net.minecraft.world.entity.ai.goal.target.OwnerHurtTargetGoal;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
+import net.minecraft.util.Mth;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Comparator;
 import java.util.List;
 
 import software.bernie.geckolib.animatable.GeoEntity;
@@ -72,6 +74,13 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
     /** true mientras el lanzallamas está activo: Burnice queda plantada en el sitio. */
     private boolean flameChanneling = false;
     private int flameTicks = 0;
+    /**
+     * Enemigo al que apunta el chorro. El lanzallamas es teledirigido mientras ella está
+     * plantada: el cuerpo gira para encararlo y el daño va a lo largo de ese eje, no del
+     * `look` que quedara al empezar la habilidad. Se pierde si muere o se sale del alcance.
+     */
+    @Nullable
+    private LivingEntity flameAimTarget = null;
 
     // --- Ultimate aérea (lluvia de fuego) ---
     /** 0 = inactiva | 1 = salto | 2 = lluvia de fuego en el aire */
@@ -97,7 +106,6 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
     private static final double FLAME_RANGE = 20.0D;
     /** La ultimate aérea se lanza desde más lejos. */
     private static final double ULTIMATE_RANGE = 16.0D;
-    private static final double FLAME_COS = 0.82D; // cono de ~35°
     private static final int CHANNEL_LENGTH = 60;  // 3 s de soplete
     private static final int AIR_RAIN_LENGTH = 50; // 2.5 s de lluvia de fuego en el aire
     /** Ticks entre el inicio del tajo y el daño, para que coincida con el fotograma del golpe. */
@@ -351,8 +359,9 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
 
             // Prioridad 1: Ultimate (Burnice Supernova aérea)
             if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
-                performUltimate();
+                performUltimate(target);
             }
+
             // Prioridad 2: Special Skill (Jet Flamethrower — lanzallamas sostenido)
             else if (this.specialSkillCooldown <= 0 && distanceSq <= FLAME_RANGE * FLAME_RANGE) {
                 performSpecialSkill(target);
@@ -370,6 +379,10 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.flameTicks++;
 
         if (!this.level().isClientSide) {
+            // Teledirigido: cada tick vuelve a encarar al enemigo bloqueado (o busca otro si murió
+            // o se alejó) antes de quemar, para que el chorro y el daño apunten a lo mismo.
+            this.updateFlameAim();
+
             // Los 4 primeros ticks no se dibuja el chorro: coincide con el arranque de la animación
             // y evita el estallido doble de partículas del primer fotograma.
             if (this.flameTicks >= 4) {
@@ -383,14 +396,77 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         if (this.flameTicks >= CHANNEL_LENGTH) {
             this.flameChanneling = false;
             this.flameTicks = 0;
+            this.flameAimTarget = null;
             this.beginRecovery();
         }
     }
 
-    /** Avanza la ultimate aérea: salto, altura de crucero y lluvia de fuego. */
+    /**
+     * Mantiene el bloqueo del lanzallamas: si el objetivo sigue vivo y en alcance, se queda con él
+     * y gira el cuerpo; si no, busca al enemigo vivo más cercano que tenga delante (medio cono
+     * delantero, para no darse la vuelta por un bicho que está a la espalda).
+     */
+    private void updateFlameAim() {
+        LivingEntity aim = this.flameAimTarget;
+        if (aim != null && (!aim.isAlive() || aim.level() != this.level()
+                || this.distanceToSqr(aim) > FLAME_RANGE * FLAME_RANGE)) {
+            aim = null;
+        }
+        if (aim == null) {
+            aim = this.findFlameAim();
+        }
+        this.flameAimTarget = aim;
+        if (aim != null) {
+            this.faceFlameTarget(aim);
+        }
+    }
+
+    /** El enemigo vivo más cercano dentro del alcance y delante de ella. */
+    @Nullable
+    private LivingEntity findFlameAim() {
+        Vec3 look = this.getLookAngle();
+        List<LivingEntity> candidates = this.level().getEntitiesOfClass(LivingEntity.class,
+                this.getBoundingBox().inflate(FLAME_RANGE),
+                e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity) && e.isAlive());
+        LivingEntity best = null;
+        double bestDistance = Double.MAX_VALUE;
+        for (LivingEntity candidate : candidates) {
+            Vec3 to = candidate.getBoundingBox().getCenter().subtract(this.getEyePosition());
+            double distance = to.length();
+            if (distance < 0.01D || distance > FLAME_RANGE) continue;
+            // 0,2 ≈ 78° de semiángulo: recoge lo que tenga delante sin girarse por completo.
+            if (to.scale(1.0D / distance).dot(look) < 0.2D) continue;
+            if (!this.hasLineOfSight(candidate)) continue;
+            if (distance < bestDistance) {
+                bestDistance = distance;
+                best = candidate;
+            }
+        }
+        return best;
+    }
+
+    /** Gira el cuerpo (y con él los brazos y los sopletes) hacia el objetivo. */
+    private void faceFlameTarget(LivingEntity target) {
+        Vec3 to = target.getBoundingBox().getCenter().subtract(this.getEyePosition());
+        double horizontal = Math.sqrt(to.x * to.x + to.z * to.z);
+        float yaw = (float) (Mth.atan2(to.z, to.x) * (180.0D / Math.PI)) - 90.0F;
+        float pitch = (float) -(Mth.atan2(to.y, Math.max(0.001D, horizontal)) * (180.0D / Math.PI));
+        pitch = Mth.clamp(pitch, -85.0F, 85.0F);
+        this.setYRot(yaw);
+        this.setYHeadRot(yaw);
+        this.yBodyRot = yaw;
+        this.setXRot(pitch);
+    }
+
+    /** Avanza la ultimate aérea: salto, altura de crucero y lluvia de fuego auto-apuntada. */
     private void tickUltimate() {
         if (this.ultimatePhase == 0) return;
         this.ultimateTicks++;
+
+        if (!this.level().isClientSide) {
+            // Auto-apuntado activo tanto en el salto como en la lluvia aérea
+            this.updateFlameAim();
+        }
 
         if (this.ultimatePhase == 1) {
             // Salto: sube sin gravedad hasta ~3 bloques sobre la altura inicial
@@ -403,7 +479,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
             return;
         }
 
-        // Fase 2: suspendida en el aire escupiendo fuego hacia abajo
+        // Fase 2: suspendida en el aire escupiendo fuego hacia abajo hacia el enemigo
         this.setDeltaMovement(0.0D, 0.02D, 0.0D);
         if (!this.level().isClientSide) {
             this.sprayConeFlames(true);
@@ -418,6 +494,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         if (this.ultimateTicks >= AIR_RAIN_LENGTH) {
             this.ultimatePhase = 0;
             this.ultimateTicks = 0;
+            this.flameAimTarget = null;
             this.setNoGravity(false);
             this.setInvulnerable(false);
             this.invulnerableTicks = 0;
@@ -431,38 +508,61 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.recoveryTicks = RECOVERY_LENGTH;
     }
 
-    /** Dirección del chorro de fuego: la mirada, o hacia abajo (0.8 horizontal) en la ultimate. */
+    /** Dirección del chorro de fuego: hacia el enemigo bloqueado o la mirada. */
     private Vec3 flameDirection(boolean downward) {
+        if (this.flameAimTarget != null && this.flameAimTarget.isAlive()) {
+            Vec3 to = this.flameAimTarget.getBoundingBox().getCenter()
+                    .subtract(this.getX(), this.getEyeY() - (downward ? 0.4D : 0.2D), this.getZ());
+            if (to.lengthSqr() > 1.0E-6D) {
+                return to.normalize();
+            }
+        }
         Vec3 look = this.getLookAngle();
         return downward ? new Vec3(look.x * 0.8D, -1.0D, look.z * 0.8D).normalize() : look;
     }
 
-    /** Dibuja el chorro de fuego en cono desde los sopletes de ambos brazos. */
+    /** Dibuja el chorro de fuego en cono saliendo de las puntas de ambos brazos/sopletes. */
     private void sprayConeFlames(boolean downward) {
         if (!(this.level() instanceof ServerLevel serverLevel)) return;
 
         Vec3 look = this.flameDirection(downward);
         double originY = this.getEyeY() - (downward ? 0.4D : 0.2D);
+        Vec3 up = new Vec3(0, 1, 0);
+        Vec3 right = look.cross(up);
+        right = right.lengthSqr() < 1.0E-6D ? new Vec3(1, 0, 0) : right.normalize();
+
+        // Puntas de ambos brazos/sopletes en coordenadas de mundo
+        Vec3 leftArm = new Vec3(this.getX(), originY, this.getZ()).add(right.scale(-0.35D)).add(look.scale(0.35D));
+        Vec3 rightArm = new Vec3(this.getX(), originY, this.getZ()).add(right.scale(0.35D)).add(look.scale(0.35D));
 
         for (int step = 1; step <= (int) FLAME_RANGE; step++) {
             double distance = step * 1.0D;
-            double spread = 0.12D * step;
-            double px = this.getX() + look.x * distance;
-            double py = originY + look.y * distance;
-            double pz = this.getZ() + look.z * distance;
+            double spread = 0.10D * step;
 
-            serverLevel.sendParticles(ParticleTypes.FLAME, px, py, pz, 2, spread, spread, spread, 0.02);
+            double plx = leftArm.x + look.x * distance;
+            double ply = leftArm.y + look.y * distance;
+            double plz = leftArm.z + look.z * distance;
+
+            double prx = rightArm.x + look.x * distance;
+            double pry = rightArm.y + look.y * distance;
+            double prz = rightArm.z + look.z * distance;
+
+            serverLevel.sendParticles(ParticleTypes.FLAME, plx, ply, plz, 1, spread * 0.5D, spread * 0.5D, spread * 0.5D, 0.02);
+            serverLevel.sendParticles(ParticleTypes.FLAME, prx, pry, prz, 1, spread * 0.5D, spread * 0.5D, spread * 0.5D, 0.02);
+
             if (step % 3 == 0) {
-                serverLevel.sendParticles(ParticleTypes.LAVA, px, py, pz, 1, spread * 0.5D, spread * 0.5D, spread * 0.5D, 0.0);
+                serverLevel.sendParticles(ParticleTypes.LAVA, (plx + prx) * 0.5D, (ply + pry) * 0.5D, (plz + prz) * 0.5D, 1, spread * 0.3D, spread * 0.3D, spread * 0.3D, 0.0);
             }
             if (step % 4 == 0) {
-                serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, px, py, pz, 1, spread, spread, spread, 0.01);
+                serverLevel.sendParticles(ParticleTypes.LARGE_SMOKE, (plx + prx) * 0.5D, (ply + pry) * 0.5D, (plz + prz) * 0.5D, 1, spread * 0.5D, spread * 0.5D, spread * 0.5D, 0.01);
             }
         }
 
         // Chispas en las boquillas de los sopletes
-        serverLevel.sendParticles(ParticleTypes.FLAME, this.getX(), originY, this.getZ(), 4, 0.3, 0.2, 0.3, 0.03);
+        serverLevel.sendParticles(ParticleTypes.FLAME, leftArm.x, leftArm.y, leftArm.z, 2, 0.1, 0.1, 0.1, 0.02);
+        serverLevel.sendParticles(ParticleTypes.FLAME, rightArm.x, rightArm.y, rightArm.z, 2, 0.1, 0.1, 0.1, 0.02);
     }
+
 
     /**
      * Quema a los enemigos dentro del cono del lanzallamas.
@@ -470,18 +570,26 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
      * @param downward true para la lluvia de fuego de la ultimate (cono hacia el suelo)
      */
     private void burnConeTargets(float damage, boolean downward) {
-        Vec3 look = this.flameDirection(downward);
+        Vec3 aim = this.flameDirection(downward);
         double originY = this.getEyeY() - (downward ? 0.4D : 0.2D);
-        AABB area = this.getBoundingBox().inflate(FLAME_RANGE);
+        Vec3 from = new Vec3(this.getX(), originY, this.getZ());
+        AABB area = this.getBoundingBox().inflate(FLAME_RANGE + 2.0D);
         List<LivingEntity> candidates = this.level().getEntitiesOfClass(LivingEntity.class, area,
                 e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
 
+        // Volumen de llama (cilindro que abre con la distancia), no un cono estrecho de 35°:
+        // antes un enemigo a un palmo del eje, o el propio objetivo, se quedaba fuera por unos
+        // grados y la habilidad "no le atinaba". El objetivo bloqueado entra siempre que esté en
+        // alcance y a la vista.
         for (LivingEntity enemy : candidates) {
-            if (this.distanceToSqr(enemy) > FLAME_RANGE * FLAME_RANGE) continue;
+            Vec3 to = enemy.getBoundingBox().getCenter().subtract(from);
+            double along = to.dot(aim);
+            if (along < -0.5D || along > FLAME_RANGE) continue;
             if (!this.hasLineOfSight(enemy)) continue;
-            Vec3 toEnemy = enemy.getBoundingBox().getCenter()
-                    .subtract(this.getX(), originY, this.getZ()).normalize();
-            if (toEnemy.dot(look) < FLAME_COS) continue; // fuera del cono
+            if (enemy != this.flameAimTarget) {
+                double radius = 0.9D + Math.max(0.0D, along) * 0.23D;
+                if (to.subtract(aim.scale(along)).length() > radius) continue;
+            }
             enemy.hurt(this.damageSources().inFire(), damage);
             enemy.igniteForSeconds(5);
         }
@@ -529,6 +637,9 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.setDeltaMovement(Vec3.ZERO);
         this.getNavigation().stop();
 
+        // Teledirigido desde el primer tick: se bloquea al objetivo y el cuerpo se gira hacia él.
+        this.flameAimTarget = target;
+        this.faceFlameTarget(target);
         this.getLookControl().setLookAt(target, 60.0F, 60.0F);
         this.setAction(ACTION_FLAME_CHANNEL);
 
@@ -552,10 +663,14 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
     /**
      * Skill 3: Ultimate — Burnice Supernova (aérea)
      * Burnice SALTA por los aires y, suspendida sobre el campo, descarga una lluvia de fuego
-     * en cono hacia abajo durante 2.5 segundos antes de caer.
+     * en cono hacia abajo auto-apuntada al enemigo durante 2.5 segundos antes de caer.
      */
-    private void performUltimate() {
+    private void performUltimate(LivingEntity target) {
         this.ultimateCooldown = 700;
+
+        // Guarda el objetivo para auto-apuntar en 3D durante el salto y la lluvia
+        this.flameAimTarget = target;
+        this.faceFlameTarget(target);
 
         // Estado aéreo: salto controlado sin gravedad + animación de salto.
         this.ultimatePhase = 1;
@@ -566,6 +681,7 @@ public class BurniceWhiteEntity extends AbstractWaifuEntity implements GeoEntity
         this.setTarget(null);
         this.getNavigation().stop();
         this.setAction(ACTION_LEAP);
+
 
         Level level = this.level();
         LivingEntity owner = this.getOwner();

@@ -1,0 +1,61 @@
+{
+  "schema": 1,
+  "id": "burnice_white/normal",
+  "doc": "Ataque normal de Burnice: tajo corto de la pistola-llama + chispas al frente. Strike tier S (clip attack, 0.4 s).",
+  "stages": {
+    "strike": {
+      "tier": "S",
+      "duration": 0.4,
+      "trigger": {
+        "clip": "animation.burnice_white.attack",
+        "at": 0.0
+      },
+      "layers": [
+        {
+          "type": "slash_arc",
+          "at": 0.12,
+          "anchor": "entity",
+          "offset": [0, 1.0, 0.6],
+          "radius": 1.8,
+          "arc_degrees": 120,
+          "width": 0.9,
+          "duration": 0.15,
+          "tilt": -20,
+          "texture": "arc_streak",
+          "color": [
+            [0, "#fff6c8", 1.0],
+            [0.5, "#ff9a2e", 0.85],
+            [1, "#c2185b", 0.0]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.15,
+          "anchor": "entity",
+          "offset": [0, 1.0, 1.4],
+          "shape": "point",
+          "texture": "spark",
+          "blend": "additive",
+          "count": 18,
+          "lifetime": [0.2, 0.4],
+          "size": [0.2, 0.02],
+          "speed": [2, 6],
+          "direction": "outward",
+          "color": [
+            [0, "#fff6c8", 1.0],
+            [0.5, "#ff9a2e", 0.85],
+            [1, "#c2185b", 0.0]
+          ]
+        },
+        {
+          "type": "flash",
+          "at": 0.15,
+          "intensity": 0.25,
+          "duration": 0.06,
+          "color": "#fff6c8",
+          "scope": "world"
+        }
+      ]
+    }
+  }
+}
