@@ -155,11 +155,12 @@ public final class ModClientBindings {
     }
 
     static {
-        // El modelo de jugador con la pieza del pecho: cuatro variantes de rombo, más las tres
-        // waifus que no usan GeckoLib y tienen capa de vanilla propia.
+        // El modelo de jugador con la pieza del pecho: tres variantes de rombo, más las tres
+        // waifus que no usan GeckoLib y tienen capa de vanilla propia. La cuarta entrada es la malla
+        // slim sin pieza pero en lienzo de 128 (las planas necesitan sitio para sus accesorios).
         add(LAYERS, WaifuBustLayers.TUBE, WaifuBustLayers::create);
         add(LAYERS, WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
-        add(LAYERS, WaifuBustLayers.TUBE_WIDE, WaifuBustLayers::createWide);
+        add(LAYERS, WaifuBustLayers.SLIM_128, WaifuBustLayers::createSlim128);
         add(LAYERS, WaifuBustLayers.PROMEIA, WaifuBustLayers::createPromeia);
         add(LAYERS, TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
         add(LAYERS, RemielleModel.LAYER_LOCATION, RemielleModel::createBodyLayer);

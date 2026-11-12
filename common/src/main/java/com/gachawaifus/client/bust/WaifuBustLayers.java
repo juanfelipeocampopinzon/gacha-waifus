@@ -58,10 +58,13 @@ public final class WaifuBustLayers {
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust"), "main");
     public static final ModelLayerLocation TUBE_BIG = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust_big"), "main");
-    /** Malla ANCHA (brazos de 4px): Soldier 11, cuyo modelo vanilla es el de Steve. */
-    public static final ModelLayerLocation TUBE_WIDE = new ModelLayerLocation(
-            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_bust_wide"), "main");
-
+    /**
+     * Lienzo de las planas: la malla slim sin pieza, pero declarada en 64x128. Existe para que las
+     * filas 64-127 sean sitio real donde pintar cubos nuevos (coletas, lazos, capas): con la capa
+     * vanilla {@code ModelLayers.PLAYER_SLIM} el alto es 64 y todo lo que caiga por debajo no se ve.
+     */
+    public static final ModelLayerLocation SLIM_128 = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "waifu_slim_128"), "main");
     /**
      * Malla de Promeia: la pieza normal más la cola de caballo. Va en capa propia para que la cola
      * no se le pegue a las demás waifus que comparten {@link #TUBE}.
@@ -86,9 +89,12 @@ public final class WaifuBustLayers {
         return build(PIVOT_Y_BIG, 3.0F, true);
     }
 
-    /** Pieza normal sobre malla ancha: 8x2x2 (Soldier 11). */
-    public static LayerDefinition createWide() {
-        return build(PIVOT_Y_NORMAL, 2.0F, false, false);
+    /**
+     * Planas (sin pieza) con lienzo de 128: la malla slim de vanilla tal cual, solo que declarada
+     * a 64x128 para que el workbench y los cubos nuevos tengan filas por debajo de la 64.
+     */
+    public static LayerDefinition createSlim128() {
+        return LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, true), 64, 128);
     }
 
     /** Promeia: pieza normal sobre malla slim más la cola de caballo colgada de la cabeza. */
