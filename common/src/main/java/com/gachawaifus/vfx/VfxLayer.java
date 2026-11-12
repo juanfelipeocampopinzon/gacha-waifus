@@ -89,7 +89,63 @@ public final class VfxLayer {
             layer.duration = number(json, "duration", stageDuration);
             layer.ribbonLifetime = number(json, "lifetime", 0.3F);
         }
+
+        // telegraph: sin "duration" dura todo el stage, como un emisor.
+        layer.spin = number(json, "spin", 0.0F);
+        layer.fillAlpha = number(json, "fill_alpha", 0.0F);
+        layer.fadeIn = number(json, "fade_in", 0.0F);
+        if ("telegraph".equals(layer.type)) {
+            float width = number(json, "thickness", 0.25F);
+            layer.thickness = new float[]{width, width};
+            layer.duration = Math.max(0.05F, number(json, "duration", stageDuration - layer.at));
+        }
+
+        // slash_arc: "width" es un escalar (en ribbon es un par).
+        layer.arcDegrees = number(json, "arc_degrees", 120.0F);
+        layer.tilt = number(json, "tilt", 0.0F);
+        layer.arcWidth = number(json, "width", 0.6F);
+
+        // flash
+        layer.intensity = number(json, "intensity", 0.5F);
+        layer.scope = string(json, "scope", "world");
+        layer.flashColor = hex(string(json, "color", "#ffffff"));
+
+        // shake
+        layer.amplitude = number(json, "amplitude", 0.1F);
+        layer.falloff = string(json, "falloff", "linear");
+        if ("shake".equals(layer.type) && !json.has("radius")) {
+            layer.radius = 16.0F;
+        }
         return layer;
+    }
+
+    // telegraph
+    /** Giro del anillo en radianes por segundo (el ejemplo de Miyabi usa 3,6). */
+    public float spin = 0.0F;
+    public float fillAlpha = 0.0F;
+    public float fadeIn = 0.0F;
+
+    // slash_arc
+    public float arcDegrees = 120.0F;
+    public float tilt = 0.0F;
+    public float arcWidth = 0.6F;
+
+    // flash
+    public float intensity = 0.5F;
+    public String scope = "world";
+    public float[] flashColor = {1.0F, 1.0F, 1.0F};
+
+    // shake
+    public float amplitude = 0.1F;
+    public String falloff = "linear";
+
+    private static float[] hex(String value) {
+        try {
+            int rgb = Integer.parseInt(value.startsWith("#") ? value.substring(1) : value, 16);
+            return new float[]{((rgb >> 16) & 255) / 255.0F, ((rgb >> 8) & 255) / 255.0F, (rgb & 255) / 255.0F};
+        } catch (NumberFormatException exception) {
+            return new float[]{1.0F, 1.0F, 1.0F};
+        }
     }
 
     // ribbon

@@ -229,6 +229,66 @@ def ribbon_soft(w=16, h=8):
     return make(w, h, fn)
 
 
+# ---------- notas musicales y haz de foco (Miku y cualquier waifu "de escenario") ----------
+def _capsule(px, py, ax, ay, bx, by, r):
+    """Distancia con signo de un punto a un trazo grueso (cápsula) de radio r."""
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px - ax) * dx + (py - ay) * dy) / max(1e-6, dx * dx + dy * dy)))
+    return math.hypot(px - (ax + dx * t), py - (ay + dy * t)) - r
+
+
+def _head(px, py, cx, cy, rx=3.1, ry=2.2, angle=-25):
+    """Distancia aproximada a la cabeza ovalada (inclinada) de una nota."""
+    a = math.radians(angle)
+    u, v = px - cx, py - cy
+    ru, rv = u * math.cos(a) - v * math.sin(a), u * math.sin(a) + v * math.cos(a)
+    return (math.hypot(ru / rx, rv / ry) - 1.0) * min(rx, ry)
+
+
+def _glyph(sdf):
+    """Distancia con signo -> 3 bandas: núcleo dentro, borde medio en el contorno, halo fuera."""
+    def fn(x, y):
+        d = sdf(x + 0.5, y + 0.5)
+        if d < -0.6:
+            return 1.0
+        if d < 0.2:
+            return 0.6
+        if d < 1.3:
+            return 0.3
+        return 0.0
+    return fn
+
+
+def note(size=16):
+    """Corchea: cabeza abajo a la izquierda, plica a la derecha y banderín que cae."""
+    def sdf(x, y):
+        flag = min(_capsule(x, y, 9.4, 2.0, 12.6, 5.0, 0.9),
+                   _capsule(x, y, 12.6, 5.0, 12.8, 8.6, 0.8))
+        return min(_head(x, y, 6.0, 12.0), _capsule(x, y, 8.8, 2.0, 8.8, 11.4, 0.75), flag)
+    return make(size, size, _glyph(sdf))
+
+
+def note_double(size=16):
+    """Dos semicorcheas unidas por dos barras."""
+    def sdf(x, y):
+        heads = min(_head(x, y, 3.6, 12.6, 2.6, 1.9), _head(x, y, 11.4, 11.4, 2.6, 1.9))
+        stems = min(_capsule(x, y, 5.9, 2.6, 5.9, 12.0, 0.7), _capsule(x, y, 13.7, 1.6, 13.7, 10.8, 0.7))
+        beams = min(_capsule(x, y, 5.9, 2.6, 13.7, 1.6, 1.0), _capsule(x, y, 5.9, 5.4, 13.7, 4.4, 0.8))
+        return min(heads, stems, beams)
+    return make(size, size, _glyph(sdf))
+
+
+def light_beam(w=8, h=32):
+    """Haz vertical de foco: línea central caliente, bordes suaves y extremos que se desvanecen.
+    El motor lo dibuja siempre vertical y 4 veces más alto que ancho (textura light_beam)."""
+    def fn(x, y):
+        u = abs(x - (w - 1) / 2) / (w / 2)
+        v = y / (h - 1)
+        ends = min(1.0, v / 0.12) * min(1.0, (1.0 - v) / 0.25)
+        return (1.15 - u * 1.25) * (0.55 + 0.6 * ends) * min(1.0, ends * 2.5)
+    return make(w, h, fn)
+
+
 def build(seed):
     return {
         "flame_8f": flame_strip(seed),
@@ -247,6 +307,9 @@ def build(seed):
         "streak": streak(),
         "arc_streak": arc_streak(),
         "ribbon_soft": ribbon_soft(),
+        "note": note(),
+        "note_double": note_double(),
+        "light_beam": light_beam(),
     }
 
 

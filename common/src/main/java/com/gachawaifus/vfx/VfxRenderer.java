@@ -76,6 +76,10 @@ public final class VfxRenderer {
                     addRing(groups, instance, layer, cameraPos, partialTick);
                 } else if ("glow".equals(layer.type)) {
                     addGlow(groups, instance, layer, cameraPos, right, up, partialTick);
+                } else if ("telegraph".equals(layer.type)) {
+                    addTelegraph(groups, instance, layer, cameraPos, partialTick);
+                } else if ("slash_arc".equals(layer.type)) {
+                    addSlashArc(groups, instance, layer, cameraPos, partialTick);
                 }
             }
         }
@@ -91,7 +95,7 @@ public final class VfxRenderer {
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         for (Map.Entry<Group, List<Quad>> entry : groups.entrySet()) {
-            boolean isRing = entry.getKey().texture().startsWith("ring_");
+            boolean isRing = entry.getKey().texture().startsWith("ring_") || entry.getKey().flat();
             if (isRing) {
                 RenderSystem.enablePolygonOffset();
                 RenderSystem.polygonOffset(-1.0F, -10.0F);
@@ -133,6 +137,22 @@ public final class VfxRenderer {
             // Los fotogramas ya traen la silueta: girarlos al azar los convierte en hojas sueltas.
             axis = new Vector3f(right);
             across = new Vector3f(up);
+        } else if (particle.texture.startsWith("note")) {
+            // Las notas se leen derechas: solo un balanceo de ±18° que cambia con la edad.
+            float angle = (particle.phase - 0.5F) * 0.63F * Mth.cos(progress * 6.0F + particle.phase * TAU);
+            axis = new Vector3f(right).mul(Mth.cos(angle)).fma(Mth.sin(angle), up);
+            across = new Vector3f(up).mul(Mth.cos(angle)).fma(-Mth.sin(angle), right);
+        } else if ("light_beam".equals(particle.texture)) {
+            // Haz de foco: siempre vertical en el mundo y girado hacia la cámara (como un cartel),
+            // cuatro veces más alto que ancho.
+            Vec3 toCamera = cameraPos.subtract(particle.pos);
+            Vector3f side = new Vector3f((float) -toCamera.z, 0.0F, (float) toCamera.x);
+            if (side.lengthSquared() < 1.0E-6F) {
+                side.set(right);
+            }
+            axis = side.normalize();
+            across = new Vector3f(0.0F, 1.0F, 0.0F);
+            halfAlong = half * 0.25F;
         } else {
             float angle = particle.phase * TAU;
             float cos = Mth.cos(angle);
@@ -294,7 +314,7 @@ public final class VfxRenderer {
             rawCentre = a.position();
             boneAxis = a.axis();
         } else {
-            rawCentre = new Vec3(instance.origin.x, instance.origin.y + layer.y, instance.origin.z);
+            rawCentre = instance.point(layer).add(0.0D, layer.y, 0.0D);
         }
         Vec3 centre = rawCentre.subtract(cameraPos);
 
@@ -315,11 +335,15 @@ public final class VfxRenderer {
             tR = centre.add(right.scale( half)).add(up2.scale( half));
             tL = centre.add(right.scale(-half)).add(up2.scale( half));
         } else {
-            // Plano horizontal clásico
-            bL = centre.add(-half, 0.0D, -half);
-            bR = centre.add( half, 0.0D, -half);
-            tR = centre.add( half, 0.0D,  half);
-            tL = centre.add(-half, 0.0D,  half);
+            // Plano horizontal: corona de segmentos con el grosor del JSON. Un solo quad con el
+            // sprite del anillo se ve a bloques en cuanto el radio pasa de 3-4 (32 px estirados).
+            float thickness = Mth.lerp(eased, layer.thickness[0], layer.thickness[1]);
+            if ("ring_soft".equals(layer.texture)) {
+                thickness *= 1.6F;
+            }
+            addAnnulus(groups, centre, radius, thickness, 0.0F, 0.0F, layer.additive,
+                    color[0], color[1], color[2], color[3]);
+            return;
         }
 
         groups.computeIfAbsent(new Group(layer.texture, layer.additive), key -> new ArrayList<>())
@@ -333,13 +357,120 @@ public final class VfxRenderer {
         if (half <= 0.002F) {
             return;
         }
-        Vec3 centre = instance.origin.add(layer.offset).subtract(cameraPos);
+        Vec3 centre = instance.point(layer).subtract(cameraPos);
         float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
         groups.computeIfAbsent(new Group("soft_glow", true), key -> new ArrayList<>())
                 .add(new Quad(
                         pole(centre, right, up, -half, -half), pole(centre, right, up, half, -half),
                         pole(centre, right, up, half, half), pole(centre, right, up, -half, half),
                         0.0F, 0.0F, 1.0F, 1.0F, color[0], color[1], color[2], color[3]));
+    }
+
+    /**
+     * Círculo de aviso en el suelo: el anillo del radio real del área (gira con {@code spin}) y,
+     * debajo, un relleno muy tenue de {@code soft_glow} ({@code fill_alpha}). Entra en
+     * {@code fade_in} segundos y se apaga en los últimos 0,15 s.
+     */
+    private static void addTelegraph(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
+                                     Vec3 cameraPos, float partialTick) {
+        float local = instance.localSeconds(layer, partialTick);
+        float progress = instance.progress(layer, partialTick);
+        float fade = layer.fadeIn > 0.0F ? Mth.clamp(local / layer.fadeIn, 0.0F, 1.0F) : 1.0F;
+        fade *= Mth.clamp((layer.duration - local) / 0.15F, 0.0F, 1.0F);
+        if (fade <= 0.005F) {
+            return;
+        }
+        float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
+        Vec3 point = instance.point(layer);
+        Vec3 centre = new Vec3(point.x, point.y + 0.06D + layer.y, point.z).subtract(cameraPos);
+        // El sprite del anillo tiene el aro al 82 % del borde: se agranda para que el aro caiga
+        // justo en el radio del JSON (que es el radio del daño).
+        // El aro cae justo en el radio del daño; el giro se ve como 8 tramos brillantes que rotan.
+        addAnnulus(groups, centre, layer.radius, layer.thickness[0], local * layer.spin,
+                layer.spin != 0.0F ? 0.45F : 0.0F, true, color[0], color[1], color[2], color[3] * fade);
+        if (layer.fillAlpha > 0.0F) {
+            float fill = layer.radius * 1.15F;
+            groups.computeIfAbsent(new Group("soft_glow", true, true), key -> new ArrayList<>())
+                    .add(new Quad(centre.add(-fill, -0.01D, -fill), centre.add(fill, -0.01D, -fill),
+                            centre.add(fill, -0.01D, fill), centre.add(-fill, -0.01D, fill),
+                            0.0F, 0.0F, 1.0F, 1.0F, color[0], color[1], color[2],
+                            Math.min(1.0F, layer.fillAlpha * fade)));
+        }
+    }
+
+    /**
+     * Tajo: una cinta curva de {@code arc_degrees} alrededor del ancla, centrada en la mirada e
+     * inclinada {@code tilt} grados sobre el eje de la mirada. Se revela de derecha a izquierda en
+     * el primer 35 % de la duración (la punta brilla, la estela se apaga) y luego se disuelve con
+     * el degradado.
+     */
+    private static void addSlashArc(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
+                                    Vec3 cameraPos, float partialTick) {
+        float progress = instance.progress(layer, partialTick);
+        float head = Mth.clamp(progress / 0.35F, 0.0F, 1.0F);
+        if (head <= 0.0F) {
+            return;
+        }
+        float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
+        Vec3 centre = instance.point(layer).subtract(cameraPos);
+        Vec3 forward = new Vec3(instance.look.x, 0.0D, instance.look.z);
+        forward = forward.lengthSqr() < 1.0E-6D ? new Vec3(0.0D, 0.0D, 1.0D) : forward.normalize();
+        Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
+        float tilt = layer.tilt * Mth.DEG_TO_RAD;
+        // Plano del tajo: "right" girado alrededor de la mirada.
+        Vec3 side = right.scale(Mth.cos(tilt)).add(0.0D, Mth.sin(tilt), 0.0D);
+        float arc = layer.arcDegrees * Mth.DEG_TO_RAD;
+        float inner = Math.max(0.05F, layer.radius - layer.arcWidth * 0.5F);
+        float outer = layer.radius + layer.arcWidth * 0.5F;
+        int segments = Math.max(6, (int) (layer.arcDegrees / 7.5F));
+        int shown = Math.max(1, Math.round(segments * head));
+        List<Quad> list = groups.computeIfAbsent(new Group(layer.texture, true), key -> new ArrayList<>());
+        for (int i = 0; i < shown; i++) {
+            float s0 = (float) i / segments;
+            float s1 = (float) (i + 1) / segments;
+            float t0 = arc * 0.5F - s0 * arc;
+            float t1 = arc * 0.5F - s1 * arc;
+            Vec3 d0 = forward.scale(Mth.cos(t0)).add(side.scale(Mth.sin(t0)));
+            Vec3 d1 = forward.scale(Mth.cos(t1)).add(side.scale(Mth.sin(t1)));
+            // Estela: lo recién barrido a pleno, lo antiguo se apaga hacia el 30 %.
+            float trail = 0.3F + 0.7F * Mth.clamp(1.0F - (head - s1) / 0.6F, 0.0F, 1.0F);
+            // Puntas afiladas: el ancho cae a 0 en los extremos del arco.
+            float taper0 = Mth.sin(Mth.clamp(s0, 0.0F, 1.0F) * Mth.PI);
+            float taper1 = Mth.sin(Mth.clamp(s1, 0.0F, 1.0F) * Mth.PI);
+            float mid = (inner + outer) * 0.5F;
+            float half0 = (outer - inner) * 0.5F * (0.25F + 0.75F * taper0);
+            float half1 = (outer - inner) * 0.5F * (0.25F + 0.75F * taper1);
+            list.add(new Quad(centre.add(d0.scale(mid - half0)), centre.add(d1.scale(mid - half1)),
+                    centre.add(d1.scale(mid + half1)), centre.add(d0.scale(mid + half0)),
+                    s0, 0.0F, s1, 1.0F, color[0], color[1], color[2], color[3] * trail));
+        }
+    }
+
+    /**
+     * Corona plana horizontal de radio {@code radius} y ancho {@code thickness} (bloques), en 64
+     * tramos con la textura {@code ribbon_soft} de través. {@code pulse} > 0 modula el alfa con 8
+     * tramos más brillantes desplazados {@code phase} radianes (para que un giro se note).
+     */
+    private static void addAnnulus(Map<Group, List<Quad>> groups, Vec3 centre, float radius, float thickness,
+                                   float phase, float pulse, boolean additive,
+                                   float red, float green, float blue, float alpha) {
+        if (alpha <= 0.004F || radius <= 0.01F) {
+            return;
+        }
+        float inner = Math.max(0.0F, radius - thickness * 0.5F);
+        float outer = radius + thickness * 0.5F;
+        int segments = 64;
+        List<Quad> list = groups.computeIfAbsent(new Group("ribbon_soft", additive, true), key -> new ArrayList<>());
+        for (int i = 0; i < segments; i++) {
+            float a0 = TAU * i / segments;
+            float a1 = TAU * (i + 1) / segments;
+            float k = pulse > 0.0F ? 1.0F - pulse + pulse * Mth.cos(8.0F * ((a0 + a1) * 0.5F - phase)) : 1.0F;
+            Vec3 d0 = new Vec3(Mth.cos(a0), 0.0D, Mth.sin(a0));
+            Vec3 d1 = new Vec3(Mth.cos(a1), 0.0D, Mth.sin(a1));
+            list.add(new Quad(centre.add(d0.scale(inner)), centre.add(d1.scale(inner)),
+                    centre.add(d1.scale(outer)), centre.add(d0.scale(outer)),
+                    0.0F, 0.0F, 1.0F, 1.0F, red, green, blue, alpha * Math.max(0.0F, k)));
+        }
     }
 
     private static void addRibbon(Map<Group, List<Quad>> groups, VfxInstance.RibbonState ribbon,
@@ -456,7 +587,11 @@ public final class VfxRenderer {
                 .setColor(quad.red(), quad.green(), quad.blue(), quad.alpha());
     }
 
-    private record Group(String texture, boolean additive) {
+    /** flat = plano en el suelo: se dibuja con polygon offset para no pelearse con el terreno. */
+    private record Group(String texture, boolean additive, boolean flat) {
+        Group(String texture, boolean additive) {
+            this(texture, additive, false);
+        }
     }
 
     private record Quad(Vec3 bottomLeft, Vec3 bottomRight, Vec3 topRight, Vec3 topLeft,

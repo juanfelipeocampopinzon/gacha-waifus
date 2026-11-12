@@ -27,6 +27,8 @@ public final class VfxInstance {
     private static final Set<String> IGNORED = new HashSet<>();
     private static final Set<String> BONE_WARNED = new HashSet<>();
     private static final Vec3 UP = new Vec3(0.0D, 1.0D, 0.0D);
+    private static final Set<String> SUPPORTED = Set.of("emitter", "ring_wave", "glow", "telegraph",
+            "slash_arc", "flash", "shake");
 
     public final VfxStage stage;
     public Vec3 origin;
@@ -55,7 +57,16 @@ public final class VfxInstance {
     private int ticks;
 
     public VfxInstance(VfxStage stage, Vec3 origin, Vec3 look) {
+        this(stage, origin, look, 0.0F);
+    }
+
+    /**
+     * @param delaySeconds retardo antes de que empiece el stage ({@code trigger.at}): el reloj
+     *                     arranca en negativo, así que nada se emite ni se dibuja hasta llegar a 0.
+     */
+    public VfxInstance(VfxStage stage, Vec3 origin, Vec3 look, float delaySeconds) {
         this.stage = stage;
+        this.ticks = -Math.round(Math.max(0.0F, delaySeconds) * 20.0F);
         this.origin = origin;
         this.look = look.lengthSqr() < 1.0E-6D ? new Vec3(0.0D, 0.0D, 1.0D) : look.normalize();
         this.accumulators = new float[stage.layers.size()];
@@ -64,7 +75,7 @@ public final class VfxInstance {
         for (VfxLayer layer : stage.layers) {
             if ("ribbon".equals(layer.type)) {
                 ribbons.add(new RibbonState(layer));
-            } else if (!"emitter".equals(layer.type) && !"ring_wave".equals(layer.type) && !"glow".equals(layer.type)) {
+            } else if (!SUPPORTED.contains(layer.type)) {
                 if (IGNORED.add(layer.type)) {
                     LOG.info("[vfx] capa '{}' ignorada por el prototipo (el motor definitivo la hará)", layer.type);
                 }
@@ -229,7 +240,32 @@ public final class VfxInstance {
                     .add(right.scale(left ? -0.35D : 0.35D))
                     .add(look.scale(0.2D));
         }
-        return new Anchor(base.add(layer.offset), null);
+        return new Anchor(base.add(local(layer.offset)), null);
+    }
+
+    /**
+     * Offset del JSON (x = derecha, y = arriba, z = delante) pasado al mundo con el giro horizontal
+     * de la mirada. Así {@code [0,1,1.4]} queda delante de la waifu mire donde mire; antes iba
+     * siempre hacia +Z del mundo.
+     */
+    public Vec3 local(Vec3 offset) {
+        if (offset.x == 0.0D && offset.z == 0.0D) {
+            return offset;
+        }
+        Vec3 forward = new Vec3(look.x, 0.0D, look.z);
+        forward = forward.lengthSqr() < 1.0E-6D ? new Vec3(0.0D, 0.0D, 1.0D) : forward.normalize();
+        Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
+        return right.scale(offset.x).add(0.0D, offset.y, 0.0D).add(forward.scale(offset.z));
+    }
+
+    /** Punto del mundo de una capa sin hueso (ancla + offset local). */
+    public Vec3 point(VfxLayer layer) {
+        return anchor(layer).position();
+    }
+
+    /** Segundos desde que empezó el stage (negativo mientras dura el retardo). */
+    public float localSeconds(VfxLayer layer, float partialTick) {
+        return timeSeconds(partialTick) - layer.at;
     }
 
     /** Punto de emisión y, si se ancló a un hueso, su eje (pivote → punta). */

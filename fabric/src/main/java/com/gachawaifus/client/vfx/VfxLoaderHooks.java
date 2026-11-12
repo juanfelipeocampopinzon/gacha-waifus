@@ -3,8 +3,10 @@ package com.gachawaifus.client.vfx;
 import com.gachawaifus.vfx.VfxCommand;
 import com.gachawaifus.vfx.VfxManager;
 import com.gachawaifus.vfx.VfxRenderer;
+import com.gachawaifus.vfx.VfxScreen;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
 import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
 import net.minecraft.client.Camera;
 import org.joml.Matrix4f;
@@ -30,6 +32,9 @@ public final class VfxLoaderHooks {
             Matrix4f modelView = new Matrix4f().rotation(camera.rotation().conjugate(new Quaternionf()));
             VfxRenderer.render(modelView, camera, context.tickCounter().getGameTimeDeltaPartialTick(false));
         });
+        // Capa flash. La capa shake no tiene evento en Fabric API: va en mixin/CameraShakeMixin.
+        HudRenderCallback.EVENT.register((graphics, tickCounter) ->
+                VfxScreen.renderFlash(graphics, tickCounter.getGameTimeDeltaPartialTick(false)));
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, access) -> dispatcher.register(VfxCommand.build()));
     }
 }

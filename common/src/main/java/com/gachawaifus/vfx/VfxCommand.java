@@ -17,6 +17,10 @@ import java.util.Comparator;
  * {@code /gwvfx waifu burnice_white/special#channel} — sobre la waifu más cercana (a 24 bloques),
  * y el efecto la sigue mientras dure (anclado a sus huesos si los declara).
  * {@code /gwvfx probe left_torch} — imprime dónde cae ese hueso y hacia dónde apunta.
+ * {@code /gwvfx waifu hatsune_miku/ultimate} — sin {@code #}: todos los stages del efecto que tengan
+ * {@code trigger}, cada uno en su {@code at} (la habilidad entera sin esperar al combate).
+ * {@code /gwvfx flash on|off} — destellos de pantalla (también se apagan con la opción de
+ * accesibilidad de vanilla "Ocultar destellos").
  * {@code /gwvfx reload} — olvida el JSON cacheado.
  *
  * <p>Brigadier genérico: el mismo constructor sirve para el dispatcher de cliente de NeoForge
@@ -39,7 +43,19 @@ public final class VfxCommand {
                 .then(LiteralArgumentBuilder.<S>literal("probe")
                         .then(RequiredArgumentBuilder.<S, String>argument("bone", StringArgumentType.word())
                                 .executes(VfxCommand::probe)))
+                .then(LiteralArgumentBuilder.<S>literal("flash")
+                        .then(LiteralArgumentBuilder.<S>literal("on").executes(context -> flash(true)))
+                        .then(LiteralArgumentBuilder.<S>literal("off").executes(context -> flash(false))))
                 .then(LiteralArgumentBuilder.<S>literal("reload").executes(VfxCommand::reload));
+    }
+
+    private static int flash(boolean enabled) {
+        VfxScreen.flashEnabled = enabled;
+        Player player = Minecraft.getInstance().player;
+        if (player != null) {
+            player.displayClientMessage(Component.literal("VFX flash " + (enabled ? "on" : "off")), false);
+        }
+        return 1;
     }
 
     private static <S> int play(CommandContext<S> context) {
@@ -63,7 +79,19 @@ public final class VfxCommand {
         if (player == null) {
             return 0;
         }
-        String[] spec = split(player, StringArgumentType.getString(context, "id"));
+        String raw = StringArgumentType.getString(context, "id");
+        if (raw.indexOf('#') < 0) {
+            AbstractWaifuEntity whole = nearest(player);
+            if (whole == null) {
+                player.displayClientMessage(Component.literal("no hay ninguna waifu a 24 bloques"), false);
+                return 0;
+            }
+            int stages = VfxTriggers.playAll(raw, whole);
+            player.displayClientMessage(Component.literal(
+                    "VFX " + raw + " (" + stages + " stages) sobre " + whole.getName().getString()), false);
+            return stages > 0 ? 1 : 0;
+        }
+        String[] spec = split(player, raw);
         if (spec == null) {
             return 0;
         }

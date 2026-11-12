@@ -25,11 +25,17 @@ public final class VfxManager {
 
     /** Igual que play, pero el efecto sigue a la entidad (para verlo sobre una waifu). */
     public static void playOn(String effectId, String stage, net.minecraft.world.entity.Entity entity) {
+        playOn(effectId, stage, entity, 0.0F);
+    }
+
+    /** playOn con retardo: el stage arranca {@code delaySeconds} después (su {@code trigger.at}). */
+    public static void playOn(String effectId, String stage, net.minecraft.world.entity.Entity entity,
+                              float delaySeconds) {
         VfxStage loaded = VfxLoader.load(effectId, stage);
         if (loaded == null) {
             return;
         }
-        VfxInstance instance = new VfxInstance(loaded, entity.position(), entity.getLookAngle());
+        VfxInstance instance = new VfxInstance(loaded, entity.position(), entity.getLookAngle(), delaySeconds);
         instance.attach(entity);
         INSTANCES.add(instance);
     }

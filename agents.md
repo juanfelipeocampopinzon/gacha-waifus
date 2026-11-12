@@ -176,7 +176,9 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
 1. **Copia el ejemplo canónico** y cámbialo; no inventes claves. El validador rechaza cualquier clave,
    textura, forma o ancla que no esté en las listas cerradas:
    - type: `emitter | ring_wave | telegraph | glow | slash_arc | ribbon | shake | flash`
-   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4 flame_8f flame_puff_8f orb`
+   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4 flame_8f flame_puff_8f orb note note_double light_beam`
+     (`note`/`note_double` se dibujan derechas con un leve balanceo; `light_beam` es un haz de foco
+     siempre vertical, 4 veces más alto que ancho: su `size` es la ALTURA)
      (en gris de 3 niveles; el motor las tiñe con el degradado. Las `*_8f` son tiras de 8 cuadros 16x16
      que la partícula recorre **con su edad** (fotograma 0 = recién nacida, 7 = agonía), así que
      `flame_8f` (lengüeta) y `flame_puff_8f` (bola que se deshilacha) deben ir de caliente a jirón.
@@ -185,6 +187,8 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
    - direction: `outward inward up down forward random bone` (`forward` = hacia donde mira el ancla;
      `bone` = por el eje del hueso anclado, del pivote hacia la punta — es el que usa un soplete)
    - anchor: `entity | ground | target | bone:<hueso>` (el hueso debe existir en el `.geo.json`).
+     Con `entity`/`ground` el `offset` es **relativo a la mirada**: `[x derecha, y arriba, z delante]`
+     (`[0,1.2,1.4]` = delante del pecho mire donde mire). `ring_wave` también lo respeta.
      En un ancla `bone:` el `offset` va **dentro del hueso** (bloques, misma orientación que el geo):
      `[0,-0.53,0]` = 0,53 bloques del pivote hacia la punta, que es donde está la boquilla de un soplete.
    - color: degradado `[[0,"#rrggbb",alfa], ..., [1,"#rrggbb",alfa]]` (t ascendente, empieza en 0, acaba en 1)
@@ -203,7 +207,19 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
    Prefiere pocas partículas grandes y suaves antes que muchas pequeñas. Todo stage lleva:
    anticipación, golpe y cola; un degradado con un acento; y contacto con el suelo si aplica.
 3. **Los tiempos salen del clip**, no de los ticks de Java: un stage empieza en su `trigger` y su
-   `duration` debe cubrir ese clip (mira `animation_length`).
+   `duration` debe cubrir ese clip (mira `animation_length`). Un clip largo puede llevar **varios
+   stages** con el mismo `clip` y distinto `trigger.at` (segundos desde que empieza el clip): así
+   la ultimate de Miku encadena `intro@0`, `drop@1.6` y `encore@2.0`. El golpe de Java debe caer en
+   el mismo segundo que el stage del impacto (Miku: `ULTIMATE_HIT_DELAY = 32` ticks = 1,6 s).
+   - `ring_wave` y `telegraph` se dibujan como corona con el grosor real (`thickness`, bloques; el
+     telegraph admite `thickness` fijo, 0,25 por defecto, y su `spin` se ve como tramos que giran).
+   - `flash` respeta "Ocultar destellos" de vanilla y `/gwvfx flash off`; `shake` se multiplica por
+     "Efectos de distorsión". Amplitud 1 = 8°: 0,02 es un zumbido, 0,3 un golpe fuerte.
+   - **Míralo antes de entregarlo:** `python3 tools/vfx_preview.py <waifu>/<efecto>[#stage] [--gif]`
+     deja una hoja de fotogramas (vista 3/4 + cenital) en `../agents-bus/captures/`. Los huesos se
+     aproximan al pecho: un efecto con `bone:` se revisa además en el juego.
+   - En el juego: `/gwvfx waifu <waifu>/<efecto>` (sin `#`) lanza todos sus stages sobre la waifu
+     más cercana, cada uno en su `at`.
 4. **Al migrar `sendParticles`** (solo en FASE 1+ y cuando exista el stage equivalente): quita únicamente
    las llamadas a partículas; conserva daño, sonidos, efectos de poción y cooldowns. Nunca reescribas
    el archivo entero: edita bloques concretos.

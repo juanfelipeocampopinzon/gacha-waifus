@@ -23,7 +23,7 @@ RES = ROOT / "common" / "src" / "main" / "resources" / "assets" / "gachawaifus"
 
 TEXTURES = {"soft_glow", "spark", "streak", "petal", "shard", "mote", "smoke",
             "ring_thin", "ring_soft", "arc_streak", "ribbon_soft", "star4", "flame_8f",
-            "flame_puff_8f", "orb", "cube"}
+            "flame_puff_8f", "orb", "cube", "note", "note_double", "light_beam"}
 
 BLENDS = {"additive", "alpha"}
 SHAPES = {"point", "disc", "ring", "cone", "line", "sphere"}
@@ -54,7 +54,7 @@ SPEC = {
                   "duration": (0.05, 5), "ease": EASES, "y": (-4, 8),
                   "color": "gradient", "texture": {"ring_thin", "ring_soft"}, "blend": BLENDS},
     "telegraph": {"radius": (0.5, 32), "spin": (-20, 20), "fill_alpha": (0, 1),
-                  "color": "gradient", "fade_in": (0, 5), "duration": (0.05, 10),
+                  "color": "gradient", "fade_in": (0, 5), "duration": (0.05, 10), "thickness": (0.02, 4),
                   "texture": {"ring_thin"}},
     "glow": {"size": ("pair", 0.1, 24), "color": "gradient", "duration": (0.05, 10),
              "texture": {"soft_glow"}},

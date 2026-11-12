@@ -15,7 +15,9 @@ import software.bernie.geckolib.animation.AnimationProcessor;
 
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -29,8 +31,11 @@ import java.util.Map;
 public final class VfxTriggers {
 
     private static final Logger LOG = LoggerFactory.getLogger("gachawaifus-vfx");
-    /** clip -> {id del efecto, stage}. */
-    private static final Map<String, String[]> BY_CLIP = new HashMap<>();
+    /** clip -> stages que arrancan con él (un clip largo puede llevar varios, cada uno en su "at"). */
+    private static final Map<String, List<Target>> BY_CLIP = new HashMap<>();
+
+    private record Target(String effectId, String stage, float at) {
+    }
     /** id de entidad -> último clip visto, para no repetir el stage en cada tick. */
     private static final Map<Integer, String> LAST_CLIP = new HashMap<>();
     private static final double RANGE = 64.0D;
@@ -61,9 +66,11 @@ public final class VfxTriggers {
             if (clip == null || clip.equals(previous)) {
                 continue;
             }
-            String[] target = BY_CLIP.get(clip);
-            if (target != null) {
-                VfxManager.playOn(target[0], target[1], entity);
+            List<Target> targets = BY_CLIP.get(clip);
+            if (targets != null) {
+                for (Target target : targets) {
+                    VfxManager.playOn(target.effectId(), target.stage(), entity, target.at());
+                }
             }
         }
     }
@@ -126,13 +133,41 @@ public final class VfxTriggers {
                     if (!trigger.has("clip")) {
                         continue;
                     }
-                    BY_CLIP.put(trigger.get("clip").getAsString(), new String[]{effectId, stage});
+                    float at = trigger.has("at") ? trigger.get("at").getAsFloat() : 0.0F;
+                    BY_CLIP.computeIfAbsent(trigger.get("clip").getAsString(), key -> new ArrayList<>())
+                            .add(new Target(effectId, stage, at));
                 }
             } catch (Exception exception) {
                 LOG.warn("[vfx] trigger ilegible en {}: {}", entry.getKey(), exception.toString());
             }
         }
         LOG.info("[vfx] triggers de animacion: {}", BY_CLIP.size());
+    }
+
+    /**
+     * Lanza sobre la entidad todos los stages de un efecto que declaren trigger, cada uno con su
+     * {@code at}, en el orden de sus clips. Es para el comando de prueba: los clips de verdad no
+     * se reproducen, así que los stages de clips distintos se encadenan con {@code at} relativo al
+     * primero solo si comparten clip; los de otro clip arrancan a la vez que el primero.
+     *
+     * @return cuántos stages se lanzaron
+     */
+    public static int playAll(String effectId, Entity entity) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (!scanned) {
+            scanned = true;
+            scan(minecraft);
+        }
+        int played = 0;
+        for (List<Target> targets : BY_CLIP.values()) {
+            for (Target target : targets) {
+                if (target.effectId().equals(effectId)) {
+                    VfxManager.playOn(target.effectId(), target.stage(), entity, target.at());
+                    played++;
+                }
+            }
+        }
+        return played;
     }
 
     public static void clearCache() {
