@@ -47,7 +47,7 @@ import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
 /**
- * Tokisaki Kurumi (Date A Live), GeckoLib desde la 7.7.0.
+ * Tokisaki Kurumi (Date A Live), GeckoLib desde la 7.8.0.
  *
  * <ul>
  *   <li>Normal: mosquete a distancia (clip {@code attack}) o culatazo cuerpo a cuerpo ({@code strike}).</li>
