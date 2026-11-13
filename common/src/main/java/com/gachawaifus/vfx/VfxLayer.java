@@ -104,11 +104,47 @@ public final class VfxLayer {
         layer.arcDegrees = number(json, "arc_degrees", 120.0F);
         layer.tilt = number(json, "tilt", 0.0F);
         layer.arcWidth = number(json, "width", 0.6F);
+        // segundos que tarda el tajo en dibujarse entero; sin "reveal", el 35 % de su duración
+        layer.reveal = number(json, "reveal", -1.0F);
 
         // flash
         layer.intensity = number(json, "intensity", 0.5F);
         layer.scope = string(json, "scope", "world");
         layer.flashColor = hex(string(json, "color", "#ffffff"));
+
+        // clone: sin "duration" dura todo el stage desde su "at"
+        layer.rise = number(json, "rise", 0.0F);
+        if ("clone".equals(layer.type)) {
+            layer.duration = Math.max(0.05F, number(json, "duration", stageDuration - layer.at));
+        }
+
+        // decal: textura plana (suelo o vertical) con giro por curva de grados o por spin
+        layer.plane = string(json, "plane", "ground");
+        layer.angle = Curve.parse(json.get("angle"));
+        if ("decal".equals(layer.type)) {
+            layer.duration = Math.max(0.05F, number(json, "duration", stageDuration - layer.at));
+        }
+
+        // sphere: esfera (o cúpula) translúcida con borde brillante; "radius" es [inicio, fin]
+        layer.grow = number(json, "grow", -1.0F);
+        layer.hemisphere = json.has("hemisphere") && json.get("hemisphere").getAsBoolean();
+        layer.rim = number(json, "rim", 0.0F);
+        layer.rimColor = hex(string(json, "rim_color", "#ffffff"));
+        layer.rimColor2 = json.has("rim_color2") ? hex(string(json, "rim_color2", "#ffffff")) : layer.rimColor;
+        if ("sphere".equals(layer.type)) {
+            layer.ringRadius = pair(json, "radius", new float[]{1.0F, 1.0F});
+            layer.radius = layer.ringRadius[1];
+            layer.texture = string(json, "texture", "solid");
+            layer.duration = Math.max(0.05F, number(json, "duration", stageDuration - layer.at));
+        }
+
+        // projectile: vuela del ancla al objetivo (anchor "target") en "duration"
+        layer.to = string(json, "to", "target");
+        layer.arc = number(json, "arc", 0.0F);
+        layer.trail = number(json, "trail", 0.08F);
+        if ("projectile".equals(layer.type)) {
+            layer.duration = Math.max(0.05F, number(json, "duration", 0.25F));
+        }
 
         // shake
         layer.amplitude = number(json, "amplitude", 0.1F);
@@ -129,11 +165,40 @@ public final class VfxLayer {
     public float arcDegrees = 120.0F;
     public float tilt = 0.0F;
     public float arcWidth = 0.6F;
+    /** Segundos del barrido del tajo (-1 = 35 % de la duración). Con duración larga, el tajo flota. */
+    public float reveal = -1.0F;
 
     // flash
     public float intensity = 0.5F;
     public String scope = "world";
     public float[] flashColor = {1.0F, 1.0F, 1.0F};
+
+    // clone
+    /** Bloques que el clon emerge del suelo al aparecer (y se hunde al irse). */
+    public float rise = 0.0F;
+
+    // decal
+    /** "ground" = tumbado en el suelo; "vertical" = de pie, de cara a la mirada (un reloj detrás). */
+    public String plane = "ground";
+    /** Ángulo en grados a lo largo de la capa (curva 0..1 -> grados); null = usar spin. */
+    public Curve angle = null;
+
+    // sphere
+    /** Segundos hasta llegar al radio final (-1 = toda la capa). */
+    public float grow = -1.0F;
+    public boolean hemisphere = false;
+    /** Fuerza del borde brillante (fresnel): 0 = sin borde. */
+    public float rim = 0.0F;
+    public float[] rimColor = {1.0F, 1.0F, 1.0F};
+    public float[] rimColor2 = {1.0F, 1.0F, 1.0F};
+
+    // projectile
+    /** Destino: "target" (punto de {@link VfxTargeted}) o "forward" (6 bloques delante). */
+    public String to = "target";
+    /** Altura extra de la parábola en el punto medio (0 = recto). */
+    public float arc = 0.0F;
+    /** Segundos de estela que se dibujan detrás de la cabeza. */
+    public float trail = 0.08F;
 
     // shake
     public float amplitude = 0.1F;

@@ -1,0 +1,368 @@
+{
+  "schema": 1,
+  "id": "tokisaki_kurumi/special",
+  "doc": "Sombras: su sombra se extiende (0.1 s), tres clones emergen de ella (0.25-1.85 s) y disparan con ella en 0.8 / 1.1 / 1.4 s. Los offsets de los clones TIENEN que coincidir con CLONE_OFFSETS de TokisakiKurumiEntity.",
+  "stages": {
+    "shadows": {
+      "tier": "M",
+      "duration": 2.0,
+      "trigger": {
+        "clip": "animation.tokisaki_kurumi.special",
+        "at": 0.0
+      },
+      "layers": [
+        {
+          "type": "decal",
+          "at": 0.1,
+          "anchor": "entity",
+          "radius": 2.8,
+          "texture": "soft_glow",
+          "blend": "alpha",
+          "fade_in": 0.3,
+          "duration": 1.9,
+          "color": [
+            [
+              0,
+              "#0b0306",
+              0.0
+            ],
+            [
+              0.15,
+              "#0b0306",
+              0.62
+            ],
+            [
+              0.85,
+              "#14050b",
+              0.62
+            ],
+            [
+              1,
+              "#0b0306",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "clone",
+          "at": 0.25,
+          "anchor": "entity",
+          "offset": [
+            -1.6,
+            0,
+            -0.7
+          ],
+          "duration": 1.6,
+          "rise": 1.8,
+          "color": [
+            [
+              0,
+              "#3a0f1c",
+              0.0
+            ],
+            [
+              0.2,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              0.85,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              1,
+              "#3a0f1c",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "clone",
+          "at": 0.32,
+          "anchor": "entity",
+          "offset": [
+            1.6,
+            0,
+            -0.7
+          ],
+          "duration": 1.55,
+          "rise": 1.8,
+          "color": [
+            [
+              0,
+              "#3a0f1c",
+              0.0
+            ],
+            [
+              0.2,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              0.85,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              1,
+              "#3a0f1c",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "clone",
+          "at": 0.4,
+          "anchor": "entity",
+          "offset": [
+            0,
+            0,
+            -1.6
+          ],
+          "duration": 1.5,
+          "rise": 1.8,
+          "color": [
+            [
+              0,
+              "#3a0f1c",
+              0.0
+            ],
+            [
+              0.2,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              0.85,
+              "#6b2a3f",
+              0.72
+            ],
+            [
+              1,
+              "#3a0f1c",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            0.1,
+            0
+          ],
+          "shape": "disc",
+          "radius": 2.6,
+          "texture": "smoke",
+          "blend": "alpha",
+          "rate": [
+            [
+              0,
+              0
+            ],
+            [
+              0.09000000000000001,
+              0
+            ],
+            [
+              0.1,
+              22
+            ],
+            [
+              0.9,
+              22
+            ],
+            [
+              0.91,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "lifetime": [
+            0.6,
+            1.0
+          ],
+          "size": [
+            0.4,
+            0.9
+          ],
+          "speed": [
+            0.5,
+            1.2
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#1a0610",
+              0.0
+            ],
+            [
+              0.2,
+              "#1a0610",
+              0.6
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        }
+      ]
+    },
+    "volley": {
+      "tier": "S",
+      "duration": 0.6,
+      "trigger": {
+        "clip": "animation.tokisaki_kurumi.special",
+        "at": 0.8
+      },
+      "layers": [
+        {
+          "type": "emitter",
+          "at": 0.0,
+          "anchor": "bone:musket_muzzle",
+          "shape": "cone",
+          "radius": 0.12,
+          "texture": "spark",
+          "blend": "additive",
+          "count": 10,
+          "lifetime": [
+            0.12,
+            0.25
+          ],
+          "size": [
+            0.26,
+            0.03
+          ],
+          "speed": [
+            6,
+            11
+          ],
+          "direction": "bone",
+          "stretch": 1.5,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.25,
+              "#ffd27a",
+              0.95
+            ],
+            [
+              0.6,
+              "#ff4d5e",
+              0.7
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.3,
+          "anchor": "bone:musket_muzzle",
+          "shape": "cone",
+          "radius": 0.12,
+          "texture": "spark",
+          "blend": "additive",
+          "count": 10,
+          "lifetime": [
+            0.12,
+            0.25
+          ],
+          "size": [
+            0.26,
+            0.03
+          ],
+          "speed": [
+            6,
+            11
+          ],
+          "direction": "bone",
+          "stretch": 1.5,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.25,
+              "#ffd27a",
+              0.95
+            ],
+            [
+              0.6,
+              "#ff4d5e",
+              0.7
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.6,
+          "anchor": "bone:musket_muzzle",
+          "shape": "cone",
+          "radius": 0.12,
+          "texture": "spark",
+          "blend": "additive",
+          "count": 10,
+          "lifetime": [
+            0.12,
+            0.25
+          ],
+          "size": [
+            0.26,
+            0.03
+          ],
+          "speed": [
+            6,
+            11
+          ],
+          "direction": "bone",
+          "stretch": 1.5,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.25,
+              "#ffd27a",
+              0.95
+            ],
+            [
+              0.6,
+              "#ff4d5e",
+              0.7
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

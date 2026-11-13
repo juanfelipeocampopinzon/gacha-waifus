@@ -162,7 +162,6 @@ public final class ModClientBindings {
         add(LAYERS, WaifuBustLayers.TUBE_BIG, WaifuBustLayers::createBig);
         add(LAYERS, WaifuBustLayers.SLIM_128, WaifuBustLayers::createSlim128);
         add(LAYERS, WaifuBustLayers.PROMEIA, WaifuBustLayers::createPromeia);
-        add(LAYERS, TokisakiKurumiModel.LAYER_LOCATION, TokisakiKurumiModel::createBodyLayer);
         add(LAYERS, RemielleModel.LAYER_LOCATION, RemielleModel::createBodyLayer);
         add(LAYERS, JaneDoeModel.LAYER_LOCATION, JaneDoeModel::createBodyLayer);
 

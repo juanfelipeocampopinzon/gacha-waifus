@@ -42,6 +42,7 @@ public final class VfxManager {
 
     public static void tick() {
         VfxTriggers.tick();
+        VfxCasters.tick();
         for (Iterator<VfxInstance> iterator = INSTANCES.iterator(); iterator.hasNext(); ) {
             VfxInstance instance = iterator.next();
             instance.tick();

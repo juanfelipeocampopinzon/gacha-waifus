@@ -33,7 +33,7 @@ ROOT = Path(__file__).resolve().parent.parent
 RES = ROOT / "common" / "src" / "main" / "resources" / "assets" / "gachawaifus"
 CAPTURES = ROOT.parent / "agents-bus" / "captures"
 TPS = 20.0
-CAPS = {"S": 40, "M": 150, "L": 400}
+CAPS = {"S": 40, "M": 150, "L": 400, "XL": 1200}
 TAU = math.tau
 
 
@@ -117,9 +117,36 @@ def layer_defaults(raw, stage_duration):
     if t == "flash":
         c = int(str(raw.get("color", "#ffffff"))[1:], 16)
         L["flash_rgb"] = (((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255)
+    if t in ("clone", "decal"):
+        L["duration"] = max(0.05, raw.get("duration", stage_duration - L["at"]))
+    L.setdefault("rise", 0.0)
+    L.setdefault("plane", "ground")
+    L["angle_c"] = curve(raw.get("angle"))
     L.setdefault("amplitude", 0.1)
     L.setdefault("falloff", "linear")
+    # sphere / projectile (espejo de VfxLayer)
+    L.setdefault("grow", -1.0)
+    L.setdefault("reveal", -1.0)
+    L["hemisphere"] = bool(raw.get("hemisphere", False))
+    L.setdefault("rim", 0.0)
+    L["rim_rgb"] = hex_rgb(raw.get("rim_color", "#ffffff"))
+    L["rim_rgb2"] = hex_rgb(raw.get("rim_color2", raw.get("rim_color", "#ffffff")))
+    if t == "sphere":
+        L["ring_radius"] = tuple(raw.get("radius", (1.0, 1.0)))
+        L["radius"] = L["ring_radius"][1]
+        L["texture"] = raw.get("texture", "solid")
+        L["duration"] = max(0.05, raw.get("duration", stage_duration - L["at"]))
+    L.setdefault("to", "target")
+    L.setdefault("arc", 0.0)
+    L.setdefault("trail", 0.08)
+    if t == "projectile":
+        L["duration"] = max(0.05, raw.get("duration", 0.25))
     return L
+
+
+def hex_rgb(value):
+    c = int(str(value).lstrip("#"), 16)
+    return (((c >> 16) & 255) / 255, ((c >> 8) & 255) / 255, (c & 255) / 255)
 
 
 # --------------------------------------------------------------------------- vectores
@@ -167,8 +194,13 @@ class Instance:
         right = v(-fwd[2], 0, fwd[0])
         return right * off[0] + v(0, off[1], 0) + fwd * off[2]
 
+    TARGET = 6.0  # bloques delante: el mismo respaldo que VfxInstance.target() (--target lo cambia)
+
+    def target(self):
+        return self.origin + norm(v(self.look[0], 0, self.look[2])) * Instance.TARGET
+
     def anchor(self, L):
-        base = self.origin
+        base = self.target() if L["anchor"] == "target" else self.origin
         if L["anchor"].startswith("bone:"):
             # La misma aproximación que el motor cuando no encuentra el hueso.
             right = norm(np.cross(self.look, UP))
@@ -396,7 +428,11 @@ def draw_instance(canvas, cam, inst):
         else:
             draw_ring(canvas, cam, inst, L)
     for L in rest:
-        if L["type"] == "glow":
+        if L["type"] == "decal":
+            draw_decal(canvas, cam, inst, L)
+        elif L["type"] == "clone":
+            draw_clone(canvas, cam, inst, L)
+        elif L["type"] == "glow":
             pr = inst.progress(L)
             half = (L["size"][0] + (L["size"][1] - L["size"][0]) * pr) * 0.5
             c = sample_gradient(L["grad"], pr)
@@ -405,6 +441,10 @@ def draw_instance(canvas, cam, inst):
                       texture("soft_glow"), col, True)
         elif L["type"] == "slash_arc":
             draw_arc(canvas, cam, inst, L)
+        elif L["type"] == "sphere":
+            draw_sphere(canvas, cam, inst, L)
+        elif L["type"] == "projectile":
+            draw_projectile(canvas, cam, inst, L)
     for p in inst.particles:
         draw_particle(canvas, cam, p)
 
@@ -441,6 +481,17 @@ def draw_particle(canvas, cam, p):
             across = norm(np.cross(np.cross(right, up), axis))
             ha = half * (1 + p.stretch * float(np.linalg.norm(p.vel)) * 1.6)
             hc = half * min(1.0, max(0.45, 0.78 - prog * 0.22))
+    if p.tex.startswith("ring_"):
+        n = norm(p.vel) if np.linalg.norm(p.vel) > 1e-3 else norm(p.pos - cam.pos)
+        helper = v(0, 1, 0) if abs(n[1]) < 0.9 else v(1, 0, 0)
+        a = norm(np.cross(n, helper))
+        b = norm(np.cross(n, a))
+        c = sample_gradient(p.grad, prog)
+        k = 1.25 if p.add else 1.0
+        width = max(0.04, size * (0.07 if p.tex == "ring_thin" else 0.16))
+        draw_annulus(canvas, cam, p.pos, half * 0.82, width, 0, 0, p.add,
+                     (min(1, c[0] * k), min(1, c[1] * k), min(1, c[2] * k), c[3]), a, b)
+        return
     u0, u1 = 0.0, 1.0
     if p.tex.endswith("_8f"):
         frame = min(7, max(0, int(prog * 8)))
@@ -460,8 +511,10 @@ def draw_particle(canvas, cam, p):
                       texture("flame_core"), (r + (1 - r) * w, g + (1 - g) * w, b + (1 - b) * w, ca), True)
 
 
-def draw_annulus(canvas, cam, c, radius, thickness, phase, pulse, additive, col):
-    """Espejo de VfxRenderer.addAnnulus: 64 tramos con ribbon_soft de través."""
+def draw_annulus(canvas, cam, c, radius, thickness, phase, pulse, additive, col, ax=None, bx=None):
+    """Espejo de VfxRenderer.addAnnulus: 64 tramos con ribbon_soft de través (plano ax/bx; suelo por defecto)."""
+    ax = v(1, 0, 0) if ax is None else ax
+    bx = v(0, 0, 1) if bx is None else bx
     if col[3] <= 0.004 or radius <= 0.01:
         return
     inner, outer = max(0.0, radius - thickness * 0.5), radius + thickness * 0.5
@@ -469,9 +522,120 @@ def draw_annulus(canvas, cam, c, radius, thickness, phase, pulse, additive, col)
     for i in range(64):
         a0, a1 = TAU * i / 64, TAU * (i + 1) / 64
         k = 1 - pulse + pulse * math.cos(8 * ((a0 + a1) * 0.5 - phase)) if pulse > 0 else 1.0
-        d0, d1 = v(math.cos(a0), 0, math.sin(a0)), v(math.cos(a1), 0, math.sin(a1))
+        d0, d1 = ax * math.cos(a0) + bx * math.sin(a0), ax * math.cos(a1) + bx * math.sin(a1)
         draw_quad(canvas, cam, [c + d0 * inner, c + d1 * inner, c + d1 * outer, c + d0 * outer], (0, 0, 1, 1),
                   tex, (col[0], col[1], col[2], col[3] * max(0.0, k)), additive)
+
+
+SOLID = np.ones((1, 1, 2))
+
+
+def draw_decal(canvas, cam, inst, L):
+    """Espejo de VfxRenderer.addDecal."""
+    local = inst.time() - L["at"]
+    pr = inst.progress(L)
+    fade = min(1.0, max(0.0, local / L["fade_in"])) if L["fade_in"] > 0 else 1.0
+    fade *= min(1.0, max(0.0, (L["duration"] - local) / 0.15))
+    col = sample_gradient(L["grad"], pr)
+    if fade <= 0.005 or col[3] <= 0.004:
+        return
+    ang = math.radians(sample_curve(L["angle_c"], pr)) if L["angle_c"] else local * L["spin"]
+    c = inst.anchor(L) + v(0, L["y"], 0)
+    if L["plane"] == "vertical":
+        fwd = norm(v(inst.look[0], 0, inst.look[2]))
+        a, b = v(fwd[2], 0, -fwd[0]), v(0, 1, 0)
+    else:
+        a, b, c = v(1, 0, 0), v(0, 0, 1), c + v(0, 0.05, 0)
+    if L["texture"].startswith("ring_"):
+        width = L["radius"] * (0.05 if L["texture"] == "ring_thin" else 0.12)
+        draw_annulus(canvas, cam, c, L["radius"] * 0.9, width, ang, 0, L["additive"],
+                     (col[0], col[1], col[2], col[3] * fade), a, b)
+        return
+    right = (a * math.cos(ang) - b * math.sin(ang)) * L["radius"]
+    up = (a * math.sin(ang) + b * math.cos(ang)) * L["radius"]
+    draw_quad(canvas, cam, [c - right - up, c + right - up, c + right + up, c - right + up], (0, 0, 1, 1),
+              texture(L["texture"]), (col[0], col[1], col[2], col[3] * fade), L["additive"])
+
+
+def draw_sphere(canvas, cam, inst, L):
+    """Espejo de VfxRenderer.addSphere: cuerpo con alfa + borde fresnel aditivo."""
+    local = inst.time() - L["at"]
+    pr = inst.progress(L)
+    grow_t = L["grow"] if L["grow"] > 0 else L["duration"]
+    g = ease(min(1.0, max(0.0, local / max(0.01, grow_t))), L["ease"])
+    radius = L["ring_radius"][0] + (L["ring_radius"][1] - L["ring_radius"][0]) * g
+    fade = min(1.0, max(0.0, local / L["fade_in"])) if L["fade_in"] > 0 else 1.0
+    fade *= min(1.0, max(0.0, (L["duration"] - local) / 0.2))
+    if fade <= 0.005 or radius <= 0.02:
+        return
+    col = sample_gradient(L["grad"], pr)
+    c = inst.anchor(L) + v(0, L["y"], 0)
+    rings = 8 if L["hemisphere"] else 16
+    slices = 32
+    tmax = math.pi / 2 if L["hemisphere"] else math.pi
+    body_tex = texture(L["texture"])
+
+    def d(t, p):
+        return v(math.sin(t) * math.cos(p), math.cos(t), math.sin(t) * math.sin(p))
+    for i in range(rings):
+        t0, t1 = tmax * i / rings, tmax * (i + 1) / rings
+        for j in range(slices):
+            p0, p1 = TAU * j / slices, TAU * (j + 1) / slices
+            quad = [c + d(t1, p0) * radius, c + d(t1, p1) * radius, c + d(t0, p1) * radius, c + d(t0, p0) * radius]
+            if col[3] > 0.004:
+                draw_quad(canvas, cam, quad, (0, 0, 1, 1), body_tex, (col[0], col[1], col[2], col[3] * fade), L["additive"])
+            if L["rim"] > 0:
+                n = d((t0 + t1) / 2, (p0 + p1) / 2)
+                to_cam = norm(cam.pos - (c + n * radius))
+                edge = (1 - abs(float(np.dot(n, to_cam)))) ** 2.5
+                mix = 0.5 + 0.5 * math.sin((p0 + p1) / 2)
+                a = min(1.0, L["rim"] * edge) * fade
+                if a > 0.01:
+                    rgb = [L["rim_rgb"][k] + (L["rim_rgb2"][k] - L["rim_rgb"][k]) * mix for k in range(3)]
+                    draw_quad(canvas, cam, quad, (0, 0, 1, 1), SOLID, (*rgb, a), True)
+
+
+def draw_projectile(canvas, cam, inst, L):
+    """Espejo de VfxRenderer.addProjectile."""
+    pr = inst.progress(L)
+    start = inst.anchor(L)
+    end = (inst.origin + norm(v(inst.look[0], 0, inst.look[2])) * 6.0) if L["to"] == "forward" else inst.target()
+    end = end + v(0, L["y"], 0)
+
+    def fl(t):
+        return start + (end - start) * t + v(0, L["arc"] * 4 * t * (1 - t), 0)
+    head = ease(pr, L["ease"])
+    tail = ease(max(0.0, pr - L["trail"] / max(0.01, L["duration"])), L["ease"])
+    hp, tp = fl(head), fl(tail)
+    col = sample_gradient(L["grad"], pr)
+    half = (L["size"][0] + (L["size"][1] - L["size"][0]) * pr) * 0.5
+    if half <= 0.002 or col[3] <= 0.004:
+        return
+    along = hp - tp
+    if np.dot(along, along) > 1e-4:
+        side = np.cross(along, cam.pos - (hp + tp) * 0.5)
+        if np.dot(side, side) > 1e-8:
+            side = norm(side) * half * 0.8
+            draw_quad(canvas, cam, [tp - side * 0.3, hp - side, hp + side, tp + side * 0.3], (0, 0, 1, 1),
+                      texture("ribbon_soft"), (col[0], col[1], col[2], col[3] * 0.85), True)
+    draw_quad(canvas, cam, billboard(hp, cam.r, cam.u, half, half), (0, 0, 1, 1), texture(L["texture"]),
+              tuple(col), L["additive"])
+
+
+def draw_clone(canvas, cam, inst, L):
+    """El clon en el juego es la waifu entera; aquí, la silueta de 1,8 bloques teñida."""
+    pr = inst.progress(L)
+    col = sample_gradient(L["grad"], pr)
+    if col[3] <= 0.02:
+        return
+    sink = L["rise"] * (1 - min(1.0, max(0.0, min(pr, 1 - pr) / 0.2)))
+    base = inst.origin + inst.local(L["offset"]) - v(0, sink, 0)
+    for y0, y1, hw in ((0.0, 0.75, 0.25), (0.75, 1.5, 0.3), (1.5, 1.8, 0.25)):
+        if base[1] + y1 <= 0:
+            continue
+        lo = max(y0, -base[1])
+        corners = [base + v(-hw, lo, 0), base + v(hw, lo, 0), base + v(hw, y1, 0), base + v(-hw, y1, 0)]
+        draw_quad(canvas, cam, corners, (0, 0, 1, 1), SOLID, (col[0] * 1.6, col[1] * 1.6, col[2] * 1.6, col[3]), False)
 
 
 def draw_ring(canvas, cam, inst, L):
@@ -504,7 +668,8 @@ def draw_telegraph(canvas, cam, inst, L):
 
 def draw_arc(canvas, cam, inst, L):
     pr = inst.progress(L)
-    head = min(1.0, max(0.0, pr / 0.35))
+    part = min(1.0, max(0.01, L["reveal"] / max(0.01, L["duration"]))) if L["reveal"] > 0 else 0.35
+    head = min(1.0, max(0.0, pr / part))
     if head <= 0:
         return
     col = sample_gradient(L["grad"], pr)
@@ -609,6 +774,8 @@ def main():
     ap.add_argument("--out", help="PNG de salida (por defecto en agents-bus/captures/)")
     ap.add_argument("--gif", action="store_true", help="además, GIF de la vista 3/4 a 20 fps")
     ap.add_argument("--seed", type=int, default=7)
+    ap.add_argument("--target", type=float, default=6.0,
+                    help="bloques delante a los que cae el objetivo (anchor target)")
     args = ap.parse_args()
 
     effect_id, _, stage_name = args.spec.partition("#")
@@ -620,13 +787,19 @@ def main():
     else:
         chosen = [(s, s["at"]) for s in stages.values() if s["has_trigger"]] or [(s, 0.0) for s in stages.values()]
     rng = random.Random(args.seed)
+    Instance.TARGET = args.target
     insts = [Instance(s, delay, rng) for s, delay in chosen]
     total = max(delay + s["duration"] for s, delay in chosen)
     total_ticks = int(math.ceil(total * TPS)) + 6
     w, h = (int(x) for x in args.size.lower().split("x"))
     reach = max_reach([s for s, _ in chosen])
-    cams = [("3/4", Camera(v(-reach * 0.75, reach * 0.55 + 1.5, reach * 1.05), v(0, 1.0, reach * 0.15), UP, w, h)),
-            ("cenital", Camera(v(0, reach * 2.2 + 2, 0.001), v(0, 0, 0), v(0, 0, 1), w, h))]
+    # Si algo cae sobre el objetivo, el encuadre se centra entre la waifu y él.
+    shift = v(0, 0, args.target * 0.5) if any(L["anchor"] == "target" or L["type"] == "projectile"
+                                              for s, _ in chosen for L in s["layers"]) else v(0, 0, 0)
+    if shift[2]:
+        reach = max(reach, args.target * 0.5 + 3)
+    cams = [("3/4", Camera(shift + v(-reach * 0.75, reach * 0.55 + 1.5, reach * 1.05), shift + v(0, 1.0, reach * 0.15), UP, w, h)),
+            ("cenital", Camera(shift + v(0, reach * 2.2 + 2, 0.001), shift, v(0, 0, 1), w, h))]
     bgs = [background(cam, w, h, reach) for _, cam in cams]
     sheet_ticks = sorted({max(1, round(total_ticks * (i + 0.5) / args.frames)) for i in range(args.frames)})
     gif_frames, cells = [], []

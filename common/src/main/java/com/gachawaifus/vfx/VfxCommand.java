@@ -145,6 +145,7 @@ public final class VfxCommand {
     private static <S> int reload(CommandContext<S> context) {
         VfxLoader.clearCache();
         VfxTriggers.clearCache();
+        VfxCasters.clearCache();
         VfxManager.clear();
         Player player = Minecraft.getInstance().player;
         if (player != null) {

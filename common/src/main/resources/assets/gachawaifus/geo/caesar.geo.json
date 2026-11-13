@@ -311,6 +311,15 @@
      ]
     },
     {
+     "name": "sword_tip",
+     "parent": "sword",
+     "pivot": [
+      -5.5,
+      11.5,
+      -15
+     ]
+    },
+    {
      "name": "left_arm",
      "parent": "body",
      "pivot": [
@@ -731,6 +740,15 @@
         97
        ]
       }
+     ]
+    },
+    {
+     "name": "shield_face",
+     "parent": "escudo",
+     "pivot": [
+      11,
+      12.5,
+      -0.5
      ]
     },
     {

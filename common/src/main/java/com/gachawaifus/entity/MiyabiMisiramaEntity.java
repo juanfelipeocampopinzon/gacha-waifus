@@ -67,6 +67,26 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
     private int ultimateTicks = 0;
     private int frostRingTick = 0;
     private Vec3 ultimatePos = Vec3.ZERO;
+    // --- Golpes al ritmo de la animacion (ticks desde que empieza el clip) ---
+    // Salen de animations/miyabi (attack 0,6 s, special 1,4 s, ultimate_charge 1,2 s) y de
+    // vfx/miyabi/*.json: cambiar uno obliga a cambiar el otro.
+    private static final int ATTACK_HIT_1 = 3;
+    private static final int ATTACK_HIT_2 = 7;
+    private static final float ATTACK_SECOND_DAMAGE = 6.0F;
+    private static final int SPECIAL_DASH = 3;
+    private static final int SPECIAL_HIT = 9;
+    private static final int SPECIAL_CUT_1 = 16;
+    private static final int SPECIAL_CUT_2 = 19;
+    private static final int SPECIAL_LENGTH = 28;
+    private static final float SPECIAL_CUT_DAMAGE = 5.0F;
+    /** El tajo de la ultimate llega cuando acaba ultimate_charge (1,2 s); antes eran 20 ticks y el daño se adelantaba. */
+    private static final int ULTIMATE_IMPACT_TICK = 24;
+    /** -1 = sin golpe en curso. */
+    private int attackTicks = -1;
+    private LivingEntity attackTarget;
+    private int specialTicks = -1;
+    private LivingEntity specialTarget;
+
     /** Enemigos con marca de escarcha: UUID -> ticks restantes de la marca. */
     private final Map<UUID, Integer> frostMarks = new HashMap<>();
 
@@ -179,6 +199,10 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
             }
         }
 
+        if (!this.level().isClientSide) {
+            this.tickStrikes();
+        }
+
         // La Ultimate es una secuencia cinemática: mientras corre, Miyabi no se mueve ni ataca.
         this.tickUltimate();
         if (this.ultimatePhase != 0) {
@@ -195,7 +219,9 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             // Prioridad 1: Ultimate (Cherry Blossom Frost)
-            if (this.cherryBlossomCooldown <= 0 && distanceSq <= 144.0D) { // 12 bloques
+            if (this.attackTicks >= 0 || this.specialTicks >= 0) {
+                // Tajos en curso: no se pisan las habilidades.
+            } else if (this.cherryBlossomCooldown <= 0 && distanceSq <= 144.0D) { // 12 bloques
                 performCherryBlossomFrost();
             }
             // Prioridad 2: Special Skill (Frostfall Stance)
@@ -218,19 +244,57 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
         this.kitsuneSlashCooldown = 20;
 
         this.triggerAnim("attack_controller", "attack");
+        // Los dos tajos llegan en tickStrikes, en el fotograma de cada corte (VFX: miyabi/normal).
+        this.attackTarget = target;
+        this.attackTicks = 0;
+    }
 
-        this.doHurtTarget(target);
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0));
-
-        this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 1.6F);
-
-        if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
-                    target.getX(), target.getY() + 1.0, target.getZ(),
-                    12, 0.3, 0.5, 0.3, 0.05);
-            serverLevel.sendParticles(ParticleTypes.ITEM_SNOWBALL,
-                    target.getX(), target.getY() + 1.0, target.getZ(),
-                    8, 0.3, 0.5, 0.3, 0.05);
+    /** Avanza los golpes retrasados del ataque normal y del especial (solo servidor). */
+    private void tickStrikes() {
+        if (this.attackTicks >= 0) {
+            this.attackTicks++;
+            LivingEntity t = this.attackTarget;
+            boolean inReach = t != null && t.isAlive() && this.distanceToSqr(t) <= 25.0D;
+            if (this.attackTicks == ATTACK_HIT_1) {
+                if (inReach) {
+                    this.doHurtTarget(t);
+                    t.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 60, 0));
+                }
+                this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 1.6F);
+            } else if (this.attackTicks >= ATTACK_HIT_2) {
+                if (inReach) {
+                    t.hurt(this.damageSources().mobAttack(this), ATTACK_SECOND_DAMAGE);
+                }
+                this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F, 1.9F);
+                this.attackTicks = -1;
+                this.attackTarget = null;
+            }
+        }
+        if (this.specialTicks >= 0) {
+            this.specialTicks++;
+            LivingEntity t = this.specialTarget;
+            boolean inReach = t != null && t.isAlive() && this.distanceToSqr(t) <= 100.0D;
+            if (this.specialTicks == SPECIAL_DASH && t != null) {
+                Vec3 direction = t.position().subtract(this.position()).normalize();
+                this.setDeltaMovement(direction.x * 1.4, 0.25, direction.z * 1.4);
+            } else if (this.specialTicks == SPECIAL_HIT) {
+                if (inReach) {
+                    t.hurt(this.damageSources().mobAttack(this), 20.0F);
+                    t.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
+                    t.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
+                }
+                this.level().playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1.2F, 1.4F);
+                this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 0.8F);
+            } else if (this.specialTicks == SPECIAL_CUT_1 || this.specialTicks == SPECIAL_CUT_2) {
+                if (inReach) {
+                    t.hurt(this.damageSources().mobAttack(this), SPECIAL_CUT_DAMAGE);
+                }
+                this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_SWEEP, SoundSource.PLAYERS, 1.0F,
+                        this.specialTicks == SPECIAL_CUT_1 ? 1.5F : 1.8F);
+            } else if (this.specialTicks >= SPECIAL_LENGTH) {
+                this.specialTicks = -1;
+                this.specialTarget = null;
+            }
         }
     }
 
@@ -244,30 +308,13 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
 
         this.triggerAnim("attack_controller", "special");
 
-        // Invulnerabilidad temporal durante el dash
+        // Invulnerabilidad temporal durante el dash y los tajos
         this.setInvulnerable(true);
-        this.invulnerableTicks = 25;
+        this.invulnerableTicks = 30;
 
-        // Dash hacia el objetivo
-        Vec3 direction = target.position().subtract(this.position()).normalize();
-        this.setDeltaMovement(direction.x * 1.4, 0.25, direction.z * 1.4);
-
-        // Daño de corte helado
-        target.hurt(this.damageSources().mobAttack(this), 20.0F);
-        target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 100, 1));
-        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 100, 0));
-
-        this.level().playSound(null, this.blockPosition(), SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 1.2F, 1.4F);
-        this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.PLAYERS, 1.0F, 0.8F);
-
-        if (this.level() instanceof ServerLevel serverLevel) {
-            serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
-                    this.getX(), this.getY() + 0.5, this.getZ(),
-                    35, 0.8, 0.5, 0.8, 0.12);
-            serverLevel.sendParticles(ParticleTypes.CRIT,
-                    target.getX(), target.getY() + 1.0, target.getZ(),
-                    15, 0.4, 0.6, 0.4, 0.1);
-        }
+        // Dash, media luna y dos tajos más llegan en tickStrikes (VFX: miyabi/special).
+        this.specialTarget = target;
+        this.specialTicks = 0;
     }
 
     /**
@@ -331,7 +378,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
                 if (!this.level().isClientSide) {
                     this.renderTelegraph();
                 }
-                if (this.ultimateTicks >= 20) {
+                if (this.ultimateTicks >= ULTIMATE_IMPACT_TICK) {
                     this.ultimatePhase = 2;
                     this.ultimateTicks = 0;
                     if (!this.level().isClientSide) {
@@ -365,24 +412,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
         if (!(this.level() instanceof ServerLevel serverLevel)) return;
         if (this.ultimatePos == Vec3.ZERO) this.ultimatePos = this.position();
 
-        double radius = 10.0D;
-        double angleOffset = this.frostRingTick * 0.18D; // gira lentamente
-        int points = 36;
-        for (int i = 0; i < points; i++) {
-            double rad = Math.toRadians((360.0D / points) * i) + angleOffset;
-            double px = this.ultimatePos.x + Math.cos(rad) * radius;
-            double pz = this.ultimatePos.z + Math.sin(rad) * radius;
-            serverLevel.sendParticles(ParticleTypes.SNOWFLAKE, px, this.ultimatePos.y + 0.15, pz, 1, 0.0, 0.0, 0.0, 0.0);
-            if (i % 3 == 0) {
-                serverLevel.sendParticles(ParticleTypes.END_ROD, px, this.ultimatePos.y + 0.4, pz, 1, 0.0, 0.0, 0.0, 0.0);
-            }
-        }
-
-        // Aura de acumulación sobre Miyabi (crece durante la carga)
-        double progress = Math.min(1.0D, this.ultimateTicks / 20.0D);
-        serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
-                this.getX(), this.getY() + 1.0, this.getZ(),
-                (int) (6 + progress * 14), 0.6 + progress, 0.8, 0.6 + progress, 0.02);
+        // El círculo de radio 10 y el aura los dibuja el stage "charge" de vfx/miyabi/ultimate.
         this.frostRingTick++;
     }
 
@@ -391,18 +421,7 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
         if (!(this.level() instanceof ServerLevel serverLevel)) return;
         Vec3 center = this.ultimatePos == Vec3.ZERO ? this.position() : this.ultimatePos;
 
-        // Onda de choque: anillos expansivos desde el epicentro
-        for (int ring = 1; ring <= 3; ring++) {
-            double radius = ring * 3.33D;
-            for (int i = 0; i < 40; i++) {
-                double rad = Math.toRadians((360.0D / 40.0D) * i) + ring * 0.5D;
-                double px = center.x + Math.cos(rad) * radius;
-                double pz = center.z + Math.sin(rad) * radius;
-                serverLevel.sendParticles(ParticleTypes.FLASH, px, center.y + 0.5, pz, 1, 0.0, 0.0, 0.0, 0.0);
-                serverLevel.sendParticles(ParticleTypes.EXPLOSION, px, center.y + 0.4, pz, 1, 0.1, 0.1, 0.1, 0.0);
-            }
-        }
-        serverLevel.sendParticles(ParticleTypes.FLASH, center.x, center.y + 1.2, center.z, 6, 0.0, 0.0, 0.0, 0.0);
+        // Onda de choque, tajos y destello: stage "impact" de vfx/miyabi/ultimate.
 
         // Fanfarria de impacto
         this.level().playSound(null, this.blockPosition(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.6F, 0.7F);
@@ -433,8 +452,6 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
             enemy.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 140, 3)); // Slowness IV
             enemy.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 140, 1));
             this.frostMarks.put(enemy.getUUID(), 36);
-            serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
-                    enemy.getX(), enemy.getY() + 1.0, enemy.getZ(), 12, 0.4, 0.6, 0.4, 0.06);
         }
     }
 
@@ -469,10 +486,6 @@ public class MiyabiMisiramaEntity extends AbstractWaifuEntity implements GeoEnti
     /** Nieve cayendo dentro del vórtice durante la recuperación. */
     private void renderFrostAura() {
         if (!(this.level() instanceof ServerLevel serverLevel)) return;
-        Vec3 center = this.ultimatePos == Vec3.ZERO ? this.position() : this.ultimatePos;
-        serverLevel.sendParticles(ParticleTypes.SNOWFLAKE,
-                center.x, center.y + 2.5, center.z, 14, 4.0, 0.5, 4.0, 0.02);
-        serverLevel.sendParticles(ParticleTypes.ITEM_SNOWBALL,
-                center.x, center.y + 1.5, center.z, 6, 3.0, 0.4, 3.0, 0.03);
+        // Llamas frías y escarcha del vórtice: stage "residual" de vfx/miyabi/ultimate.
     }
 }

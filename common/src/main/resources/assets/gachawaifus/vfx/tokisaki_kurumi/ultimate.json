@@ -1,0 +1,712 @@
+{
+  "schema": 1,
+  "id": "tokisaki_kurumi/ultimate",
+  "doc": "Zafkiel: Zayin. summon (0-1.5 s): el reloj gigante aparece a su espalda con las agujas girando, su sombra se extiende y el círculo de radio 8 marca el área. zayin (1.5 s, la séptima bala): las agujas se clavan en las XII, destello y el reloj del suelo marca la zona detenida; motas suspendidas en el aire. resume (5.0 s): el reloj se resquebraja y a los 5.5 s el tiempo vuelve de golpe (Java: parada de 80 ticks desde el tick 30).",
+  "stages": {
+    "summon": {
+      "tier": "L",
+      "duration": 1.5,
+      "trigger": {
+        "clip": "animation.tokisaki_kurumi.ultimate",
+        "at": 0.0
+      },
+      "layers": [
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 1.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.4
+          ],
+          "radius": 2.4,
+          "texture": "clock_face",
+          "color": [
+            [
+              0,
+              "#e8c15a",
+              0.0
+            ],
+            [
+              0.3,
+              "#e8c15a",
+              0.9
+            ],
+            [
+              1,
+              "#ffe9b0",
+              1.0
+            ]
+          ],
+          "fade_in": 0.5
+        },
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 1.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.35
+          ],
+          "radius": 2.4,
+          "texture": "clock_hand",
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              1440
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ff4d5e",
+              1.0
+            ],
+            [
+              1,
+              "#ffffff",
+              1.0
+            ]
+          ],
+          "fade_in": 0.5
+        },
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 1.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.33
+          ],
+          "radius": 2.4,
+          "texture": "clock_hand_short",
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              360
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ff4d5e",
+              1.0
+            ],
+            [
+              1,
+              "#ffffff",
+              1.0
+            ]
+          ],
+          "fade_in": 0.5
+        },
+        {
+          "type": "glow",
+          "anchor": "entity",
+          "offset": [
+            0,
+            2.9,
+            -1.5
+          ],
+          "size": [
+            1,
+            6.5
+          ],
+          "duration": 1.5,
+          "texture": "soft_glow",
+          "color": [
+            [
+              0,
+              "#c8102e",
+              0.0
+            ],
+            [
+              1,
+              "#c8102e",
+              0.45
+            ]
+          ]
+        },
+        {
+          "type": "telegraph",
+          "anchor": "ground",
+          "radius": 8,
+          "thickness": 0.3,
+          "spin": -1.2,
+          "fade_in": 0.3,
+          "duration": 1.5,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#ff4d5e",
+              0.9
+            ],
+            [
+              1,
+              "#e8c15a",
+              0.9
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "entity",
+          "radius": 3.0,
+          "texture": "soft_glow",
+          "blend": "alpha",
+          "fade_in": 0.4,
+          "duration": 1.5,
+          "color": [
+            [
+              0,
+              "#0b0306",
+              0.0
+            ],
+            [
+              0.3,
+              "#0b0306",
+              0.8
+            ],
+            [
+              1,
+              "#0b0306",
+              0.8
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "ground",
+          "offset": [
+            0,
+            0.2,
+            0
+          ],
+          "shape": "disc",
+          "radius": 7,
+          "texture": "mote",
+          "blend": "additive",
+          "rate": 25,
+          "lifetime": [
+            0.8,
+            1.2
+          ],
+          "size": [
+            0.14,
+            0.04
+          ],
+          "speed": [
+            0.8,
+            1.6
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#ffe9b0",
+              0.9
+            ],
+            [
+              0.7,
+              "#e8c15a",
+              0.6
+            ],
+            [
+              1,
+              "#c8102e",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "at": 0.5,
+          "anchor": "entity",
+          "amplitude": 0.015,
+          "duration": 1.0,
+          "radius": 12,
+          "falloff": "linear"
+        }
+      ]
+    },
+    "zayin": {
+      "tier": "L",
+      "duration": 3.5,
+      "trigger": {
+        "clip": "animation.tokisaki_kurumi.ultimate",
+        "at": 1.5
+      },
+      "layers": [
+        {
+          "type": "flash",
+          "intensity": 0.6,
+          "duration": 0.25,
+          "color": "#ffe9b0",
+          "scope": "world"
+        },
+        {
+          "type": "shake",
+          "anchor": "entity",
+          "amplitude": 0.25,
+          "duration": 0.4,
+          "radius": 18,
+          "falloff": "linear"
+        },
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 3.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.4
+          ],
+          "radius": 2.4,
+          "texture": "clock_face",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.06,
+              "#d8d0b8",
+              0.85
+            ],
+            [
+              1,
+              "#d8d0b8",
+              0.85
+            ]
+          ]
+        },
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 3.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.35
+          ],
+          "radius": 2.4,
+          "texture": "clock_hand",
+          "angle": 0,
+          "color": [
+            [
+              0,
+              "#ff4d5e",
+              1.0
+            ],
+            [
+              1,
+              "#ffffff",
+              1.0
+            ]
+          ]
+        },
+        {
+          "anchor": "entity",
+          "plane": "vertical",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 3.5,
+          "type": "decal",
+          "offset": [
+            0,
+            2.9,
+            -1.33
+          ],
+          "radius": 2.4,
+          "texture": "clock_hand_short",
+          "angle": 0,
+          "color": [
+            [
+              0,
+              "#ff4d5e",
+              1.0
+            ],
+            [
+              1,
+              "#ffffff",
+              1.0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "ground",
+          "radius": 8,
+          "texture": "clock_face",
+          "blend": "additive",
+          "fade_in": 0.2,
+          "duration": 3.5,
+          "color": [
+            [
+              0,
+              "#ffe9b0",
+              0.6
+            ],
+            [
+              0.1,
+              "#d8d0b8",
+              0.35
+            ],
+            [
+              1,
+              "#d8d0b8",
+              0.35
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "anchor": "ground",
+          "radius": [
+            0.5,
+            8
+          ],
+          "thickness": [
+            1.0,
+            0.15
+          ],
+          "duration": 0.45,
+          "ease": "out",
+          "y": 0.1,
+          "texture": "ring_soft",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#ffe9b0",
+              0.9
+            ],
+            [
+              0.7,
+              "#e8c15a",
+              0.6
+            ],
+            [
+              1,
+              "#c8102e",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "ground",
+          "offset": [
+            0,
+            1.2,
+            0
+          ],
+          "shape": "disc",
+          "radius": 8,
+          "texture": "star4",
+          "blend": "additive",
+          "count": 40,
+          "lifetime": [
+            2.6,
+            3.3
+          ],
+          "size": [
+            0.16,
+            0.1
+          ],
+          "speed": [
+            0,
+            0.05
+          ],
+          "direction": "random",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.0
+            ],
+            [
+              0.1,
+              "#ffe9b0",
+              0.9
+            ],
+            [
+              0.9,
+              "#d8d0b8",
+              0.7
+            ],
+            [
+              1,
+              "#d8d0b8",
+              0.0
+            ]
+          ]
+        }
+      ]
+    },
+    "resume": {
+      "tier": "L",
+      "duration": 1.3,
+      "trigger": {
+        "clip": "animation.tokisaki_kurumi.ultimate",
+        "at": 5.0
+      },
+      "layers": [
+        {
+          "type": "decal",
+          "anchor": "entity",
+          "offset": [
+            0,
+            2.9,
+            -1.4
+          ],
+          "plane": "vertical",
+          "radius": 2.4,
+          "texture": "clock_face",
+          "blend": "additive",
+          "duration": 0.55,
+          "color": [
+            [
+              0,
+              "#d8d0b8",
+              0.85
+            ],
+            [
+              0.8,
+              "#ffffff",
+              1.0
+            ],
+            [
+              1,
+              "#ffffff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "anchor": "ground",
+          "radius": [
+            8,
+            0.5
+          ],
+          "thickness": [
+            0.2,
+            0.6
+          ],
+          "duration": 0.5,
+          "ease": "in",
+          "y": 0.1,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#d8d0b8",
+              0.6
+            ],
+            [
+              1,
+              "#ffffff",
+              1.0
+            ]
+          ]
+        },
+        {
+          "type": "flash",
+          "at": 0.5,
+          "intensity": 0.45,
+          "duration": 0.2,
+          "color": "#ff4d5e",
+          "scope": "world"
+        },
+        {
+          "type": "shake",
+          "at": 0.5,
+          "anchor": "entity",
+          "amplitude": 0.3,
+          "duration": 0.4,
+          "radius": 18,
+          "falloff": "linear"
+        },
+        {
+          "type": "emitter",
+          "at": 0.5,
+          "anchor": "entity",
+          "offset": [
+            0,
+            2.9,
+            -1.4
+          ],
+          "shape": "sphere",
+          "radius": 1.5,
+          "texture": "shard",
+          "blend": "additive",
+          "count": 60,
+          "lifetime": [
+            0.5,
+            1.0
+          ],
+          "size": [
+            0.35,
+            0.1
+          ],
+          "speed": [
+            4,
+            10
+          ],
+          "direction": "outward",
+          "gravity": 0.5,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#ffe9b0",
+              0.9
+            ],
+            [
+              0.7,
+              "#e8c15a",
+              0.6
+            ],
+            [
+              1,
+              "#c8102e",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.5,
+          "anchor": "ground",
+          "radius": [
+            0.5,
+            8
+          ],
+          "thickness": [
+            1.2,
+            0.2
+          ],
+          "duration": 0.4,
+          "ease": "out",
+          "y": 0.12,
+          "texture": "ring_soft",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#ff4d5e",
+              0.9
+            ],
+            [
+              0.7,
+              "#c8102e",
+              0.6
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.5,
+          "anchor": "ground",
+          "offset": [
+            0,
+            0.3,
+            0
+          ],
+          "shape": "disc",
+          "radius": 8,
+          "texture": "spark",
+          "blend": "additive",
+          "count": 50,
+          "lifetime": [
+            0.4,
+            0.8
+          ],
+          "size": [
+            0.3,
+            0.04
+          ],
+          "speed": [
+            3,
+            7
+          ],
+          "direction": "up",
+          "stretch": 1.2,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#ff4d5e",
+              0.9
+            ],
+            [
+              0.7,
+              "#c8102e",
+              0.6
+            ],
+            [
+              1,
+              "#5a0a1a",
+              0.0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

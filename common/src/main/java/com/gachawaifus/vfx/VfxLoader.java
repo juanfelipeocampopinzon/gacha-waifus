@@ -38,6 +38,46 @@ public final class VfxLoader {
         return loaded;
     }
 
+    /**
+     * Todos los stages del efecto, en el orden del JSON. Lo usa {@link VfxCasters} para las
+     * waifus sin GeckoLib: cada stage lleva su {@code trigger.at} como retardo.
+     */
+    public static List<VfxStage> stages(String effectId) {
+        List<VfxStage> result = new ArrayList<>();
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft == null) {
+            return result;
+        }
+        ResourceLocation location = ResourceLocation.tryParse("gachawaifus:vfx/" + effectId + ".json");
+        if (location == null) {
+            return result;
+        }
+        try {
+            Optional<Resource> resource = minecraft.getResourceManager().getResource(location);
+            if (resource.isEmpty()) {
+                LOG.warn("[vfx] no existe {}", location);
+                return result;
+            }
+            JsonObject root;
+            try (var reader = new InputStreamReader(resource.get().open(), StandardCharsets.UTF_8)) {
+                root = JsonParser.parseReader(reader).getAsJsonObject();
+            }
+            JsonObject stages = root.getAsJsonObject("stages");
+            if (stages == null) {
+                return result;
+            }
+            for (String stage : stages.keySet()) {
+                VfxStage loaded = load(effectId, stage);
+                if (loaded != null) {
+                    result.add(loaded);
+                }
+            }
+        } catch (Exception exception) {
+            LOG.warn("[vfx] error listando {}: {}", effectId, exception.toString());
+        }
+        return result;
+    }
+
     private static VfxStage read(String effectId, String stage) {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft == null) {
@@ -67,6 +107,13 @@ public final class VfxLoader {
             JsonObject json = stages.getAsJsonObject(stage);
             float duration = json.has("duration") ? json.get("duration").getAsFloat() : 1.0F;
             String tier = json.has("tier") ? json.get("tier").getAsString() : "L";
+            float at = 0.0F;
+            if (json.has("trigger")) {
+                JsonObject trigger = json.getAsJsonObject("trigger");
+                if (trigger != null && trigger.has("at")) {
+                    at = trigger.get("at").getAsFloat();
+                }
+            }
             List<VfxLayer> layers = new ArrayList<>();
             if (json.has("layers")) {
                 for (var element : json.getAsJsonArray("layers")) {
@@ -74,7 +121,7 @@ public final class VfxLoader {
                 }
             }
             LOG.info("[vfx] cargado {}#{} ({} capas, {})", effectId, stage, layers.size(), tier);
-            return new VfxStage(effectId, stage, tier, duration, layers);
+            return new VfxStage(effectId, stage, tier, duration, at, layers);
         } catch (Exception exception) {
             LOG.warn("[vfx] error leyendo {}#{}: {}", effectId, stage, exception.toString());
             return null;

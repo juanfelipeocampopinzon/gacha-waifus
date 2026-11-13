@@ -1,0 +1,474 @@
+{
+ "schema": 1,
+ "id": "caesar/special",
+ "doc": "Parry Counter. guard (0-0,65 s): contorno dorado sobre su cuerpo (clone en su sitio), brillo en el escudo y pulsos de anillo: ventana de parry (Java GUARD_END 13). parry (clip parry, solo si la golpean en la guardia): estallido radial azul y blanco con anillos que se abren y una estrella. counter (0,65 s): empujón de escudo (0,7 s), tajo ascendente rosa-dorado (0,82 s), estrella negra y rayos dorados detrás. Java COUNTER_BASH 14, COUNTER_SLASH 16.",
+ "stages": {
+  "guard": {
+   "tier": "M",
+   "duration": 0.65,
+   "trigger": {
+    "clip": "animation.caesar.special",
+    "at": 0.0
+   },
+   "layers": [
+    {
+     "type": "clone",
+     "at": 0.08,
+     "offset": [
+      0,
+      0,
+      0
+     ],
+     "duration": 0.55,
+     "color": [
+      [
+       0,
+       "#ffd54a",
+       0
+      ],
+      [
+       0.15,
+       "#ffd54a",
+       0.45
+      ],
+      [
+       0.85,
+       "#ffab2e",
+       0.4
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "glow",
+     "anchor": "bone:shield_face",
+     "at": 0.1,
+     "duration": 0.55,
+     "size": [
+      0.8,
+      1.6
+     ],
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0
+      ],
+      [
+       0.3,
+       "#ffd54a",
+       0.7
+      ],
+      [
+       1,
+       "#ffd54a",
+       0.2
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "at": 0.12,
+     "offset": [
+      0,
+      1.2,
+      0.2
+     ],
+     "rate": 6,
+     "duration": 0.45,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.4,
+      0.4
+     ],
+     "size": [
+      1.2,
+      3.0
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0.8
+      ],
+      [
+       1,
+       "#ffd54a",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "emitter",
+     "offset": [
+      0,
+      0.1,
+      0
+     ],
+     "shape": "ring",
+     "radius": 1.0,
+     "rate": 30,
+     "duration": 0.6,
+     "direction": "up",
+     "speed": [
+      0.8,
+      1.6
+     ],
+     "lifetime": [
+      0.4,
+      0.6
+     ],
+     "size": [
+      0.12,
+      0.03
+     ],
+     "texture": "mote",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0.9
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "parry": {
+   "tier": "S",
+   "duration": 0.45,
+   "trigger": {
+    "clip": "animation.caesar.parry",
+    "at": 0.0
+   },
+   "layers": [
+    {
+     "type": "emitter",
+     "anchor": "bone:shield_face",
+     "count": 22,
+     "speed": [
+      6,
+      11
+     ],
+     "lifetime": [
+      0.15,
+      0.3
+     ],
+     "size": [
+      0.35,
+      0.05
+     ],
+     "texture": "streak",
+     "blend": "additive",
+     "stretch": 2.2,
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#8fd0ff",
+       0.9
+      ],
+      [
+       1,
+       "#3a6fff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:shield_face",
+     "count": 2,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.3,
+      0.4
+     ],
+     "size": [
+      0.6,
+      4.0
+     ],
+     "texture": "ring_soft",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0.95
+      ],
+      [
+       0.5,
+       "#8fd0ff",
+       0.7
+      ],
+      [
+       1,
+       "#8fd0ff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:shield_face",
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.25,
+      0.25
+     ],
+     "size": [
+      2.4,
+      0.3
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       1,
+       "#8fd0ff",
+       0
+      ]
+     ],
+     "shape": "point"
+    }
+   ]
+  },
+  "counter": {
+   "tier": "M",
+   "duration": 0.9,
+   "trigger": {
+    "clip": "animation.caesar.special",
+    "at": 0.65
+   },
+   "layers": [
+    {
+     "type": "glow",
+     "anchor": "bone:shield_face",
+     "at": 0.03,
+     "duration": 0.2,
+     "size": [
+      2.2,
+      0.5
+     ],
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       1,
+       "#ffd54a",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "at": 0.03,
+     "offset": [
+      0,
+      1.1,
+      1.4
+     ],
+     "count": 14,
+     "texture": "spark",
+     "blend": "additive",
+     "speed": [
+      4,
+      8
+     ],
+     "lifetime": [
+      0.18,
+      0.35
+     ],
+     "size": [
+      0.24,
+      0.04
+     ],
+     "stretch": 1.6,
+     "direction": "random",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.2,
+       "#fff1a0",
+       0.95
+      ],
+      [
+       0.7,
+       "#ffd54a",
+       0.7
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "slash_arc",
+     "at": 0.15,
+     "offset": [
+      0,
+      1.2,
+      0.6
+     ],
+     "radius": 2.2,
+     "arc_degrees": 160,
+     "width": 0.45,
+     "tilt": 70,
+     "duration": 0.7,
+     "reveal": 0.1,
+     "texture": "arc_streak",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.2,
+       "#ff9be8",
+       0.95
+      ],
+      [
+       0.6,
+       "#ffd54a",
+       0.7
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "at": 0.17,
+     "offset": [
+      0,
+      1.2,
+      1.4
+     ],
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.4,
+      0.4
+     ],
+     "size": [
+      2.4,
+      1.44
+     ],
+     "texture": "star4",
+     "color": [
+      [
+       0,
+       "#140c1a",
+       0.95
+      ],
+      [
+       0.7,
+       "#140c1a",
+       0.85
+      ],
+      [
+       1,
+       "#140c1a",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "emitter",
+     "at": 0.17,
+     "offset": [
+      0,
+      1.2,
+      0.8
+     ],
+     "count": 18,
+     "direction": "outward",
+     "speed": [
+      7,
+      12
+     ],
+     "lifetime": [
+      0.2,
+      0.32
+     ],
+     "size": [
+      0.4,
+      0.05
+     ],
+     "texture": "streak",
+     "blend": "additive",
+     "stretch": 2.5,
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ffd54a",
+       0.95
+      ],
+      [
+       1,
+       "#ff7a1a",
+       0
+      ]
+     ],
+     "shape": "point"
+    }
+   ]
+  }
+ }
+}

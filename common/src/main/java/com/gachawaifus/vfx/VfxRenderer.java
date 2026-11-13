@@ -57,6 +57,8 @@ public final class VfxRenderer {
             return;
         }
         Vec3 cameraPos = camera.getPosition();
+        // Los clones son entidades de verdad: van antes que los quads y con el estado de vanilla.
+        VfxClones.render(cameraPos, partialTick);
         Vector3f right = new Vector3f(camera.getLeftVector()).negate();
         Vector3f up = new Vector3f(camera.getUpVector());
 
@@ -80,6 +82,12 @@ public final class VfxRenderer {
                     addTelegraph(groups, instance, layer, cameraPos, partialTick);
                 } else if ("slash_arc".equals(layer.type)) {
                     addSlashArc(groups, instance, layer, cameraPos, partialTick);
+                } else if ("decal".equals(layer.type)) {
+                    addDecal(groups, instance, layer, cameraPos, partialTick);
+                } else if ("sphere".equals(layer.type)) {
+                    addSphere(groups, instance, layer, cameraPos, partialTick);
+                } else if ("projectile".equals(layer.type)) {
+                    addProjectile(groups, instance, layer, cameraPos, right, up, partialTick);
                 }
             }
         }
@@ -94,7 +102,11 @@ public final class VfxRenderer {
         RenderSystem.enableDepthTest();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
-        for (Map.Entry<Group, List<Quad>> entry : groups.entrySet()) {
+        // Primero lo de alfa normal (humo, sombras, el cuerpo oscuro de un agujero negro) y después
+        // lo aditivo: así los brillos y anillos quedan encima en vez de tapados por lo oscuro.
+        List<Map.Entry<Group, List<Quad>>> ordered = new ArrayList<>(groups.entrySet());
+        ordered.sort((first, second) -> Boolean.compare(first.getKey().additive(), second.getKey().additive()));
+        for (Map.Entry<Group, List<Quad>> entry : ordered) {
             boolean isRing = entry.getKey().texture().startsWith("ring_") || entry.getKey().flat();
             if (isRing) {
                 RenderSystem.enablePolygonOffset();
@@ -199,6 +211,21 @@ public final class VfxRenderer {
             red = Math.min(1.0F, red * 1.25F);
             green = Math.min(1.0F, green * 1.25F);
             blue = Math.min(1.0F, blue * 1.25F);
+        }
+
+        if (particle.texture.startsWith("ring_")) {
+            // Un anillo como partícula (ondas de sonido, pulsos): aro liso perpendicular a la
+            // dirección en que viaja. El sprite de 32 px a 2 bloques de tamaño se veía a cuadros.
+            Vec3 normal = particle.vel.lengthSqr() > 1.0E-6D ? particle.vel.normalize()
+                    : centre.normalize();
+            Vec3 helper = Math.abs(normal.y) < 0.9D ? new Vec3(0.0D, 1.0D, 0.0D) : new Vec3(1.0D, 0.0D, 0.0D);
+            Vec3 a = normal.cross(helper).normalize();
+            Vec3 b = normal.cross(a).normalize();
+            float ringRadius = half * 0.82F;
+            float width = Math.max(0.04F, size * ("ring_thin".equals(particle.texture) ? 0.07F : 0.16F));
+            addAnnulus(groups, centre, a, b, ringRadius, width, 0.0F, 0.0F, particle.additive, false,
+                    red, green, blue, color[3]);
+            return;
         }
 
         if ("cube".equals(particle.texture) || particle.texture.startsWith("cube_")) {
@@ -341,7 +368,7 @@ public final class VfxRenderer {
             if ("ring_soft".equals(layer.texture)) {
                 thickness *= 1.6F;
             }
-            addAnnulus(groups, centre, radius, thickness, 0.0F, 0.0F, layer.additive,
+            addAnnulus(groups, centre, X_AXIS, Z_AXIS, radius, thickness, 0.0F, 0.0F, layer.additive, true,
                     color[0], color[1], color[2], color[3]);
             return;
         }
@@ -386,8 +413,8 @@ public final class VfxRenderer {
         // El sprite del anillo tiene el aro al 82 % del borde: se agranda para que el aro caiga
         // justo en el radio del JSON (que es el radio del daño).
         // El aro cae justo en el radio del daño; el giro se ve como 8 tramos brillantes que rotan.
-        addAnnulus(groups, centre, layer.radius, layer.thickness[0], local * layer.spin,
-                layer.spin != 0.0F ? 0.45F : 0.0F, true, color[0], color[1], color[2], color[3] * fade);
+        addAnnulus(groups, centre, X_AXIS, Z_AXIS, layer.radius, layer.thickness[0], local * layer.spin,
+                layer.spin != 0.0F ? 0.45F : 0.0F, true, true, color[0], color[1], color[2], color[3] * fade);
         if (layer.fillAlpha > 0.0F) {
             float fill = layer.radius * 1.15F;
             groups.computeIfAbsent(new Group("soft_glow", true, true), key -> new ArrayList<>())
@@ -407,7 +434,8 @@ public final class VfxRenderer {
     private static void addSlashArc(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
                                     Vec3 cameraPos, float partialTick) {
         float progress = instance.progress(layer, partialTick);
-        float head = Mth.clamp(progress / 0.35F, 0.0F, 1.0F);
+        float revealPart = layer.reveal > 0.0F ? Mth.clamp(layer.reveal / Math.max(0.01F, layer.duration), 0.01F, 1.0F) : 0.35F;
+        float head = Mth.clamp(progress / revealPart, 0.0F, 1.0F);
         if (head <= 0.0F) {
             return;
         }
@@ -447,26 +475,189 @@ public final class VfxRenderer {
     }
 
     /**
-     * Corona plana horizontal de radio {@code radius} y ancho {@code thickness} (bloques), en 64
-     * tramos con la textura {@code ribbon_soft} de través. {@code pulse} > 0 modula el alfa con 8
-     * tramos más brillantes desplazados {@code phase} radianes (para que un giro se note).
+     * Textura plana de {@code radius} (medio lado, bloques). {@code plane: ground} la tumba en el
+     * suelo; {@code vertical} la pone de pie mirando hacia donde mira la waifu (un reloj a su
+     * espalda). Gira según {@code angle} (curva de grados sobre la vida de la capa) o, si no hay,
+     * a {@code spin} rad/s. Entra en {@code fade_in} y se apaga en los últimos 0,15 s.
      */
-    private static void addAnnulus(Map<Group, List<Quad>> groups, Vec3 centre, float radius, float thickness,
-                                   float phase, float pulse, boolean additive,
-                                   float red, float green, float blue, float alpha) {
+    private static void addDecal(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
+                                 Vec3 cameraPos, float partialTick) {
+        float local = instance.localSeconds(layer, partialTick);
+        float progress = instance.progress(layer, partialTick);
+        float fade = layer.fadeIn > 0.0F ? Mth.clamp(local / layer.fadeIn, 0.0F, 1.0F) : 1.0F;
+        fade *= Mth.clamp((layer.duration - local) / 0.15F, 0.0F, 1.0F);
+        float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
+        if (fade <= 0.005F || color[3] <= 0.004F) {
+            return;
+        }
+        float angle = layer.angle != null ? layer.angle.sample(progress) * Mth.DEG_TO_RAD : local * layer.spin;
+        Vec3 centre = instance.point(layer).add(0.0D, layer.y, 0.0D).subtract(cameraPos);
+        Vec3 axisA;
+        Vec3 axisB;
+        boolean flat = !"vertical".equals(layer.plane);
+        if (flat) {
+            axisA = X_AXIS;
+            axisB = Z_AXIS;
+            centre = centre.add(0.0D, 0.05D, 0.0D);
+        } else {
+            Vec3 forward = new Vec3(instance.look.x, 0.0D, instance.look.z);
+            forward = forward.lengthSqr() < 1.0E-6D ? Z_AXIS : forward.normalize();
+            axisA = new Vec3(forward.z, 0.0D, -forward.x); // izquierda de la waifu = derecha de quien la mira de frente
+            axisB = new Vec3(0.0D, 1.0D, 0.0D);
+        }
+        if (layer.texture.startsWith("ring_")) {
+            // Un aro como decal (el anillo de pie de Miyabi): corona lisa, no el sprite de 32 px estirado.
+            float width = layer.radius * ("ring_thin".equals(layer.texture) ? 0.05F : 0.12F);
+            addAnnulus(groups, centre, axisA, axisB, layer.radius * 0.9F, width, angle, 0.0F, layer.additive, flat,
+                    color[0], color[1], color[2], color[3] * fade);
+            return;
+        }
+        // "arriba" de la textura gira con el ángulo (sentido horario visto de frente o desde arriba)
+        float cos = Mth.cos(angle);
+        float sin = Mth.sin(angle);
+        Vec3 right = axisA.scale(cos).add(axisB.scale(-sin)).scale(layer.radius);
+        Vec3 up = axisA.scale(sin).add(axisB.scale(cos)).scale(layer.radius);
+        groups.computeIfAbsent(new Group(layer.texture, layer.additive, flat), key -> new ArrayList<>())
+                .add(new Quad(centre.subtract(right).subtract(up), centre.add(right).subtract(up),
+                        centre.add(right).add(up), centre.subtract(right).add(up),
+                        0.0F, 0.0F, 1.0F, 1.0F, color[0], color[1], color[2], color[3] * fade));
+    }
+
+    /**
+     * Esfera o cúpula ({@code hemisphere}) translúcida: el cuerpo con el degradado {@code color}
+     * (alfa normal: puede ser oscura, un agujero negro) y encima un borde aditivo tipo fresnel de
+     * fuerza {@code rim} que brilla donde la superficie se ve de canto, mezclando
+     * {@code rim_color}/{@code rim_color2} alrededor. {@code radius} [inicio, fin] se recorre en
+     * {@code grow} segundos con {@code ease}; entra en {@code fade_in} y se apaga en 0,2 s.
+     */
+    private static void addSphere(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
+                                  Vec3 cameraPos, float partialTick) {
+        float local = instance.localSeconds(layer, partialTick);
+        float progress = instance.progress(layer, partialTick);
+        float growTime = layer.grow > 0.0F ? layer.grow : layer.duration;
+        float grown = ease(Mth.clamp(local / Math.max(0.01F, growTime), 0.0F, 1.0F), layer.ease);
+        float radius = Mth.lerp(grown, layer.ringRadius[0], layer.ringRadius[1]);
+        float fade = layer.fadeIn > 0.0F ? Mth.clamp(local / layer.fadeIn, 0.0F, 1.0F) : 1.0F;
+        fade *= Mth.clamp((layer.duration - local) / 0.2F, 0.0F, 1.0F);
+        if (fade <= 0.005F || radius <= 0.02F) {
+            return;
+        }
+        float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
+        Vec3 centre = instance.point(layer).add(0.0D, layer.y, 0.0D).subtract(cameraPos);
+        int rings = layer.hemisphere ? 8 : 16;
+        int slices = 32;
+        float thetaMax = layer.hemisphere ? Mth.HALF_PI : Mth.PI;
+        List<Quad> body = color[3] > 0.004F
+                ? groups.computeIfAbsent(new Group(layer.texture, layer.additive), key -> new ArrayList<>()) : null;
+        List<Quad> rim = layer.rim > 0.0F
+                ? groups.computeIfAbsent(new Group("solid", true), key -> new ArrayList<>()) : null;
+        for (int i = 0; i < rings; i++) {
+            float t0 = thetaMax * i / rings;
+            float t1 = thetaMax * (i + 1) / rings;
+            for (int j = 0; j < slices; j++) {
+                float p0 = TAU * j / slices;
+                float p1 = TAU * (j + 1) / slices;
+                Vec3 n00 = sphereDir(t0, p0);
+                Vec3 n01 = sphereDir(t0, p1);
+                Vec3 n11 = sphereDir(t1, p1);
+                Vec3 n10 = sphereDir(t1, p0);
+                Vec3 a = centre.add(n10.scale(radius));
+                Vec3 b = centre.add(n11.scale(radius));
+                Vec3 c = centre.add(n01.scale(radius));
+                Vec3 d = centre.add(n00.scale(radius));
+                if (body != null) {
+                    body.add(new Quad(a, b, c, d, 0.0F, 0.0F, 1.0F, 1.0F,
+                            color[0], color[1], color[2], color[3] * fade));
+                }
+                if (rim != null) {
+                    Vec3 normal = sphereDir((t0 + t1) * 0.5F, (p0 + p1) * 0.5F);
+                    Vec3 toCamera = centre.add(normal.scale(radius)).scale(-1.0D).normalize();
+                    float facing = (float) Math.abs(normal.dot(toCamera));
+                    float edge = (float) Math.pow(1.0F - facing, 2.5F);
+                    float mix = 0.5F + 0.5F * Mth.sin((p0 + p1) * 0.5F);
+                    float alpha = Math.min(1.0F, layer.rim * edge) * fade;
+                    if (alpha > 0.01F) {
+                        rim.add(new Quad(a, b, c, d, 0.0F, 0.0F, 1.0F, 1.0F,
+                                Mth.lerp(mix, layer.rimColor[0], layer.rimColor2[0]),
+                                Mth.lerp(mix, layer.rimColor[1], layer.rimColor2[1]),
+                                Mth.lerp(mix, layer.rimColor[2], layer.rimColor2[2]), alpha));
+                    }
+                }
+            }
+        }
+    }
+
+    private static Vec3 sphereDir(float theta, float phi) {
+        float sin = Mth.sin(theta);
+        return new Vec3(sin * Mth.cos(phi), Mth.cos(theta), sin * Mth.sin(phi));
+    }
+
+    /**
+     * Proyectil: la cabeza ({@code texture}, {@code size} [inicio, fin]) viaja del ancla (puede ser
+     * un hueso: la boca del arma) al objetivo ({@code to}) en {@code duration} con {@code ease} y
+     * una parábola de {@code arc} bloques; detrás deja una estela de {@code trail} segundos.
+     */
+    private static void addProjectile(Map<Group, List<Quad>> groups, VfxInstance instance, VfxLayer layer,
+                                      Vec3 cameraPos, Vector3f right, Vector3f up, float partialTick) {
+        float progress = instance.progress(layer, partialTick);
+        Vec3 start = instance.anchor(layer).position();
+        Vec3 end = "forward".equals(layer.to)
+                ? instance.origin.add(new Vec3(instance.look.x, 0.0D, instance.look.z).normalize().scale(6.0D))
+                : instance.target();
+        end = end.add(0.0D, layer.y, 0.0D);
+        float head = ease(progress, layer.ease);
+        float tail = ease(Math.max(0.0F, progress - layer.trail / Math.max(0.01F, layer.duration)), layer.ease);
+        Vec3 headPos = flight(start, end, head, layer.arc).subtract(cameraPos);
+        Vec3 tailPos = flight(start, end, tail, layer.arc).subtract(cameraPos);
+        float[] color = (layer.color == null ? Gradient.WHITE : layer.color).sample(progress);
+        float half = Mth.lerp(progress, layer.size[0], layer.size[1]) * 0.5F;
+        if (half <= 0.002F || color[3] <= 0.004F) {
+            return;
+        }
+        Vec3 along = headPos.subtract(tailPos);
+        if (along.lengthSqr() > 1.0E-4D) {
+            Vec3 side = along.cross(headPos.add(tailPos).scale(-0.5D));
+            if (side.lengthSqr() > 1.0E-8D) {
+                side = side.normalize().scale(half * 0.8F);
+                groups.computeIfAbsent(new Group("ribbon_soft", true), key -> new ArrayList<>())
+                        .add(new Quad(tailPos.subtract(side.scale(0.3D)), headPos.subtract(side),
+                                headPos.add(side), tailPos.add(side.scale(0.3D)),
+                                0.0F, 0.0F, 1.0F, 1.0F, color[0], color[1], color[2], color[3] * 0.85F));
+            }
+        }
+        addQuad(groups, layer.texture, layer.additive, headPos, right, up, half, half, 0.0F, 1.0F,
+                color[0], color[1], color[2], color[3]);
+    }
+
+    private static Vec3 flight(Vec3 start, Vec3 end, float t, float arc) {
+        return start.lerp(end, t).add(0.0D, arc * 4.0F * t * (1.0F - t), 0.0D);
+    }
+
+    private static final Vec3 X_AXIS = new Vec3(1.0D, 0.0D, 0.0D);
+    private static final Vec3 Z_AXIS = new Vec3(0.0D, 0.0D, 1.0D);
+
+    /**
+     * Corona plana de radio {@code radius} y ancho {@code thickness} (bloques) en el plano de
+     * {@code axisA}/{@code axisB} (X/Z = suelo), en 64 tramos con la textura {@code ribbon_soft} de
+     * través. {@code pulse} > 0 modula el alfa con 8 tramos más brillantes desplazados
+     * {@code phase} radianes (para que un giro se note). {@code flat} = pegada al suelo.
+     */
+    private static void addAnnulus(Map<Group, List<Quad>> groups, Vec3 centre, Vec3 axisA, Vec3 axisB,
+                                   float radius, float thickness, float phase, float pulse, boolean additive,
+                                   boolean flat, float red, float green, float blue, float alpha) {
         if (alpha <= 0.004F || radius <= 0.01F) {
             return;
         }
         float inner = Math.max(0.0F, radius - thickness * 0.5F);
         float outer = radius + thickness * 0.5F;
         int segments = 64;
-        List<Quad> list = groups.computeIfAbsent(new Group("ribbon_soft", additive, true), key -> new ArrayList<>());
+        List<Quad> list = groups.computeIfAbsent(new Group("ribbon_soft", additive, flat), key -> new ArrayList<>());
         for (int i = 0; i < segments; i++) {
             float a0 = TAU * i / segments;
             float a1 = TAU * (i + 1) / segments;
             float k = pulse > 0.0F ? 1.0F - pulse + pulse * Mth.cos(8.0F * ((a0 + a1) * 0.5F - phase)) : 1.0F;
-            Vec3 d0 = new Vec3(Mth.cos(a0), 0.0D, Mth.sin(a0));
-            Vec3 d1 = new Vec3(Mth.cos(a1), 0.0D, Mth.sin(a1));
+            Vec3 d0 = axisA.scale(Mth.cos(a0)).add(axisB.scale(Mth.sin(a0)));
+            Vec3 d1 = axisA.scale(Mth.cos(a1)).add(axisB.scale(Mth.sin(a1)));
             list.add(new Quad(centre.add(d0.scale(inner)), centre.add(d1.scale(inner)),
                     centre.add(d1.scale(outer)), centre.add(d0.scale(outer)),
                     0.0F, 0.0F, 1.0F, 1.0F, red, green, blue, alpha * Math.max(0.0F, k)));

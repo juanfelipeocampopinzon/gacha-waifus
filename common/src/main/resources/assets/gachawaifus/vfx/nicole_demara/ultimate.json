@@ -1,0 +1,1302 @@
+{
+ "schema": 1,
+ "id": "nicole_demara/ultimate",
+ "doc": "Granada de éter, sin cortes de cámara: la cinemática de ZZZ se reparte en el mundo. charge (0-1,3 s): sello naranja de pie en la boca del maletín, chispas que se juntan y el círculo de r 12 en el objetivo; a 1,0 s disparo (destello en estrella, temblor y rayo naranja de 0,2 s). collapse (1,2 s): una esfera negra con borde azul-rosa crece en el objetivo, se encoge de golpe a 1,5 s con destello blanco, halo erizado y rayos; aura naranja alrededor de Nicole. dome (1,7 s) y dome_hold (5,0 s): cúpula violeta de r 6,5 con núcleo negro anillado, línea dorada en el ecuador, estrellas, arrastre hacia dentro y tajos rosas. close (8,5 s): la cúpula se cierra y estalla a 9,7 s. Java: ULT_SHOT_TICK 20, ULT_BURST_TICK 30, ULT_FIELD_TICK 34 y campo de 160 ticks.",
+ "stages": {
+  "charge": {
+   "tier": "L",
+   "duration": 1.3,
+   "trigger": {
+    "clip": "animation.nicole_demara.blackhole_ult",
+    "at": 0.0
+   },
+   "layers": [
+    {
+     "type": "decal",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 0.45,
+     "duration": 0.75,
+     "plane": "vertical",
+     "radius": 0.95,
+     "texture": "sigil",
+     "blend": "additive",
+     "fade_in": 0.15,
+     "spin": 2.5,
+     "color": [
+      [
+       0,
+       "#ff9a2e",
+       0.9
+      ],
+      [
+       0.7,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ffffff",
+       1
+      ]
+     ]
+    },
+    {
+     "type": "glow",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 0.4,
+     "duration": 0.65,
+     "size": [
+      0.4,
+      1.9
+     ],
+     "color": [
+      [
+       0,
+       "#ff9a2e",
+       0
+      ],
+      [
+       0.5,
+       "#ff9a2e",
+       0.8
+      ],
+      [
+       1,
+       "#ffffff",
+       1
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 0.4,
+     "duration": 0.6,
+     "shape": "sphere",
+     "radius": 1.6,
+     "rate": 55,
+     "direction": "inward",
+     "speed": [
+      3.6,
+      4.6
+     ],
+     "lifetime": [
+      0.32,
+      0.4
+     ],
+     "size": [
+      0.2,
+      0.05
+     ],
+     "texture": "spark",
+     "blend": "additive",
+     "stretch": 1.0,
+     "color": [
+      [
+       0,
+       "#ff9a2e",
+       0
+      ],
+      [
+       0.3,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ffffff",
+       1
+      ]
+     ]
+    },
+    {
+     "type": "telegraph",
+     "anchor": "target",
+     "radius": 12,
+     "duration": 1.0,
+     "spin": 1.4,
+     "thickness": 0.22,
+     "fill_alpha": 0.06,
+     "color": [
+      [
+       0,
+       "#8a5cff",
+       0.45
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0.45
+      ]
+     ],
+     "fade_in": 0.6,
+     "at": 0.3
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 1.0,
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.3,
+      0.3
+     ],
+     "size": [
+      3.6,
+      0.4
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ff9a2e",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "projectile",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 1.0,
+     "duration": 0.2,
+     "y": 1.3,
+     "size": [
+      1.3,
+      1.5
+     ],
+     "trail": 0.16,
+     "texture": "soft_glow",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.5,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ff9a2e",
+       1
+      ]
+     ]
+    },
+    {
+     "type": "shake",
+     "at": 1.0,
+     "amplitude": 0.25,
+     "duration": 0.25
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:briefcase_muzzle",
+     "at": 1.0,
+     "count": 16,
+     "shape": "cone",
+     "radius": 0.35,
+     "direction": "bone",
+     "speed": [
+      6,
+      11
+     ],
+     "lifetime": [
+      0.15,
+      0.28
+     ],
+     "size": [
+      0.28,
+      0.05
+     ],
+     "texture": "spark",
+     "blend": "additive",
+     "stretch": 2.0,
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ff9a2e",
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "collapse": {
+   "tier": "L",
+   "duration": 0.8,
+   "trigger": {
+    "clip": "animation.nicole_demara.blackhole_ult",
+    "at": 1.2
+   },
+   "layers": [
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "y": 1.3,
+     "radius": [
+      0.3,
+      3.4
+     ],
+     "grow": 0.25,
+     "ease": "out",
+     "duration": 0.3,
+     "color": [
+      [
+       0,
+       "#0a0820",
+       0.95
+      ],
+      [
+       1,
+       "#0a0820",
+       0.95
+      ]
+     ],
+     "rim": 2.0,
+     "rim_color": "#3f8cff",
+     "rim_color2": "#ff4fd8"
+    },
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "at": 0.3,
+     "y": 1.3,
+     "radius": [
+      3.4,
+      0.2
+     ],
+     "grow": 0.15,
+     "ease": "in",
+     "duration": 0.16,
+     "color": [
+      [
+       0,
+       "#0a0820",
+       0.95
+      ],
+      [
+       1,
+       "#0a0820",
+       0.95
+      ]
+     ],
+     "rim": 3.0,
+     "rim_color": "#ffffff",
+     "rim_color2": "#7fd4ff"
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "at": 0.26,
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      0.3,
+      0.3
+     ],
+     "size": [
+      7.0,
+      3.0
+     ],
+     "texture": "spike_burst",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.5,
+       "#5a7dff",
+       1
+      ],
+      [
+       1,
+       "#3f8cff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "flash",
+     "anchor": "target",
+     "at": 0.3,
+     "duration": 0.4,
+     "intensity": 0.6,
+     "color": "#eef4ff"
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "at": 0.32,
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 14,
+     "speed": [
+      12,
+      18
+     ],
+     "lifetime": [
+      0.22,
+      0.32
+     ],
+     "size": [
+      1.0,
+      0.3
+     ],
+     "texture": "streak",
+     "stretch": 3.0,
+     "color": [
+      [
+       0,
+       "#1a1f6e",
+       0.95
+      ],
+      [
+       1,
+       "#3a2a8e",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "shake",
+     "anchor": "target",
+     "at": 0.3,
+     "amplitude": 0.55,
+     "duration": 0.4,
+     "radius": 24
+    },
+    {
+     "type": "glow",
+     "at": 0.35,
+     "offset": [
+      0,
+      1.0,
+      0
+     ],
+     "duration": 0.45,
+     "size": [
+      2.6,
+      4.6
+     ],
+     "color": [
+      [
+       0,
+       "#ffd27a",
+       0.9
+      ],
+      [
+       0.5,
+       "#ff9a2e",
+       0.7
+      ],
+      [
+       1,
+       "#ff9a2e",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "at": 0.35,
+     "offset": [
+      0,
+      1.0,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 1.2,
+     "count": 3,
+     "speed": [
+      0,
+      0.2
+     ],
+     "lifetime": [
+      0.4,
+      0.45
+     ],
+     "size": [
+      1.9,
+      0.2
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.5,
+       "#ffd27a",
+       1
+      ],
+      [
+       1,
+       "#ff9a2e",
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "dome": {
+   "tier": "L",
+   "duration": 3.5,
+   "trigger": {
+    "clip": "animation.nicole_demara.blackhole_ult",
+    "at": 1.7
+   },
+   "layers": [
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "hemisphere": true,
+     "radius": [
+      0.5,
+      6.5
+     ],
+     "ease": "out",
+     "duration": 3.5,
+     "color": [
+      [
+       0,
+       "#2b1a5e",
+       0.42
+      ],
+      [
+       1,
+       "#2b1a5e",
+       0.42
+      ]
+     ],
+     "rim": 1.5,
+     "rim_color": "#3f8cff",
+     "rim_color2": "#ff4fd8",
+     "grow": 0.5
+    },
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "y": 1.3,
+     "radius": [
+      0.1,
+      0.75
+     ],
+     "ease": "out",
+     "duration": 3.5,
+     "color": [
+      [
+       0,
+       "#05030c",
+       0.97
+      ],
+      [
+       1,
+       "#05030c",
+       0.97
+      ]
+     ],
+     "rim": 1.6,
+     "rim_color": "#7fd4ff",
+     "rim_color2": "#ffffff",
+     "grow": 0.3
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      3.5,
+      3.5
+     ],
+     "size": [
+      2.1,
+      2.1
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#7fd4ff",
+       0.0
+      ],
+      [
+       0.06,
+       "#7fd4ff",
+       0.95
+      ],
+      [
+       0.9,
+       "#3f8cff",
+       0.85
+      ],
+      [
+       1,
+       "#3f8cff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "target",
+     "at": 0.5,
+     "y": 1.3,
+     "radius": [
+      6.37,
+      6.37
+     ],
+     "duration": 3.0,
+     "thickness": [
+      0.14,
+      0.14
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffd27a",
+       0
+      ],
+      [
+       0.08,
+       "#ffd27a",
+       0.9
+      ],
+      [
+       0.92,
+       "#ffb070",
+       0.85
+      ],
+      [
+       1,
+       "#ffb070",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      2.0,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 4.6,
+     "rate": 26,
+     "duration": 3.5,
+     "speed": [
+      0,
+      0.4
+     ],
+     "lifetime": [
+      0.6,
+      1.1
+     ],
+     "size": [
+      0.35,
+      0.05
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0
+      ],
+      [
+       0.3,
+       "#ffffff",
+       0.9
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 6.0,
+     "rate": 50,
+     "duration": 3.5,
+     "direction": "inward",
+     "speed": [
+      7.5,
+      9.600000000000001
+     ],
+     "lifetime": [
+      0.55,
+      0.75
+     ],
+     "size": [
+      0.2,
+      0.05
+     ],
+     "texture": "mote",
+     "blend": "additive",
+     "stretch": 1.4,
+     "color": [
+      [
+       0,
+       "#ff4fd8",
+       0
+      ],
+      [
+       0.25,
+       "#ff4fd8",
+       0.9
+      ],
+      [
+       1,
+       "#3f8cff",
+       0.6
+      ]
+     ]
+    },
+    {
+     "type": "telegraph",
+     "anchor": "target",
+     "radius": 12,
+     "duration": 3.5,
+     "spin": 1.4,
+     "thickness": 0.22,
+     "fill_alpha": 0.06,
+     "color": [
+      [
+       0,
+       "#8a5cff",
+       0.45
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0.45
+      ]
+     ]
+    },
+    {
+     "type": "slash_arc",
+     "anchor": "target",
+     "at": 0.9,
+     "offset": [
+      0,
+      1.8,
+      0
+     ],
+     "radius": 3.6,
+     "arc_degrees": 150,
+     "width": 0.25,
+     "tilt": 35,
+     "duration": 0.7,
+     "texture": "arc_streak",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0.95
+      ],
+      [
+       0.4,
+       "#ffb0f0",
+       0.8
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "dome_hold": {
+   "tier": "L",
+   "duration": 3.5,
+   "trigger": {
+    "clip": "animation.nicole_demara.blackhole_ult",
+    "at": 5.0
+   },
+   "layers": [
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "hemisphere": true,
+     "radius": [
+      6.5,
+      6.5
+     ],
+     "ease": "out",
+     "duration": 3.5,
+     "color": [
+      [
+       0,
+       "#2b1a5e",
+       0.42
+      ],
+      [
+       1,
+       "#2b1a5e",
+       0.42
+      ]
+     ],
+     "rim": 1.5,
+     "rim_color": "#3f8cff",
+     "rim_color2": "#ff4fd8",
+     "fade_in": 0.2
+    },
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "y": 1.3,
+     "radius": [
+      0.75,
+      0.75
+     ],
+     "ease": "out",
+     "duration": 3.5,
+     "color": [
+      [
+       0,
+       "#05030c",
+       0.97
+      ],
+      [
+       1,
+       "#05030c",
+       0.97
+      ]
+     ],
+     "rim": 1.6,
+     "rim_color": "#7fd4ff",
+     "rim_color2": "#ffffff",
+     "fade_in": 0.2
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      3.5,
+      3.5
+     ],
+     "size": [
+      2.1,
+      2.1
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#7fd4ff",
+       0.0
+      ],
+      [
+       0.06,
+       "#7fd4ff",
+       0.95
+      ],
+      [
+       0.9,
+       "#3f8cff",
+       0.85
+      ],
+      [
+       1,
+       "#3f8cff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "target",
+     "at": 0.0,
+     "y": 1.3,
+     "radius": [
+      6.37,
+      6.37
+     ],
+     "duration": 3.5,
+     "thickness": [
+      0.14,
+      0.14
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffd27a",
+       0
+      ],
+      [
+       0.08,
+       "#ffd27a",
+       0.9
+      ],
+      [
+       0.92,
+       "#ffb070",
+       0.85
+      ],
+      [
+       1,
+       "#ffb070",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      2.0,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 4.6,
+     "rate": 26,
+     "duration": 3.5,
+     "speed": [
+      0,
+      0.4
+     ],
+     "lifetime": [
+      0.6,
+      1.1
+     ],
+     "size": [
+      0.35,
+      0.05
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0
+      ],
+      [
+       0.3,
+       "#ffffff",
+       0.9
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 6.0,
+     "rate": 50,
+     "duration": 3.5,
+     "direction": "inward",
+     "speed": [
+      7.5,
+      9.600000000000001
+     ],
+     "lifetime": [
+      0.55,
+      0.75
+     ],
+     "size": [
+      0.2,
+      0.05
+     ],
+     "texture": "mote",
+     "blend": "additive",
+     "stretch": 1.4,
+     "color": [
+      [
+       0,
+       "#ff4fd8",
+       0
+      ],
+      [
+       0.25,
+       "#ff4fd8",
+       0.9
+      ],
+      [
+       1,
+       "#3f8cff",
+       0.6
+      ]
+     ]
+    },
+    {
+     "type": "telegraph",
+     "anchor": "target",
+     "radius": 12,
+     "duration": 3.5,
+     "spin": 1.4,
+     "thickness": 0.22,
+     "fill_alpha": 0.06,
+     "color": [
+      [
+       0,
+       "#8a5cff",
+       0.45
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0.45
+      ]
+     ]
+    },
+    {
+     "type": "slash_arc",
+     "anchor": "target",
+     "at": 1.4,
+     "offset": [
+      0,
+      1.8,
+      0
+     ],
+     "radius": 3.6,
+     "arc_degrees": 150,
+     "width": 0.25,
+     "tilt": -30,
+     "duration": 0.7,
+     "texture": "arc_streak",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0.95
+      ],
+      [
+       0.4,
+       "#ffb0f0",
+       0.8
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    }
+   ]
+  },
+  "close": {
+   "tier": "L",
+   "duration": 1.6,
+   "trigger": {
+    "clip": "animation.nicole_demara.blackhole_ult",
+    "at": 8.5
+   },
+   "layers": [
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "hemisphere": true,
+     "radius": [
+      6.5,
+      0.3
+     ],
+     "ease": "in",
+     "duration": 1.2,
+     "color": [
+      [
+       0,
+       "#2b1a5e",
+       0.42
+      ],
+      [
+       1,
+       "#2b1a5e",
+       0.42
+      ]
+     ],
+     "rim": 1.5,
+     "rim_color": "#3f8cff",
+     "rim_color2": "#ff4fd8",
+     "grow": 1.2
+    },
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "y": 1.3,
+     "radius": [
+      0.75,
+      0.75
+     ],
+     "ease": "out",
+     "duration": 1.2,
+     "color": [
+      [
+       0,
+       "#05030c",
+       0.97
+      ],
+      [
+       1,
+       "#05030c",
+       0.97
+      ]
+     ],
+     "rim": 1.6,
+     "rim_color": "#7fd4ff",
+     "rim_color2": "#ffffff"
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 1,
+     "speed": [
+      0,
+      0
+     ],
+     "lifetime": [
+      1.2,
+      1.2
+     ],
+     "size": [
+      2.1,
+      2.1
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#7fd4ff",
+       0.0
+      ],
+      [
+       0.06,
+       "#7fd4ff",
+       0.95
+      ],
+      [
+       0.9,
+       "#3f8cff",
+       0.85
+      ],
+      [
+       1,
+       "#3f8cff",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "telegraph",
+     "anchor": "target",
+     "radius": 12,
+     "duration": 1.2,
+     "spin": 1.4,
+     "thickness": 0.22,
+     "fill_alpha": 0.06,
+     "color": [
+      [
+       0,
+       "#8a5cff",
+       0.45
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0.45
+      ]
+     ]
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "target",
+     "at": 1.2,
+     "y": 1.3,
+     "radius": [
+      0.5,
+      9.0
+     ],
+     "duration": 0.4,
+     "ease": "out",
+     "thickness": [
+      0.8,
+      0.1
+     ],
+     "texture": "ring_soft",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#7fd4ff",
+       0.8
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "at": 1.2,
+     "offset": [
+      0,
+      1.3,
+      0
+     ],
+     "count": 30,
+     "speed": [
+      7,
+      13
+     ],
+     "lifetime": [
+      0.25,
+      0.4
+     ],
+     "size": [
+      0.3,
+      0.05
+     ],
+     "texture": "spark",
+     "blend": "additive",
+     "stretch": 1.6,
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.5,
+       "#7fd4ff",
+       0.9
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "flash",
+     "anchor": "target",
+     "at": 1.2,
+     "duration": 0.3,
+     "intensity": 0.35
+    },
+    {
+     "type": "shake",
+     "anchor": "target",
+     "at": 1.2,
+     "amplitude": 0.35,
+     "duration": 0.35
+    }
+   ]
+  }
+ }
+}

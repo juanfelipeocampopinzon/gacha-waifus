@@ -1,0 +1,503 @@
+{
+ "schema": 1,
+ "id": "caesar/ultimate",
+ "doc": "Savage Smash. crouch (0-0,4 s): se agacha, brillo dorado, brasas que suben y el anillo de radio 8 (área real). leap (0,4 s): salto (Java ULT_JUMP 8) con estela dorada en la espada y el escudo. slam (1,15 s, Java ULT_SLAM 23): destello, temblor, dos ondas doradas hasta radio 8, cúpula naranja con núcleo blanco, estrella negra quemada en el suelo, estrellas magenta y chispas.",
+ "stages": {
+  "crouch": {
+   "tier": "M",
+   "duration": 0.5,
+   "trigger": {
+    "clip": "animation.caesar.ultimate",
+    "at": 0.0
+   },
+   "layers": [
+    {
+     "type": "glow",
+     "offset": [
+      0,
+      1.0,
+      0
+     ],
+     "duration": 0.45,
+     "size": [
+      0.8,
+      2.6
+     ],
+     "color": [
+      [
+       0,
+       "#ffd54a",
+       0
+      ],
+      [
+       1,
+       "#fff1a0",
+       0.6
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "offset": [
+      0,
+      0.1,
+      0
+     ],
+     "shape": "disc",
+     "radius": 1.2,
+     "rate": 50,
+     "duration": 0.45,
+     "direction": "up",
+     "speed": [
+      1.5,
+      3
+     ],
+     "lifetime": [
+      0.3,
+      0.5
+     ],
+     "size": [
+      0.14,
+      0.03
+     ],
+     "texture": "spark",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       1
+      ],
+      [
+       0.5,
+       "#ffd54a",
+       0.9
+      ],
+      [
+       1,
+       "#ff7a1a",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "telegraph",
+     "anchor": "ground",
+     "radius": 8,
+     "duration": 1.25,
+     "fade_in": 0.25,
+     "spin": 2.0,
+     "thickness": 0.22,
+     "fill_alpha": 0.05,
+     "color": [
+      [
+       0,
+       "#ffd54a",
+       0.7
+      ],
+      [
+       1,
+       "#ffab2e",
+       0.6
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "bone:sword_tip",
+     "rate": 30,
+     "duration": 0.4,
+     "shape": "sphere",
+     "radius": 0.8,
+     "direction": "inward",
+     "speed": [
+      2,
+      3
+     ],
+     "lifetime": [
+      0.25,
+      0.35
+     ],
+     "size": [
+      0.12,
+      0.03
+     ],
+     "texture": "mote",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0
+      ],
+      [
+       0.3,
+       "#ffd54a",
+       1
+      ],
+      [
+       1,
+       "#ffffff",
+       1
+      ]
+     ]
+    }
+   ]
+  },
+  "leap": {
+   "tier": "M",
+   "duration": 0.8,
+   "trigger": {
+    "clip": "animation.caesar.ultimate",
+    "at": 0.4
+   },
+   "layers": [
+    {
+     "type": "ribbon",
+     "bone": "sword_tip",
+     "duration": 0.75,
+     "lifetime": 0.2,
+     "width": [
+      0.4,
+      0.02
+     ],
+     "texture": "streak",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.5,
+       "#ffd54a",
+       0.9
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "ribbon",
+     "bone": "shield_face",
+     "duration": 0.75,
+     "lifetime": 0.16,
+     "width": [
+      0.5,
+      0.02
+     ],
+     "texture": "ribbon_soft",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0.8
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "ground",
+     "radius": [
+      0.3,
+      2.2
+     ],
+     "duration": 0.3,
+     "ease": "out",
+     "y": 0.05,
+     "thickness": [
+      0.4,
+      0.05
+     ],
+     "texture": "ring_soft",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0.9
+      ],
+      [
+       1,
+       "#ffd54a",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "ground",
+     "offset": [
+      0,
+      0.2,
+      0
+     ],
+     "count": 14,
+     "direction": "outward",
+     "speed": [
+      2,
+      4
+     ],
+     "lifetime": [
+      0.4,
+      0.7
+     ],
+     "size": [
+      0.5,
+      0.9
+     ],
+     "texture": "smoke",
+     "color": [
+      [
+       0,
+       "#d8c49a",
+       0.5
+      ],
+      [
+       1,
+       "#d8c49a",
+       0
+      ]
+     ],
+     "shape": "point"
+    }
+   ]
+  },
+  "slam": {
+   "tier": "L",
+   "duration": 1.5,
+   "trigger": {
+    "clip": "animation.caesar.ultimate",
+    "at": 1.15
+   },
+   "layers": [
+    {
+     "type": "flash",
+     "intensity": 0.45,
+     "duration": 0.25,
+     "color": "#fff3c0",
+     "scope": "world"
+    },
+    {
+     "type": "shake",
+     "amplitude": 0.5,
+     "duration": 0.4,
+     "radius": 20
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "ground",
+     "radius": [
+      0.5,
+      8
+     ],
+     "duration": 0.35,
+     "ease": "out",
+     "y": 0.08,
+     "thickness": [
+      1.4,
+      0.2
+     ],
+     "texture": "ring_soft",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ffd54a",
+       0.9
+      ],
+      [
+       1,
+       "#ff7a1a",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "sphere",
+     "anchor": "ground",
+     "hemisphere": true,
+     "radius": [
+      0.4,
+      4.5
+     ],
+     "grow": 0.3,
+     "ease": "out",
+     "duration": 0.6,
+     "color": [
+      [
+       0,
+       "#ff7a1a",
+       0.35
+      ],
+      [
+       1,
+       "#ffab2e",
+       0
+      ]
+     ],
+     "rim": 1.6,
+     "rim_color": "#fff1a0",
+     "rim_color2": "#ffffff",
+     "blend": "additive"
+    },
+    {
+     "type": "decal",
+     "anchor": "ground",
+     "radius": 2.6,
+     "duration": 1.5,
+     "fade_in": 0.05,
+     "texture": "star4",
+     "color": [
+      [
+       0,
+       "#140c1a",
+       0.85
+      ],
+      [
+       0.7,
+       "#140c1a",
+       0.6
+      ],
+      [
+       1,
+       "#140c1a",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "ground",
+     "offset": [
+      0,
+      1.0,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 2.2,
+     "count": 5,
+     "speed": [
+      0,
+      0.3
+     ],
+     "lifetime": [
+      0.35,
+      0.5
+     ],
+     "size": [
+      1.6,
+      0.2
+     ],
+     "texture": "star4",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ff4fd8",
+       0.95
+      ],
+      [
+       1,
+       "#ff4fd8",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "ground",
+     "offset": [
+      0,
+      0.4,
+      0
+     ],
+     "count": 50,
+     "direction": "outward",
+     "speed": [
+      5,
+      11
+     ],
+     "lifetime": [
+      0.3,
+      0.6
+     ],
+     "size": [
+      0.25,
+      0.04
+     ],
+     "texture": "spark",
+     "blend": "additive",
+     "stretch": 1.6,
+     "gravity": 0.4,
+     "color": [
+      [
+       0,
+       "#ffffff",
+       1
+      ],
+      [
+       0.4,
+       "#ffd54a",
+       0.95
+      ],
+      [
+       1,
+       "#ff7a1a",
+       0
+      ]
+     ],
+     "shape": "point"
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "ground",
+     "at": 0.08,
+     "radius": [
+      0.5,
+      8
+     ],
+     "duration": 0.45,
+     "ease": "out",
+     "y": 0.12,
+     "thickness": [
+      0.3,
+      0.06
+     ],
+     "texture": "ring_thin",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#fff1a0",
+       0.9
+      ],
+      [
+       1,
+       "#ffd54a",
+       0
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

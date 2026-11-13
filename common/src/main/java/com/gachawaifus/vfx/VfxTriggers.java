@@ -38,6 +38,12 @@ public final class VfxTriggers {
     }
     /** id de entidad -> último clip visto, para no repetir el stage en cada tick. */
     private static final Map<Integer, String> LAST_CLIP = new HashMap<>();
+    /**
+     * "id/controlador" -> último clip de ESE controlador. Con un solo mapa por entidad, un clip con
+     * efecto en un segundo controlador (el parry de Caesar mientras dura su especial) nunca se veía:
+     * siempre ganaba el del primero.
+     */
+    private static final Map<String, String> LAST_BY_CONTROLLER = new HashMap<>();
     private static final double RANGE = 64.0D;
     private static boolean scanned = false;
 
@@ -61,18 +67,37 @@ public final class VfxTriggers {
             if (!(entity instanceof GeoEntity geo) || entity.distanceToSqr(minecraft.player) > limit) {
                 continue;
             }
-            String clip = currentClip(geo, entity);
-            String previous = clip == null ? LAST_CLIP.remove(entity.getId()) : LAST_CLIP.put(entity.getId(), clip);
-            if (clip == null || clip.equals(previous)) {
+            AnimatableManager<?> manager = geo.getAnimatableInstanceCache().getManagerForId(entity.getId());
+            if (manager == null) {
                 continue;
             }
-            List<Target> targets = BY_CLIP.get(clip);
-            if (targets != null) {
-                for (Target target : targets) {
-                    VfxManager.playOn(target.effectId(), target.stage(), entity, target.at());
+            for (AnimationController<?> controller : manager.getAnimationControllers().values()) {
+                String key = entity.getId() + "/" + controller.getName();
+                String clip = runningClip(controller);
+                String previous = clip == null ? LAST_BY_CONTROLLER.remove(key) : LAST_BY_CONTROLLER.put(key, clip);
+                if (clip == null || clip.equals(previous)) {
+                    continue;
+                }
+                List<Target> targets = BY_CLIP.get(clip);
+                if (targets != null) {
+                    for (Target target : targets) {
+                        VfxManager.playOn(target.effectId(), target.stage(), entity, target.at());
+                    }
                 }
             }
         }
+        if (LAST_BY_CONTROLLER.size() > 4096) {
+            LAST_BY_CONTROLLER.clear(); // entidades que se fueron sin pasar por null
+        }
+    }
+
+    /** Clip que reproduce un controlador, o null si está parado. */
+    private static String runningClip(AnimationController<?> controller) {
+        if (controller.getAnimationState() != AnimationController.State.RUNNING) {
+            return null;
+        }
+        AnimationProcessor.QueuedAnimation queued = controller.getCurrentAnimation();
+        return queued == null || queued.animation() == null ? null : queued.animation().name();
     }
 
     /**
@@ -173,6 +198,7 @@ public final class VfxTriggers {
     public static void clearCache() {
         BY_CLIP.clear();
         LAST_CLIP.clear();
+        LAST_BY_CONTROLLER.clear();
         scanned = false;
     }
 }

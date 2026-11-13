@@ -1,0 +1,186 @@
+{
+ "schema": 1,
+ "id": "megumin/special",
+ "doc": "Magia especial de Megumin (cada 15 s): la explosion mediana de 4,5 bloques que antes era su ataque normal. Golpe instantaneo: destello, bola de fuego con nucleo blanco, anillo de choque raso y esquirlas, mas un mini-crater de radio 2,5 (config megumin.special_crater). Se dispara por casteo (VfxCasting), no por clip: Megumin es un modelo de jugador.",
+ "stages": {
+  "blast": {
+   "tier": "M",
+   "duration": 1.4,
+   "trigger": {
+    "at": 0.0
+   },
+   "doc": "Explosion mediana sobre el punto de impacto congelado (anchor target).",
+   "layers": [
+    {
+     "type": "flash",
+     "intensity": 0.42,
+     "duration": 0.14,
+     "scope": "world",
+     "color": "#ffe6b0"
+    },
+    {
+     "type": "sphere",
+     "anchor": "target",
+     "offset": [
+      0,
+      0.5,
+      0
+     ],
+     "radius": [
+      0.4,
+      4.2
+     ],
+     "grow": 0.18,
+     "hemisphere": true,
+     "texture": "solid",
+     "blend": "additive",
+     "rim": 1.6,
+     "rim_color": "#ffd27a",
+     "rim_color2": "#ff6a00",
+     "duration": 0.6,
+     "fade_in": 0.04,
+     "color": [
+      [
+       0,
+       "#fffbe8",
+       0.78
+      ],
+      [
+       0.35,
+       "#ffb347",
+       0.6
+      ],
+      [
+       1,
+       "#ff3c00",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      0.6,
+      0
+     ],
+     "shape": "sphere",
+     "radius": 3.0,
+     "texture": "flame_puff_8f",
+     "blend": "additive",
+     "count": 28,
+     "lifetime": [
+      0.45,
+      0.95
+     ],
+     "size": [
+      1.7,
+      0.45
+     ],
+     "speed": [
+      2,
+      7
+     ],
+     "direction": "outward",
+     "gravity": -0.03,
+     "color": [
+      [
+       0,
+       "#fff3c4",
+       1
+      ],
+      [
+       0.35,
+       "#ffab2e",
+       0.95
+      ],
+      [
+       0.75,
+       "#ff4a00",
+       0.6
+      ],
+      [
+       1,
+       "#7a1200",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "ring_wave",
+     "anchor": "target",
+     "radius": [
+      0.5,
+      7.5
+     ],
+     "thickness": [
+      0.45,
+      0.12
+     ],
+     "duration": 0.55,
+     "ease": "out",
+     "y": 0.1,
+     "texture": "ring_soft",
+     "blend": "additive",
+     "color": [
+      [
+       0,
+       "#ffffff",
+       0.9
+      ],
+      [
+       0.6,
+       "#ffb347",
+       0.7
+      ],
+      [
+       1,
+       "#ff3c00",
+       0
+      ]
+     ]
+    },
+    {
+     "type": "emitter",
+     "anchor": "target",
+     "offset": [
+      0,
+      0.5,
+      0
+     ],
+     "shape": "point",
+     "texture": "shard",
+     "blend": "alpha",
+     "count": 16,
+     "lifetime": [
+      0.9,
+      1.6
+     ],
+     "size": [
+      0.24,
+      0.06
+     ],
+     "speed": [
+      4,
+      9
+     ],
+     "direction": "outward",
+     "gravity": 1.2,
+     "color": [
+      [
+       0,
+       "#8a7a68",
+       1
+      ],
+      [
+       1,
+       "#2a2420",
+       0.7
+      ]
+     ]
+    }
+   ]
+  }
+ }
+}

@@ -28,7 +28,7 @@ public final class VfxInstance {
     private static final Set<String> BONE_WARNED = new HashSet<>();
     private static final Vec3 UP = new Vec3(0.0D, 1.0D, 0.0D);
     private static final Set<String> SUPPORTED = Set.of("emitter", "ring_wave", "glow", "telegraph",
-            "slash_arc", "flash", "shake");
+            "slash_arc", "flash", "shake", "decal", "clone", "sphere", "projectile");
 
     public final VfxStage stage;
     public Vec3 origin;
@@ -213,7 +213,7 @@ public final class VfxInstance {
     }
 
     /**
-     * Anclas: entity/ground/target = origen del efecto; {@code bone:<nombre>} = el hueso real de
+     * Anclas: entity/ground = origen del efecto; target = {@link #target()}; {@code bone:<nombre>} = el hueso real de
      * GeckoLib (los sopletes), con el {@code offset} aplicado dentro del hueso y su eje disponible
      * para {@code direction: "bone"}. Si no hay hueso (entidad que no es GeckoLib, o sin renderizar
      * todavía) se cae a la aproximación de siempre: altura del pecho.
@@ -228,7 +228,7 @@ public final class VfxInstance {
                 return new Anchor(pose.origin(), pose.axis());
             }
         }
-        Vec3 base = origin;
+        Vec3 base = "target".equals(layer.anchor) ? target() : origin;
         if (layer.anchor.startsWith("bone:")) {
             if (BONE_WARNED.add(layer.anchor)) {
                 LOG.info("[vfx] hueso '{}' no disponible (entidad sin GeckoLib, sin renderizar o nombre mal); uso la aproximacion del pecho", layer.anchor.substring("bone:".length()));
@@ -256,6 +256,22 @@ public final class VfxInstance {
         forward = forward.lengthSqr() < 1.0E-6D ? new Vec3(0.0D, 0.0D, 1.0D) : forward.normalize();
         Vec3 right = new Vec3(-forward.z, 0.0D, forward.x);
         return right.scale(offset.x).add(0.0D, offset.y, 0.0D).add(forward.scale(offset.z));
+    }
+
+    /**
+     * Punto donde cae la habilidad: el de la entidad si implementa {@link VfxTargeted}; si no lo
+     * sabe, 6 bloques delante del origen (así el comando de prueba también lo enseña).
+     */
+    public Vec3 target() {
+        if (anchorEntity instanceof VfxTargeted targeted) {
+            Vec3 point = targeted.vfxTarget();
+            if (point != null) {
+                return point;
+            }
+        }
+        Vec3 forward = new Vec3(look.x, 0.0D, look.z);
+        forward = forward.lengthSqr() < 1.0E-6D ? new Vec3(0.0D, 0.0D, 1.0D) : forward.normalize();
+        return origin.add(forward.scale(6.0D));
     }
 
     /** Punto del mundo de una capa sin hueso (ancla + offset local). */

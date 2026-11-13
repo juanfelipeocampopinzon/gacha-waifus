@@ -15,6 +15,7 @@ com/gachawaifus/command/ColorCommand.java
 com/gachawaifus/entity/BossSpawnConfig.java
 com/gachawaifus/entity/BossSpawnHandler.java
 com/gachawaifus/entity/client/WaifuSittingPose.java
+com/gachawaifus/entity/MeguminConfig.java
 com/gachawaifus/entity/RecallConfig.java
 com/gachawaifus/entity/WaifuRecallHandler.java
 com/gachawaifus/entity/WanderConfig.java

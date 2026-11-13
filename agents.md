@@ -169,14 +169,33 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
   edición (Blockbench) y se perderían. Si el humano renombra un clip o un hueso, `validate_vfx.py`
   lo detecta (cruza `trigger.clip` con `animations/<waifu>.animation.json` y `bone:<x>`/`bone` con
   `geo/<waifu>.geo.json`). Ejemplo canónico: `vfx/miyabi/ultimate.json`.
-- Efectos decididos por el servidor (impactos sobre enemigos, AoE) y waifus que no son GeoEntity:
-  paquete `VfxPacket` (**no existe hasta la FASE 1**); esos stages van sin `trigger`.
+- Waifus que **no** son GeoEntity (modelo de jugador, como Megumin) y efectos que decide el
+  servidor: no hay clip de animación que escuchar, así que el disparo va por **contador de casteo**.
+  La entidad implementa `VfxCasting` (`vfxEffectId()` + `vfxCastSeq()`, datos sincronizados) y
+  `VfxCasters` ve subir el contador en el cliente y lanza **todos** los stages del efecto con su
+  `trigger.at` como retardo. Esos stages llevan `"trigger": {"at": segundos}` **sin `clip`**
+  (el validador lo acepta). Ejemplo: `vfx/megumin/ultimate.json`. No hay paquete nuevo ni que
+  tocar los loaders.
 
 ### Reglas
 1. **Copia el ejemplo canónico** y cámbialo; no inventes claves. El validador rechaza cualquier clave,
    textura, forma o ancla que no esté en las listas cerradas:
-   - type: `emitter | ring_wave | telegraph | glow | slash_arc | ribbon | shake | flash`
-   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4 flame_8f flame_puff_8f orb note note_double light_beam`
+   - type: `emitter | ring_wave | telegraph | glow | slash_arc | ribbon | shake | flash | decal | clone | sphere | projectile`
+     (`sphere` = esfera o cúpula (`hemisphere: true`) translúcida: `radius` [inicio, fin] recorrido en
+     `grow` s con `ease`, cuerpo con `color` en alfa normal (puede ser oscuro: agujero negro) y borde
+     fresnel aditivo `rim` con `rim_color`/`rim_color2`; `projectile` = cabeza + estela que viaja del
+     ancla (o hueso) al objetivo en `duration` con `ease`, `arc` y `trail`)
+     (`slash_arc` acepta `reveal`: segundos que tarda en dibujarse; con `duration` larga el tajo flota.
+     Ojo con shaders: un sprite claro en `blend: alpha` se ve como mancha oscura, usa `additive`)
+     (`decal` = textura plana `plane: ground|vertical` con `radius`, giro por `angle` —curva de grados—
+     o `spin`; `clone` = la waifu redibujada translúcida en `offset`, con `rise` y `color`: solo funciona
+     si su renderer consulta `VfxClones`, como `TokisakiKurumiRenderer`)
+   - texturas: `soft_glow spark streak petal shard mote smoke ring_thin ring_soft arc_streak ribbon_soft star4 flame_8f flame_puff_8f orb note note_double light_beam clock_face clock_hand clock_hand_short solid sigil spike_burst ice_cracks cut_lines rune_ring scorch`
+     (`solid` = blanco liso para las esferas; `sigil` = sello de disparo; `spike_burst` = halo erizado; `ice_cracks` = grietas
+     radiales para el suelo; `cut_lines` = líneas de tajo; `rune_ring` = círculo mágico con el interior
+     TRANSPARENTE (aros, 24 radios y estrella), para `decal` apilados en el cielo; `scorch` = hollín
+     irregular con grietas, para el cráter. Un `decal` con textura `ring_*` se dibuja como
+     aro liso, no como sprite)
      (`note`/`note_double` se dibujan derechas con un leve balanceo; `light_beam` es un haz de foco
      siempre vertical, 4 veces más alto que ancho: su `size` es la ALTURA)
      (en gris de 3 niveles; el motor las tiñe con el degradado. Las `*_8f` son tiras de 8 cuadros 16x16
@@ -187,6 +206,8 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
    - direction: `outward inward up down forward random bone` (`forward` = hacia donde mira el ancla;
      `bone` = por el eje del hueso anclado, del pivote hacia la punta — es el que usa un soplete)
    - anchor: `entity | ground | target | bone:<hueso>` (el hueso debe existir en el `.geo.json`).
+     `target` = el punto donde cae la habilidad: la entidad implementa `VfxTargeted` y lo sincroniza
+     (ver `NicoleDemaraEntity`); sin eso cae 6 bloques delante. `vfx_preview.py --target N` lo coloca.
      Con `entity`/`ground` el `offset` es **relativo a la mirada**: `[x derecha, y arriba, z delante]`
      (`[0,1.2,1.4]` = delante del pecho mire donde mire). `ring_wave` también lo respeta.
      En un ancla `bone:` el `offset` va **dentro del hueso** (bloques, misma orientación que el geo):
@@ -204,8 +225,12 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
    | S | golpe | 40 | 3 | 0,6 s |
    | M | habilidad | 150 | 5 | 4 s |
    | L | ultimate | 400 | 8 | 3,5 s |
+   | XL | ultimate insignia | 1200 | 20 | 10 s |
    Prefiere pocas partículas grandes y suaves antes que muchas pequeñas. Todo stage lleva:
    anticipación, golpe y cola; un degradado con un acento; y contacto con el suelo si aplica.
+   **XL está reservado a la habilidad insignia del mod** (hoy solo la Explosión de Megumin): es el
+   único tier que admite más de 8 capas por stage y una duración de 10 s, porque encadena carga,
+   estallido y poso en el mismo efecto.
 3. **Los tiempos salen del clip**, no de los ticks de Java: un stage empieza en su `trigger` y su
    `duration` debe cubrir ese clip (mira `animation_length`). Un clip largo puede llevar **varios
    stages** con el mismo `clip` y distinto `trigger.at` (segundos desde que empieza el clip): así

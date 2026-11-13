@@ -23,7 +23,9 @@ RES = ROOT / "common" / "src" / "main" / "resources" / "assets" / "gachawaifus"
 
 TEXTURES = {"soft_glow", "spark", "streak", "petal", "shard", "mote", "smoke",
             "ring_thin", "ring_soft", "arc_streak", "ribbon_soft", "star4", "flame_8f",
-            "flame_puff_8f", "orb", "cube", "note", "note_double", "light_beam"}
+            "flame_puff_8f", "orb", "cube", "note", "note_double", "light_beam",
+            "clock_face", "clock_hand", "clock_hand_short", "solid", "sigil", "spike_burst", "ice_cracks", "cut_lines",
+            "rune_ring", "scorch"}
 
 BLENDS = {"additive", "alpha"}
 SHAPES = {"point", "disc", "ring", "cone", "line", "sphere"}
@@ -34,40 +36,60 @@ HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 ID_RE = re.compile(r"^[a-z0-9_]+(/[a-z0-9_]+)+$")
 CLIP_RE = re.compile(r"^animation\.[a-z0-9_]+\.[a-z0-9_]+$")
 
-MAX_LAYERS = 12
+MAX_LAYERS = 20
 MAX_LAYER_PARTICLES = 600
-# Estándar de calidad por slot: S = golpe, M = habilidad, L = ultimate.
+# Estándar de calidad por slot: S = golpe, M = habilidad, L = ultimate, XL = ultimate insignia
+# (una sola por roster: la Explosión de Megumin, con carga, estallido y poso de 6 s).
 TIERS = {"S": {"particles": 40, "layers": 3, "duration": 0.6},
          "M": {"particles": 150, "layers": 5, "duration": 4.0},
-         "L": {"particles": 400, "layers": 8, "duration": 3.5}}
+         "L": {"particles": 400, "layers": 8, "duration": 3.5},
+         "XL": {"particles": 1200, "layers": 20, "duration": 10.0}}
 
 COMMON = {"type": str, "at": "t", "anchor": "anchor", "offset": "vec3"}
 # tipo -> {clave: regla}. Las claves de COMMON se aceptan en todos los tipos.
 SPEC = {
-    "emitter": {"shape": SHAPES, "radius": (0, 32), "texture": TEXTURES, "blend": BLENDS,
+    "emitter": {"shape": SHAPES, "radius": (0, 64), "texture": TEXTURES, "blend": BLENDS,
                 "count": ("int", 0, 600), "rate": "curve", "duration": (0.05, 10),
-                "lifetime": ("pair", 0.05, 10), "size": ("pair", 0.01, 12),
+                "lifetime": ("pair", 0.05, 10), "size": ("pair", 0.01, 32),
                 "color": "gradient", "speed": ("pair", 0, 40), "direction": DIRECTIONS,
                 "gravity": (-2, 2), "swirl": (0, 20), "fade_in": (0, 5),
                 "stretch": (0, 4), "core": (0, 1)},
-    "ring_wave": {"radius": ("pair", 0, 32), "thickness": ("pair", 0.05, 8),
+    "ring_wave": {"radius": ("pair", 0, 64), "thickness": ("pair", 0.05, 8),
                   "duration": (0.05, 5), "ease": EASES, "y": (-4, 8),
                   "color": "gradient", "texture": {"ring_thin", "ring_soft"}, "blend": BLENDS},
-    "telegraph": {"radius": (0.5, 32), "spin": (-20, 20), "fill_alpha": (0, 1),
+    "telegraph": {"radius": (0.5, 64), "spin": (-20, 20), "fill_alpha": (0, 1),
                   "color": "gradient", "fade_in": (0, 5), "duration": (0.05, 10), "thickness": (0.02, 4),
                   "texture": {"ring_thin"}},
-    "glow": {"size": ("pair", 0.1, 24), "color": "gradient", "duration": (0.05, 10),
+    "glow": {"size": ("pair", 0.1, 64), "color": "gradient", "duration": (0.05, 10),
              "texture": {"soft_glow"}},
     "slash_arc": {"radius": (0.3, 16), "arc_degrees": (30, 360), "width": (0.1, 6),
                   "duration": (0.05, 2), "tilt": (-90, 90), "texture": {"arc_streak", "streak"},
+                  "reveal": (0.02, 2),
                   "color": "gradient"},
     "ribbon": {"bone": "bone", "width": ("pair", 0.02, 3), "lifetime": (0.05, 2),
                "duration": (0.05, 10), "color": "gradient",
                "texture": {"streak", "ribbon_soft"}},
-    "shake": {"amplitude": (0, 1), "duration": (0.05, 5), "radius": (1, 32),
+    "shake": {"amplitude": (0, 1), "duration": (0.05, 5), "radius": (1, 64),
               "falloff": {"linear", "none"}},
     "flash": {"intensity": (0, 1), "duration": (0.02, 1), "color": "hex",
               "scope": {"world", "screen"}},
+    # textura plana en el suelo o de pie tras la waifu (relojes, sellos, sombras). "angle" = curva de
+    # grados sobre la vida de la capa ([[0,0],[1,720]] = dos vueltas); sin angle gira a "spin" rad/s.
+    "decal": {"radius": (0.1, 64), "texture": TEXTURES, "blend": BLENDS, "color": "gradient",
+              "duration": (0.05, 10), "fade_in": (0, 5), "spin": (-20, 20), "angle": "angle",
+              "plane": {"ground", "vertical"}, "y": (-4, 64)},
+    # la waifu redibujada en otro sitio, translúcida y teñida (su renderer debe soportar VfxClones)
+    "clone": {"color": "gradient", "duration": (0.05, 10), "rise": (0, 4)},
+    # esfera o cúpula translúcida con borde fresnel (agujeros negros, campos). radius = [inicio, fin]
+    # recorrido en "grow" segundos; el cuerpo usa "color" con alfa normal (puede ser oscuro).
+    "sphere": {"radius": ("pair", 0, 64), "grow": (0.02, 10), "ease": EASES, "hemisphere": {True, False},
+               "color": "gradient", "rim": (0, 4), "rim_color": "hex", "rim_color2": "hex",
+               "duration": (0.05, 10), "fade_in": (0, 5), "y": (-4, 64), "texture": {"solid"},
+               "blend": BLENDS},
+    # proyectil del ancla (o hueso) al objetivo: "to" target = punto de VfxTargeted
+    "projectile": {"to": {"target", "forward"}, "duration": (0.05, 3), "ease": EASES, "arc": (-8, 8),
+                   "trail": (0, 1), "size": ("pair", 0.01, 6), "texture": TEXTURES, "blend": BLENDS,
+                   "color": "gradient", "y": (-4, 8)},
 }
 REQUIRED = {"emitter": {"shape", "texture", "color", "lifetime", "size"},
             "ring_wave": {"radius", "duration", "color"},
@@ -76,7 +98,11 @@ REQUIRED = {"emitter": {"shape", "texture", "color", "lifetime", "size"},
             "slash_arc": {"radius", "arc_degrees", "duration", "color"},
             "ribbon": {"bone", "lifetime", "width", "color"},
             "shake": {"amplitude", "duration"},
-            "flash": {"intensity", "duration"}}
+            "flash": {"intensity", "duration"},
+            "decal": {"radius", "texture", "color"},
+            "clone": {"offset", "color"},
+            "sphere": {"radius", "color"},
+            "projectile": {"size", "texture", "color", "duration"}}
 
 
 def num(v):
@@ -98,8 +124,8 @@ def check_value(path, key, rule, v, err):
         if not (isinstance(v, str) and re.match(r"^[a-z0-9_]+$", v)):
             err(f"{where}: nombre de hueso inválido")
     elif rule == "vec3":
-        if not (isinstance(v, list) and len(v) == 3 and all(num(x) and -32 <= x <= 32 for x in v)):
-            err(f"{where}: debe ser [x,y,z] entre -32 y 32")
+        if not (isinstance(v, list) and len(v) == 3 and all(num(x) and -48 <= x <= 48 for x in v)):
+            err(f"{where}: debe ser [x,y,z] entre -48 y 48")
     elif rule == "hex":
         if not (isinstance(v, str) and HEX_RE.match(v)):
             err(f"{where}: color #RRGGBB")
@@ -117,6 +143,11 @@ def check_value(path, key, rule, v, err):
             ok = ok and v[0][0] == 0 and v[-1][0] == 1
         if not ok:
             err(f"{where}: degradado = [[0,\"#rrggbb\",alfa], ..., [1,\"#rrggbb\",alfa]] con t ascendente")
+    elif rule == "angle":
+        if not (num(v) and -3600 <= v <= 3600) and not (isinstance(v, list) and len(v) >= 2 and all(
+                isinstance(p, list) and len(p) == 2 and num(p[0]) and 0 <= p[0] <= 1
+                and num(p[1]) and -3600 <= p[1] <= 3600 for p in v)):
+            err(f"{where}: grados o curva [[t0..1, grados], ...] entre -3600 y 3600")
     elif rule == "curve":
         if num(v):
             if not 0 <= v <= 400:
@@ -193,10 +224,13 @@ def validate_file(path, rel, errors):
             err(f"{sp}: duración {dur} s supera el máximo del tier {tier} ({lim['duration']} s)")
         trig = stage.get("trigger")
         if trig is not None:
+            # Dos formas: con clip de GeckoLib ({"clip": "animation.x.y", "at": s}) o solo "at"
+            # para los efectos que arranca el servidor/casteo (VfxCasters), sin animación.
             if not (isinstance(trig, dict) and set(trig) <= {"clip", "at"}
-                    and isinstance(trig.get("clip"), str) and CLIP_RE.match(trig["clip"])
-                    and (trig.get("at") is None or (num(trig["at"]) and 0 <= trig["at"] <= 10))):
-                err(f"{sp}.trigger: debe ser {{\"clip\": \"animation.<waifu>.<clip>\", \"at\": segundos}}")
+                    and (trig.get("at") is None or (num(trig["at"]) and 0 <= trig["at"] <= 10))
+                    and ("clip" not in trig or (isinstance(trig["clip"], str) and CLIP_RE.match(trig["clip"])))):
+                err(f"{sp}.trigger: debe ser {{\"clip\": \"animation.<waifu>.<clip>\", \"at\": segundos}}"
+                    f" o {{\"at\": segundos}} para efectos por casteo")
         layers = stage.get("layers")
         if not isinstance(layers, list) or not layers or len(layers) > MAX_LAYERS:
             err(f"{sp}.layers: lista de 1..{MAX_LAYERS} capas")

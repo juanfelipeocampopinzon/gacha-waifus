@@ -2,6 +2,9 @@ package com.gachawaifus.entity;
 
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
@@ -36,6 +39,9 @@ import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
 
+import com.gachawaifus.vfx.VfxTargeted;
+import org.joml.Vector3f;
+
 import software.bernie.geckolib.animatable.GeoEntity;
 import software.bernie.geckolib.animatable.instance.AnimatableInstanceCache;
 import software.bernie.geckolib.animation.AnimatableManager;
@@ -44,7 +50,7 @@ import software.bernie.geckolib.animation.PlayState;
 import software.bernie.geckolib.animation.RawAnimation;
 import software.bernie.geckolib.util.GeckoLibUtil;
 
-public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity {
+public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity, VfxTargeted {
     private final AnimatableInstanceCache cache = GeckoLibUtil.createInstanceCache(this);
 
     /** Alcance de cada habilidad, en bloques. Nicole dispara desde muy lejos. */
@@ -81,6 +87,46 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
     private static final float BLACK_HOLE_EX_DAMAGE = 2.5F;
     private static final double BLACK_HOLE_ULT_RADIUS = 12.0D;
     private static final float BLACK_HOLE_ULT_DAMAGE = 4.0F;
+
+    // --- Disparo sincronizado con la animacion y los VFX ------------------------------
+    // El campo se abre donde estaba el objetivo al disparar. Ese punto viaja al cliente como dato
+    // sincronizado para que los efectos "anchor: target" (proyectil, agujero negro, cupula) caigan
+    // en el mismo sitio que el dano. Los ticks salen de animations/nicole_demara (blackhole_ex 1,0 s
+    // y blackhole_ult 2,6 s) y de vfx/nicole_demara/*.json: cambiar uno obliga a cambiar el otro.
+    private static final EntityDataAccessor<Vector3f> DATA_FIELD_TARGET =
+            SynchedEntityData.defineId(NicoleDemaraEntity.class, EntityDataSerializers.VECTOR3);
+
+    /** EX: disparo a 0,35 s; la bala tarda 0,25 s y el campo (6 s) se abre a 0,6 s. */
+    private static final int EX_SHOT_TICK = 7;
+    private static final int EX_FIELD_TICK = 12;
+    /** Ultimate: disparo a 1,0 s, colapso y destello a 1,5 s, cupula (8 s) a 1,7 s. */
+    private static final int ULT_SHOT_TICK = 20;
+    private static final int ULT_BURST_TICK = 30;
+    private static final int ULT_FIELD_TICK = 34;
+    private static final float ULT_BURST_DAMAGE = 10.0F;
+
+    /** 0 = nada, 1 = EX, 2 = ultimate; castTicks cuenta desde que empezo la animacion. */
+    private int castType = 0;
+    private int castTicks = 0;
+    private Vec3 castTarget = Vec3.ZERO;
+
+    @Override
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
+        super.defineSynchedData(builder);
+        builder.define(DATA_FIELD_TARGET, new Vector3f());
+    }
+
+    @Override
+    public Vec3 vfxTarget() {
+        Vector3f point = this.entityData.get(DATA_FIELD_TARGET);
+        return point.lengthSquared() == 0.0F ? null : new Vec3(point.x, point.y, point.z);
+    }
+
+    /** Fija el punto del campo (servidor) antes de lanzar la animacion, para que el cliente lo tenga. */
+    private void aimField(Vec3 center) {
+        this.castTarget = center;
+        this.entityData.set(DATA_FIELD_TARGET, new Vector3f((float) center.x, (float) center.y, (float) center.z));
+    }
 
     public NicoleDemaraEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
@@ -156,6 +202,13 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         if (!this.level().isClientSide && this.blackHoleTicks > 0) {
             tickBlackHole();
         }
+        if (!this.level().isClientSide && this.castType != 0) {
+            tickCast();
+            if (this.castType == 2) {
+                // Durante la ultimate se queda plantada: el disparo sale de donde se ve.
+                this.getNavigation().stop();
+            }
+        }
 
         LivingEntity target = this.getTarget();
         if (target != null && target.isAlive() && !this.isOrderedToSit()) {
@@ -165,7 +218,9 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             // Prioridad 1: Ultimate "Ether Grenade" (el campo mas potente)
-            if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
+            if (this.castType != 0) {
+                // Hay un disparo en curso: no se pisan las habilidades.
+            } else if (this.ultimateCooldown <= 0 && distanceSq <= ULTIMATE_RANGE * ULTIMATE_RANGE) {
                 performUltimate(target);
             }
             // Prioridad 2: EX Special "Stuffed Sugarcoated Bullet" (campo de energia)
@@ -213,12 +268,12 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         this.playVoice("attack");
         this.specialSkillCooldown = 220; // ~11 segundos
 
+        // El campo se abre donde esta el objetivo, asi el alcance largo sirve de verdad; el
+        // disparo y la apertura llegan en tickCast, al ritmo de la animacion.
+        aimField(target != null ? target.position() : this.position());
+        this.castType = 1;
+        this.castTicks = 0;
         this.triggerAnim("attack_controller", "blackhole_ex");
-
-        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1.6F, 1.3F);
-        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.4F, 1.2F);
 
         if (this.getOwner() instanceof Player player) {
             // Es soporte: el campo tambien buffea al dueño.
@@ -226,10 +281,6 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             player.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
         }
 
-        // El campo se abre donde esta el objetivo, asi el alcance largo sirve de verdad.
-        Vec3 center = (target != null ? target.position() : this.position());
-        openBlackHole(center, BLACK_HOLE_EX_RADIUS, BLACK_HOLE_EX_DAMAGE,
-                BLACK_HOLE_EX_TICKS, false);
     }
 
     /**
@@ -242,12 +293,13 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         this.playVoice("attack", true);
         this.ultimateCooldown = 650; // ~32.7 segundos
 
+        aimField(target != null ? target.position() : this.position());
+        this.castType = 2;
+        this.castTicks = 0;
         this.triggerAnim("attack_controller", "blackhole_ult");
 
         this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
                 SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.PLAYERS, 2.0F, 1.1F);
-        this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
-                SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 2.0F, 0.8F);
 
         if (this.getOwner() instanceof Player player) {
             player.sendSystemMessage(Component.translatable("message.gachawaifus.nicole_demara.1"));
@@ -257,10 +309,48 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             player.addEffect(new MobEffectInstance(MobEffects.LUCK, 400, 1));
         }
 
-        // El agujero negro se abre sobre el objetivo: alcance largo de verdad.
-        Vec3 center = (target != null ? target.position() : this.position());
-        openBlackHole(center, BLACK_HOLE_ULT_RADIUS, BLACK_HOLE_ULT_DAMAGE,
-                BLACK_HOLE_ULT_TICKS, true);
+    }
+
+    /**
+     * Avanza el disparo en curso al ritmo de la animacion: sonido del disparo, (ultimate) el
+     * colapso con su golpe y, por ultimo, la apertura del campo en el punto fijado.
+     */
+    private void tickCast() {
+        this.castTicks++;
+        Vec3 c = this.castTarget;
+        if (this.castType == 1) {
+            if (this.castTicks == EX_SHOT_TICK) {
+                this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                        SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.PLAYERS, 1.2F, 0.7F);
+            } else if (this.castTicks >= EX_FIELD_TICK) {
+                this.level().playSound(null, c.x, c.y, c.z,
+                        SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 1.6F, 1.3F);
+                this.level().playSound(null, c.x, c.y, c.z,
+                        SoundEvents.BELL_BLOCK, SoundSource.PLAYERS, 1.4F, 1.2F);
+                openBlackHole(c, BLACK_HOLE_EX_RADIUS, BLACK_HOLE_EX_DAMAGE, BLACK_HOLE_EX_TICKS, false);
+                this.castType = 0;
+            }
+            return;
+        }
+        if (this.castTicks == ULT_SHOT_TICK) {
+            this.level().playSound(null, this.getX(), this.getY(), this.getZ(),
+                    SoundEvents.GENERIC_EXPLODE.value(), SoundSource.PLAYERS, 1.0F, 1.6F);
+        } else if (this.castTicks == ULT_BURST_TICK) {
+            // Colapso: el destello blanco y el golpe inicial a todo lo que haya en la cupula.
+            this.level().playSound(null, c.x, c.y, c.z,
+                    SoundEvents.WARDEN_SONIC_BOOM, SoundSource.PLAYERS, 1.6F, 1.2F);
+            AABB area = new AABB(c, c).inflate(BLACK_HOLE_ULT_RADIUS);
+            for (LivingEntity e : this.level().getEntitiesOfClass(LivingEntity.class, area,
+                    e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity)
+                            && !(e instanceof Player) && e.distanceToSqr(c) <= BLACK_HOLE_ULT_RADIUS * BLACK_HOLE_ULT_RADIUS)) {
+                e.hurt(this.damageSources().magic(), ULT_BURST_DAMAGE);
+            }
+        } else if (this.castTicks >= ULT_FIELD_TICK) {
+            this.level().playSound(null, c.x, c.y, c.z,
+                    SoundEvents.PORTAL_TRIGGER, SoundSource.PLAYERS, 2.0F, 0.8F);
+            openBlackHole(c, BLACK_HOLE_ULT_RADIUS, BLACK_HOLE_ULT_DAMAGE, BLACK_HOLE_ULT_TICKS, true);
+            this.castType = 0;
+        }
     }
 
     /** Abre el campo de energia en un punto. */
@@ -273,14 +363,7 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
         this.blackHoleTicks = ticks;
         this.blackHoleDamageTimer = BLACK_HOLE_DAMAGE_INTERVAL;
         this.blackHoleUltimate = ultimate;
-
-        if (this.level() instanceof ServerLevel serverLevel) {
-            // Estallido de apertura
-            serverLevel.sendParticles(ParticleTypes.FLASH,
-                    center.x, center.y + 1.2, center.z, 3, 0.3, 0.3, 0.3, 0.0);
-            serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
-                    center.x, center.y + 1.2, center.z, 40, 1.0, 1.0, 1.0, 0.25);
-        }
+        // Apertura, vortice y cierre los dibujan los stages de vfx/nicole_demara (special y ultimate).
     }
 
     /**
@@ -323,36 +406,10 @@ public class NicoleDemaraEntity extends AbstractWaifuEntity implements GeoEntity
             }
         }
 
-        if (this.level() instanceof ServerLevel serverLevel) {
-            // Vortice: portales girando hacia dentro, mas densos en la ultimate.
-            int brazos = this.blackHoleUltimate ? 18 : 12;
-            double giro = (this.blackHoleTicks * 0.35D);
-            double cierre = 1.0D - (this.blackHoleTicks % 40) / 40.0D;   // va cerrándose
-            for (int i = 0; i < brazos; i++) {
-                double angulo = giro + i * (Math.PI * 2.0D / brazos);
-                double radio = this.blackHoleRadius * (0.35D + 0.65D * (1.0D - cierre));
-                serverLevel.sendParticles(ParticleTypes.PORTAL,
-                        center.x + Math.cos(angulo) * radio,
-                        center.y + 1.0D + Math.sin(giro + i) * 0.6D,
-                        center.z + Math.sin(angulo) * radio,
-                        2, 0.15, 0.15, 0.15, 0.02);
-            }
-            if (this.blackHoleTicks % 4 == 0) {
-                serverLevel.sendParticles(ParticleTypes.REVERSE_PORTAL,
-                        center.x, center.y + 1.2D, center.z, 10, 0.6, 0.6, 0.6, 0.1);
-                serverLevel.sendParticles(ParticleTypes.ENCHANTED_HIT,
-                        center.x, center.y + 1.0D, center.z, 6, 0.8, 0.5, 0.8, 0.15);
-            }
-
-            // Al cerrarse, un fogonazo final.
-            if (this.blackHoleTicks <= 0) {
-                serverLevel.sendParticles(ParticleTypes.FLASH,
-                        center.x, center.y + 1.2D, center.z, 2, 0.2, 0.2, 0.2, 0.0);
-                serverLevel.sendParticles(ParticleTypes.EXPLOSION_EMITTER,
-                        center.x, center.y + 1.0D, center.z, 1, 0, 0, 0, 0);
-                this.level().playSound(null, this.blackHoleX, this.blackHoleY, this.blackHoleZ,
-                        SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.4F, 0.7F);
-            }
+        // Al cerrarse, el sonido final (el colapso lo dibuja el stage "close").
+        if (this.blackHoleTicks <= 0) {
+            this.level().playSound(null, this.blackHoleX, this.blackHoleY, this.blackHoleZ,
+                    SoundEvents.ENDERMAN_TELEPORT, SoundSource.PLAYERS, 1.4F, 0.7F);
         }
     }
 

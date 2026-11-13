@@ -4,6 +4,109 @@ Todas las notas de versión del mod en orden cronológico descendente.
 
 ---
 
+## [7.8.0] — 2026-11-13
+
+### ✨ Motor de efectos (VFX) en uso: Hatsune Miku y Tokisaki Kurumi con kit completo
+- **Motor** (`common/.../vfx/`, NeoForge y Fabric): además de emisores, ondas, brillos y cintas, ahora
+  dibuja `telegraph` (círculo de aviso con el radio real del daño), `slash_arc` (tajos), `flash`
+  (respeta «Ocultar destellos» y `/gwvfx flash off`), `shake` (sigue «Efectos de distorsión»),
+  `decal` (texturas planas en el suelo o de pie: el reloj de Kurumi) y `clone` (la waifu redibujada
+  como sombra translúcida). Varios stages por clip con `trigger.at`; los `offset` van relativos a la
+  mirada; las ondas grandes se dibujan como coronas finas (antes, sprite estirado a cuadros).
+- **Hatsune Miku**: animaciones nuevas (batuta 0,6 s, onda de voz 1,4 s, «Live!» 3 s), el daño cae en
+  el fotograma del golpe y tres efectos (notas, anillos de sonido, focos de escenario, el drop).
+- **Tokisaki Kurumi** pasa a **GeckoLib** (mismo modelo cubo a cubo, mosquete en su propio hueso
+  `musket` con la boca en `musket_muzzle`) con 7 clips: idle, walk, aim, attack (disparo), strike
+  (culatazo), special y ultimate.
+  - Especial **«Sombras»**: su sombra se extiende y tres clones emergen de ella y disparan con ella
+    tres andanadas (balas reales desde cada clon; la primera ralentiza).
+  - Definitiva **«Zafkiel: Zayin»**: el reloj gigante aparece a su espalda, dispara la séptima bala al
+    cielo y **detiene el tiempo 4 s** a todo lo que esté en el reloj (radio 8); al reanudarse llega
+    el golpe de todo el daño acumulado.
+- **Nicole Demara**: el agujero negro se abre **sobre el objetivo** y se ve donde hace daño.
+  - Especial: el maletín apunta como un cañón, la bala viaja hasta el objetivo y allí crece un
+    agujero negro con borde azul-rosa que se traga lo de alrededor durante 6 s.
+  - Definitiva: sello naranja en la boca del maletín, rayo, una esfera negra que colapsa con un
+    destello blanco (golpe inicial de 10) y una **cúpula violeta** de 8 s con núcleo negro, ecuador
+    dorado y estrellas. Animaciones nuevas (1,0 s y 2,6 s) y el daño llega al ritmo del disparo.
+  - Motor: capas `sphere` (esferas y cúpulas con borde brillante) y `projectile`, ancla `target`
+    y hueso `briefcase_muzzle` en la punta del maletín. Lo aditivo se dibuja siempre encima.
+- **Hoshimi Miyabi**: modelo nuevo (katana retocada, textura nueva) y un kit de **fuego azul que
+  congela**.
+  - Normal: dos tajos de ida y vuelta, cada uno con su golpe.
+  - Especial: dash con dos estelas turquesa de su cuerpo, anillo cian de pie, una media luna que barre
+    de abajo a encima de la cabeza con estrellas en la punta de la katana, dos tajos más y líneas de
+    corte magenta que se apagan a naranja en el suelo.
+  - Definitiva: tajos en X, el gran tajo vertical rojo y grietas de hielo de radio 9 con fuego azul
+    subiendo por toda el área. El golpe ya no se adelanta 4 ticks al tajo.
+  Los tajos se dibujan rápido y se quedan **flotando** en el aire mientras se apagan.
+- **Caesar**: kit nuevo, dorado y sencillo.
+  - Especial **Parry Counter**: guardia con el escudo y un contorno dorado sobre su cuerpo, más un buff
+    de defensa para ella y su dueño. Si algo la golpea durante la guardia, **lo para** (estallido azul
+    y empujón al atacante) y el contraataque pega más fuerte. Remata con un empujón de escudo y un tajo
+    ascendente, y deja su estrella negra.
+  - Definitiva **Savage Smash**: se agacha, salta de verdad hacia el objetivo y cae golpeando con
+    espada y escudo: ondas doradas hasta radio 8, cúpula naranja y estrella quemada en el suelo.
+- **Motor**: los efectos ahora saltan **por controlador** (un clip de un segundo controlador ya no
+  queda tapado), los tajos aceptan `reveal` y las partículas claras pasan a aditivas (con shaders, el
+  alfa normal salía como manchas oscuras).
+- **Herramientas**: `tools/vfx_preview.py` (previsualiza un efecto sin abrir el juego: hoja de
+  fotogramas y GIF), sprites nuevos `note`, `note_double`, `light_beam`, `clock_face`, `clock_hand`,
+  `clock_hand_short`, `solid`, `sigil`, `spike_burst`, `ice_cracks`, `cut_lines` y `/gwvfx waifu <waifu>/<efecto>` para lanzar una habilidad entera.
+
+### 💥 Megumin: la Explosión, habilidad insignia del mod
+- **La ultimate destruye el mundo de verdad.** Radio 20 (cráter de 40 bloques de diámetro) y 33.000
+  bloques, cavados como una onda expansiva a **600 bloques/tick** para no congelar el servidor. Los
+  bloques se **pulverizan sin drops** (33.000 ítems serían un problema de rendimiento). Respeta
+  `mobGriefing` y se apaga con la sección `megumin` de la config COMMON
+  (`enabled`, `radius` 4–32, `blocks_per_tick`, `drops`, `respect_mob_griefing`, `damage`,
+  `cooldown`, `special_crater`). Nunca rompe bedrock, barreras, command blocks,
+  structure blocks, portal del End ni bloques con BlockEntity, y respeta el `getDestroySpeed` -1.
+- **Explota en el punto congelado del objetivo**, no sobre ella: Megumin se queda en el borde del
+  cráter, como en el anime. Ella y su dueño son inmunes; los jugadores en creativo/espectador
+  tampoco reciben el golpe.
+- **Es una artillera a distancia**: lanza la Explosión sobre un objetivo a **32 bloques** y el cráter
+  cae allí, no en sus pies.
+- **3 s de carga** (60 ticks, clavada en el sitio y mirando al punto de impacto) y luego el golpe:
+  daño 64 en el centro con caída radial hasta 6 en el borde, empujón y fuego. Después queda agotada
+  (lentitud IV + debilidad II, 20 s), fiel al personaje.
+- **Sin ataque normal** (nerfeo pedido por el humano): sus dos únicas habilidades son la **especial**
+  (22 de daño + debilidad, ahora a 16 bloques) y la **Explosión**. Si las dos están en recarga se
+  queda mirando.
+- **La explosión mediana del ataque normal no se pierde, se reparte en dos sitios:**
+  - Su **núcleo** (bola blanca incandescente, estallido de llamas, anillo raso de 9 y esquirlas) está
+    dentro del estallido de la Explosión, que así tiene un corazón compacto y legible bajo la cúpula.
+  - La **especial** (la habilidad que más usa, cada 15 s) **es** esa explosión mediana: VFX completo
+    en `vfx/megumin/special.json` (tier M, 5 capas: destello, bola de 4,2, 28 llamas, anillo de 7,5 y
+    esquirlas, 1,4 s) en lugar de las partículas de vanilla que tenía, y **mini-cráter de radio 2,5**
+    (`megumin.special_crater`, configurable; 0 = no rompe nada). Su radio es `double`, así que 2,5
+    significa 2,5 y no se redondea a 2 o 3.
+- **VFX calcado de la escena (0:17–1:55)**, en tres stages de tier **XL** nuevo:
+  - `charge` (3 s): telegraph de 22 bloques, chispas que convergen, aura cian con rayos, orbe magenta
+    en la mano, fuego a los pies, columna de luz y una **torre de 6 círculos mágicos** que se encienden
+    de abajo arriba, **cada uno más grande que el de abajo** (y 4 / 8,5 / 13,5 / 19 / 25 / 31, radios
+    3,0 → 8,1), girando en sentidos alternos.
+  - `blast` (2,6 s): destello de mundo y de pantalla, el núcleo de la explosión mediana en el centro,
+    cúpula de fuego de 18 bloques con borde fresnel,
+    ondas de choque de 26 y 42, columna de fuego, rayos cian, 80 escombros, ascuas, hongo de humo,
+    hollín y temblor de 32 bloques.
+  - `aftermath` (6 s): columna de humo, humo raso por el borde del cráter, anillo de fuego, ascuas,
+    ceniza cayendo, hollín persistente y temblor de cola.
+- **Disparo sin clip de animación.** Megumin es un modelo de jugador, no una GeoEntity, así que no hay
+  clip que escuchar: la entidad implementa **`VfxCasting`** (`vfxEffectId()` + `vfxCastSeq()` en datos
+  sincronizados) y **`VfxCasters`** ve subir el contador en el cliente y lanza todos los stages con su
+  `trigger.at`. Sin paquetes nuevos ni cambios en los loaders. Los stages de este efecto llevan
+  `"trigger": {"at": s}` **sin `clip`**.
+- **Sonido**: capas de `BEACON_ACTIVATE` + `FIREWORK_ROCKET_LAUNCH` al cargar, `WARDEN_SONIC_CHARGE`
+  a mitad, y al detonar `DRAGON_FIREBALL_EXPLODE` + `GENERIC_EXPLODE` + `LIGHTNING_BOLT_THUNDER`
+  (más `FIRE_AMBIENT`/`FIRE_EXTINGUISH` mientras el cráter humea). Todo vanilla, sin assets nuevos.
+- **Herramientas**: tier `XL` en `validate_vfx.py` (1200 partículas / 20 capas / 10 s) con los rangos
+  de radio, `y` y `offset` ampliados; sprites nuevos **`rune_ring`** (círculo mágico con el interior
+  transparente) y **`scorch`** (hollín con grietas), generados por `gen_vfx_sprites.py`;
+  `CAPS["XL"]` en `vfx_preview.py`.
+
+---
+
 ## [7.6.4] — 2026-11-11
 
 ### 🔧 Convención de rotación corregida desde el bytecode: las coletas de Miku vuelven a abrirse
