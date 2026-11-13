@@ -30,10 +30,12 @@ public final class Particle {
     public final float swirl;
     /** Eje perpendicular a la velocidad sobre el que ondula. */
     public final Vec3 wobble;
+    /** Giro de tono por partícula (0 = ninguna, 1 = vuelta completa). */
+    public final float rainbow;
 
     public Particle(Vec3 pos, Vec3 vel, float life, float sizeStart, float sizeEnd,
                     Gradient color, String texture, boolean additive, float phase, float gravity,
-                    float stretch, float core, float swirl, Vec3 wobble) {
+                    float stretch, float core, float swirl, Vec3 wobble, float rainbow) {
         this.pos = pos;
         this.vel = vel;
         this.life = life;
@@ -48,6 +50,7 @@ public final class Particle {
         this.core = core;
         this.swirl = swirl;
         this.wobble = wobble;
+        this.rainbow = rainbow;
     }
 
     public boolean alive() {

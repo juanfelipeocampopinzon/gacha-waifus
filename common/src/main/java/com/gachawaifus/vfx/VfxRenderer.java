@@ -39,19 +39,23 @@ public final class VfxRenderer {
     }
 
     public static void render(Matrix4f modelView, Camera camera, float partialTick) {
+        render(modelView, RenderSystem.getProjectionMatrix(), camera, partialTick);
+    }
+
+    public static void render(Matrix4f modelView, Matrix4f projectionMatrix, Camera camera, float partialTick) {
         if (failed) {
             return;
         }
         // El prototipo no debe tumbar el juego: si el dibujo revienta, se apaga una vez y queda en el log.
         try {
-            renderNow(modelView, camera, partialTick);
+            renderNow(modelView, projectionMatrix, camera, partialTick);
         } catch (RuntimeException exception) {
             failed = true;
             org.slf4j.LoggerFactory.getLogger("gachawaifus-vfx").error("[vfx] el dibujo fallo y se desactiva", exception);
         }
     }
 
-    private static void renderNow(Matrix4f modelView, Camera camera, float partialTick) {
+    private static void renderNow(Matrix4f modelView, Matrix4f projectionMatrix, Camera camera, float partialTick) {
         List<VfxInstance> instances = VfxManager.instances();
         if (instances.isEmpty()) {
             return;
@@ -100,6 +104,7 @@ public final class VfxRenderer {
         RenderSystem.disableCull();
         RenderSystem.depthMask(false);
         RenderSystem.enableDepthTest();
+        RenderSystem.depthFunc(515); // GL_LEQUAL (515): evita que se corten contra el cielo o con shaders
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
 
         // Primero lo de alfa normal (humo, sombras, el cuerpo oscuro de un agujero negro) y después
@@ -107,8 +112,8 @@ public final class VfxRenderer {
         List<Map.Entry<Group, List<Quad>>> ordered = new ArrayList<>(groups.entrySet());
         ordered.sort((first, second) -> Boolean.compare(first.getKey().additive(), second.getKey().additive()));
         for (Map.Entry<Group, List<Quad>> entry : ordered) {
-            boolean isRing = entry.getKey().texture().startsWith("ring_") || entry.getKey().flat();
-            if (isRing) {
+            boolean onGround = entry.getKey().flat();
+            if (onGround) {
                 RenderSystem.enablePolygonOffset();
                 RenderSystem.polygonOffset(-1.0F, -10.0F);
             }
@@ -117,8 +122,8 @@ public final class VfxRenderer {
             } else {
                 RenderSystem.defaultBlendFunc();
             }
-            draw(entry.getKey().texture(), entry.getValue(), modelView, minecraft);
-            if (isRing) {
+            draw(entry.getKey().texture(), entry.getValue(), modelView, projectionMatrix, minecraft);
+            if (onGround) {
                 RenderSystem.disablePolygonOffset();
             }
         }
@@ -126,6 +131,7 @@ public final class VfxRenderer {
         RenderSystem.disableBlend();
         RenderSystem.enableCull();
         RenderSystem.depthMask(true);
+        RenderSystem.depthFunc(515);
         RenderSystem.defaultBlendFunc();
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
     }
@@ -207,6 +213,14 @@ public final class VfxRenderer {
         float red = color[0];
         float green = color[1];
         float blue = color[2];
+        if (particle.rainbow > 0.0F) {
+            // Giro de tono por partícula: con el mismo degradado cada chispa sale de otro color
+            // (las partículas "de colores" del addon de referencia).
+            float[] rgb = hueShift(red, green, blue, particle.phase * particle.rainbow);
+            red = rgb[0];
+            green = rgb[1];
+            blue = rgb[2];
+        }
         if (particle.additive) {
             red = Math.min(1.0F, red * 1.25F);
             green = Math.min(1.0F, green * 1.25F);
@@ -495,10 +509,13 @@ public final class VfxRenderer {
         Vec3 axisA;
         Vec3 axisB;
         boolean flat = !"vertical".equals(layer.plane);
+        boolean onGround = flat && Math.abs(layer.y) < 0.5D;
         if (flat) {
             axisA = X_AXIS;
             axisB = Z_AXIS;
-            centre = centre.add(0.0D, 0.05D, 0.0D);
+            if (onGround) {
+                centre = centre.add(0.0D, 0.05D, 0.0D);
+            }
         } else {
             Vec3 forward = new Vec3(instance.look.x, 0.0D, instance.look.z);
             forward = forward.lengthSqr() < 1.0E-6D ? Z_AXIS : forward.normalize();
@@ -508,7 +525,7 @@ public final class VfxRenderer {
         if (layer.texture.startsWith("ring_")) {
             // Un aro como decal (el anillo de pie de Miyabi): corona lisa, no el sprite de 32 px estirado.
             float width = layer.radius * ("ring_thin".equals(layer.texture) ? 0.05F : 0.12F);
-            addAnnulus(groups, centre, axisA, axisB, layer.radius * 0.9F, width, angle, 0.0F, layer.additive, flat,
+            addAnnulus(groups, centre, axisA, axisB, layer.radius * 0.9F, width, angle, 0.0F, layer.additive, onGround,
                     color[0], color[1], color[2], color[3] * fade);
             return;
         }
@@ -517,7 +534,7 @@ public final class VfxRenderer {
         float sin = Mth.sin(angle);
         Vec3 right = axisA.scale(cos).add(axisB.scale(-sin)).scale(layer.radius);
         Vec3 up = axisA.scale(sin).add(axisB.scale(cos)).scale(layer.radius);
-        groups.computeIfAbsent(new Group(layer.texture, layer.additive, flat), key -> new ArrayList<>())
+        groups.computeIfAbsent(new Group(layer.texture, layer.additive, onGround), key -> new ArrayList<>())
                 .add(new Quad(centre.subtract(right).subtract(up), centre.add(right).subtract(up),
                         centre.add(right).add(up), centre.subtract(right).add(up),
                         0.0F, 0.0F, 1.0F, 1.0F, color[0], color[1], color[2], color[3] * fade));
@@ -745,7 +762,7 @@ public final class VfxRenderer {
 
     // ------------------------------------------------------------------ dibujo
 
-    private static void draw(String texture, List<Quad> quads, Matrix4f modelView, Minecraft minecraft) {
+    private static void draw(String texture, List<Quad> quads, Matrix4f modelView, Matrix4f projectionMatrix, Minecraft minecraft) {
         BufferBuilder buffer = Tesselator.getInstance().begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_TEX_COLOR);
         for (Quad quad : quads) {
             vertex(buffer, quad, quad.bottomLeft(), quad.u0(), quad.v1());
@@ -764,7 +781,7 @@ public final class VfxRenderer {
             if (shader == null) {
                 return;
             }
-            shader.setDefaultUniforms(VertexFormat.Mode.QUADS, modelView, RenderSystem.getProjectionMatrix(),
+            shader.setDefaultUniforms(VertexFormat.Mode.QUADS, modelView, projectionMatrix,
                     minecraft.getWindow());
             shader.apply();
             BufferUploader.draw(mesh);
@@ -776,6 +793,49 @@ public final class VfxRenderer {
         buffer.addVertex((float) position.x, (float) position.y, (float) position.z)
                 .setUv(u, v)
                 .setColor(quad.red(), quad.green(), quad.blue(), quad.alpha());
+    }
+
+    /**
+     * Rota el tono de un color RGB [0..1] una fraccion shift (0 = nada, 1 = 360 grados).
+     */
+    private static float[] hueShift(float r, float g, float b, float shift) {
+        shift = shift - (float) Math.floor(shift);
+        if (shift <= 0.001F) {
+            return new float[] {r, g, b};
+        }
+        float max = Math.max(r, Math.max(g, b));
+        float min = Math.min(r, Math.min(g, b));
+        float delta = max - min;
+        if (delta < 1.0E-5F) {
+            return new float[] {r, g, b};
+        }
+        float h;
+        if (max == r) {
+            h = ((g - b) / delta) % 6.0F;
+        } else if (max == g) {
+            h = ((b - r) / delta) + 2.0F;
+        } else {
+            h = ((r - g) / delta) + 4.0F;
+        }
+        h = (h / 6.0F + shift) % 1.0F;
+        if (h < 0.0F) {
+            h += 1.0F;
+        }
+        float s = delta / max;
+        float v = max;
+        int sector = (int) (h * 6.0F);
+        float f = (h * 6.0F) - sector;
+        float p = v * (1.0F - s);
+        float q = v * (1.0F - s * f);
+        float t = v * (1.0F - s * (1.0F - f));
+        return switch (sector % 6) {
+            case 0 -> new float[] {v, t, p};
+            case 1 -> new float[] {q, v, p};
+            case 2 -> new float[] {p, v, t};
+            case 3 -> new float[] {p, q, v};
+            case 4 -> new float[] {t, p, v};
+            default -> new float[] {v, p, q};
+        };
     }
 
     /** flat = plano en el suelo: se dibuja con polygon offset para no pelearse con el terreno. */

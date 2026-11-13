@@ -2,6 +2,19 @@
 
 Todas las notas de versión del mod en orden cronológico descendente.
 
+## [7.8.3] — 2026-11-13
+
+### 🎵 Kasane Teto y Akita Neru: Animaciones y Efectos VFX estilo Diva Vocal
+- **Kasane Teto (Color Rojo / Attack)**:
+  - Animaciones de combate (`attack` 0,6 s, `special` 1,4 s, `ultimate` 3,0 s) adaptadas al estándar de escenario, con balanceo dinámico de sus taladros (`coletas`).
+  - Kit completo de VFX en `vfx/kasane_teto/` (normal, special y ultimate en 3 stages: intro, drop, encore) con su paleta rojo carmesí y fucsia.
+  - Sincronización precisa de los impactos con los fotogramas del clip (`ATTACK_HIT_DELAY`, `SPECIAL_HIT_DELAY`, `ULTIMATE_HIT_DELAY`).
+- **Akita Neru (Color Naranja / Attack)**:
+  - Animaciones de combate sincronizadas con balanceo rítmico en su coleta lateral (`coleta`).
+  - Kit completo de VFX en `vfx/akita_neru/` con su paleta amarillo oro, ámbar y naranja brillante.
+  - Sincronización precisa de daño con los clips y preservación de su ataque doble en cadena.
+- **Megumin**: Retoques y mejoras en efectos, texturas y sonidos de la Explosión definitiva.
+
 ---
 
 ## [7.8.0] — 2026-11-13
@@ -82,28 +95,37 @@ Todas las notas de versión del mod en orden cronológico descendente.
     (`megumin.special_crater`, configurable; 0 = no rompe nada). Su radio es `double`, así que 2,5
     significa 2,5 y no se redondea a 2 o 3.
 - **VFX calcado de la escena (0:17–1:55)**, en tres stages de tier **XL** nuevo:
-  - `charge` (3 s): telegraph de 22 bloques, chispas que convergen, aura cian con rayos, orbe magenta
-    en la mano, fuego a los pies, columna de luz y una **torre de 6 círculos mágicos** que se encienden
-    de abajo arriba, **cada uno más grande que el de abajo** (y 4 / 8,5 / 13,5 / 19 / 25 / 31, radios
-    3,0 → 8,1), girando en sentidos alternos.
-  - `blast` (2,6 s): destello de mundo y de pantalla, el núcleo de la explosión mediana en el centro,
-    cúpula de fuego de 18 bloques con borde fresnel,
+  - `charge` (3 s): telegraph de 22 bloques, chispas y estelas que convergen desde 14 bloques, aura
+    cian con rayos, orbe magenta en la mano, fuego a los pies, columna de luz, **halos de humo en el
+    cielo**, chispas arcoíris y una **torre de 5 círculos mágicos en disco relleno translúcido**
+    (`rune_disc`) que se encienden de abajo arriba con el patrón **grande / mediano / pequeño /
+    mediano / grande** (y 4 / 11 / 17,5 / 24 / 30,5, radios 8,1 / 6,2 / 3,6 / 6,2 / 8,1), girando en
+    sentidos alternos.
+  - `blast` (2,6 s): destello largo de mundo y pantalla (0,9 s), **estrella de detonación de 58 bloques** (0,22 s),
+    el núcleo de la explosión mediana en el centro, cúpula de fuego de 18 bloques con borde fresnel,
     ondas de choque de 26 y 42, columna de fuego, rayos cian, 80 escombros, ascuas, hongo de humo,
-    hollín y temblor de 32 bloques.
-  - `aftermath` (6 s): columna de humo, humo raso por el borde del cráter, anillo de fuego, ascuas,
-    ceniza cayendo, hollín persistente y temblor de cola.
+    **grietas brillantes de magma en el suelo** (`crack_glow`), ráfaga de chispas multicolor y temblor de 32 bloques.
+  - `aftermath` (10 s): poso prolongado de 10 segundos, columna de humo, humo raso por el borde del cráter,
+    anillo de fuego, ascuas, ceniza cayendo, hollín persistente con **vetas incandescentes enfriándose**
+    (`crack_glow`) y temblor de cola.
 - **Disparo sin clip de animación.** Megumin es un modelo de jugador, no una GeoEntity, así que no hay
   clip que escuchar: la entidad implementa **`VfxCasting`** (`vfxEffectId()` + `vfxCastSeq()` en datos
   sincronizados) y **`VfxCasters`** ve subir el contador en el cliente y lanza todos los stages con su
   `trigger.at`. Sin paquetes nuevos ni cambios en los loaders. Los stages de este efecto llevan
   `"trigger": {"at": s}` **sin `clip`**.
-- **Sonido**: capas de `BEACON_ACTIVATE` + `FIREWORK_ROCKET_LAUNCH` al cargar, `WARDEN_SONIC_CHARGE`
-  a mitad, y al detonar `DRAGON_FIREBALL_EXPLODE` + `GENERIC_EXPLODE` + `LIGHTNING_BOLT_THUNDER`
-  (más `FIRE_AMBIENT`/`FIRE_EXTINGUISH` mientras el cráter humea). Todo vanilla, sin assets nuevos.
-- **Herramientas**: tier `XL` en `validate_vfx.py` (1200 partículas / 20 capas / 10 s) con los rangos
-  de radio, `y` y `offset` ampliados; sprites nuevos **`rune_ring`** (círculo mágico con el interior
-  transparente) y **`scorch`** (hollín con grietas), generados por `gen_vfx_sprites.py`;
-  `CAPS["XL"]` en `vfx_preview.py`.
+- **Sonido**: nuevos eventos registrados `ModSounds.MEGUMIN_EXPLOSION_CHARGE` y `MEGUMIN_EXPLOSION` con audio
+  propio de casteo y detonación retumbante, complementados con capas de `BEACON_ACTIVATE`, `WARDEN_SONIC_CHARGE`
+  y golpes de graves de vanilla (`DRAGON_FIREBALL_EXPLODE` + `GENERIC_EXPLODE` + `LIGHTNING_BOLT_THUNDER`).
+- **Herramientas**: tier `XL` en `validate_vfx.py` (1200 partículas / 24 capas / 15 s) con los rangos
+  de radio, `y` y `offset` ampliados (y `emitter.size` hasta 64 para la estrella de 58);
+  sprites nuevos **`rune_ring`**, **`rune_disc`** (disco mágico translúcido con runa brillante),
+  **`scorch`** (hollín) y **`crack_glow`** (grietas de magma incandescentes), generados por `gen_vfx_sprites.py`;
+  soporte de parámetro `rainbow` para rotación de tono por partícula en motor y previewer; `CAPS["XL"]` en `vfx_preview.py`.
+- **Referencia cruzada**: el addon de Bedrock `Megumin_staff.mcaddon` (short de Minecraft) sirvió para
+  afinar el estallido — su estrella de 100 bloques en 0,15 s, la convergencia de estelas desde 14 bloques,
+  los halos de humo en el cielo, las chispas multicolor, el flash sostenido de pantalla, las grietas del cráter
+  y los efectos de audio de carga/explosión. Su cráter son decenas de explosiones de poder 10 en una esfera;
+  el nuestro cava la esfera de verdad.
 
 ---
 

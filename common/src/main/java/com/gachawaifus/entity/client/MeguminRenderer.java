@@ -14,7 +14,7 @@ public class MeguminRenderer extends LivingEntityRenderer<MeguminEntity, WaifuPl
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "textures/entity/megumin.png");
 
     public MeguminRenderer(EntityRendererProvider.Context context) {
-        super(context, new WaifuPlayerModel<>(context.bakeLayer(WaifuBustLayers.SLIM_128), true), 0.5F);
+        super(context, new WaifuPlayerModel<>(context.bakeLayer(WaifuBustLayers.MEGUMIN), true), 0.5F);
     }
 
     @Override

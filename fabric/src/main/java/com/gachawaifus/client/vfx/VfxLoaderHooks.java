@@ -30,7 +30,7 @@ public final class VfxLoaderHooks {
         WorldRenderEvents.AFTER_TRANSLUCENT.register(context -> {
             Camera camera = context.camera();
             Matrix4f modelView = new Matrix4f().rotation(camera.rotation().conjugate(new Quaternionf()));
-            VfxRenderer.render(modelView, camera, context.tickCounter().getGameTimeDeltaPartialTick(false));
+            VfxRenderer.render(modelView, context.projectionMatrix(), camera, context.tickCounter().getGameTimeDeltaPartialTick(false));
         });
         // Capa flash. La capa shake no tiene evento en Fabric API: va en mixin/CameraShakeMixin.
         HudRenderCallback.EVENT.register((graphics, tickCounter) ->

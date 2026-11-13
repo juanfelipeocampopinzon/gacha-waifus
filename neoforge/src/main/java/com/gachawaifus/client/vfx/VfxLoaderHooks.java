@@ -34,7 +34,7 @@ public final class VfxLoaderHooks {
         if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_PARTICLES) {
             return;
         }
-        VfxRenderer.render(event.getModelViewMatrix(), event.getCamera(),
+        VfxRenderer.render(event.getModelViewMatrix(), event.getProjectionMatrix(), event.getCamera(),
                 event.getPartialTick().getGameTimeDeltaPartialTick(false));
     }
 

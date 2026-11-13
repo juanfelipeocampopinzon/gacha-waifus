@@ -225,11 +225,11 @@ colores/roles**: la paleta de cada efecto va escrita en su JSON.
    | S | golpe | 40 | 3 | 0,6 s |
    | M | habilidad | 150 | 5 | 4 s |
    | L | ultimate | 400 | 8 | 3,5 s |
-   | XL | ultimate insignia | 1200 | 20 | 10 s |
+   | XL | ultimate insignia | 1200 | 24 | 15 s |
    Prefiere pocas partículas grandes y suaves antes que muchas pequeñas. Todo stage lleva:
    anticipación, golpe y cola; un degradado con un acento; y contacto con el suelo si aplica.
    **XL está reservado a la habilidad insignia del mod** (hoy solo la Explosión de Megumin): es el
-   único tier que admite más de 8 capas por stage y una duración de 10 s, porque encadena carga,
+   único tier que admite más de 8 capas por stage y una duración de 15 s, porque encadena carga,
    estallido y poso en el mismo efecto.
 3. **Los tiempos salen del clip**, no de los ticks de Java: un stage empieza en su `trigger` y su
    `duration` debe cubrir ese clip (mira `animation_length`). Un clip largo puede llevar **varios

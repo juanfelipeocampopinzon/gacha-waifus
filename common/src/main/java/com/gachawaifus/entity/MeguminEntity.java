@@ -1,5 +1,6 @@
 package com.gachawaifus.entity;
 
+import com.gachawaifus.registry.ModSounds;
 import com.gachawaifus.vfx.VfxCasting;
 import com.gachawaifus.vfx.VfxTargeted;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.EntityType;
@@ -59,8 +61,8 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
     private static final EntityDataAccessor<Float> DATA_CAST_Z =
             SynchedEntityData.defineId(MeguminEntity.class, EntityDataSerializers.FLOAT);
 
-    /** Ticks de carga de la ultimate: coincide con el stage "charge" de vfx/megumin/ultimate.json. */
-    private static final int ULTIMATE_CHARGE = 60;
+    /** Ticks de carga de la ultimate: coincide con el stage "charge" de vfx/megumin/ultimate.json (34.6 s). */
+    private static final int ULTIMATE_CHARGE = 692;
     /**
      * Alcance de la Explosión, en bloques al cuadrado. Es una habilidad A DISTANCIA: la lanza desde
      * lejos y el cráter cae en el objetivo, así que ella se queda fuera del radio de la explosión.
@@ -77,6 +79,8 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
     private int castTicks = -1;
     /** Punto congelado donde cae la habilidad (el objetivo puede moverse). */
     private Vec3 castPoint = Vec3.ZERO;
+    /** Objetivo fijado de la Explosión: se mantiene durante todo el cántico aunque el AI cambie de target. */
+    private LivingEntity castTarget = null;
     /** Contador que sube en cada casteo y dispara el VFX en el cliente. */
     private int castSeq = 0;
     /** Cráteres que se están abriendo (solo el de la ultimate). */
@@ -220,13 +224,36 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
                 SoundSource.PLAYERS, 0.9F, 1.3F);
     }
 
+    @Override
+    public boolean isInvulnerableTo(DamageSource source) {
+        return this.castTicks >= 0 || super.isInvulnerableTo(source);
+    }
+
+    @Override
+    public boolean causeFallDamage(float fallDistance, float multiplier, DamageSource source) {
+        if (this.hasEffect(MobEffects.SLOW_FALLING) || this.afterglow > 0 || this.castTicks >= 0) {
+            return false;
+        }
+        return super.causeFallDamage(fallDistance, multiplier, source);
+    }
+
     /** Empieza la carga de la Explosión. El golpe real cae en {@link #ULTIMATE_CHARGE} ticks. */
     private void beginUltimate(LivingEntity target) {
         this.ultimateCooldown = MeguminConfig.cooldown();
         this.castTicks = 0;
+        this.castTarget = target;
+        this.setInvulnerable(true);
         this.setCastPoint(target.position().add(0.0D, 0.6D, 0.0D));
         this.markCast(KIND_ULTIMATE);
         this.playVoice("attack", true);
+        if (this.level() instanceof ServerLevel server) {
+            server.playSound(null, this.getX(), this.getY(), this.getZ(), ModSounds.MEGUMIN_EXPLOSION.get(),
+                    SoundSource.PLAYERS, 5.0F, 1.0F);
+        }
+        this.level().playSound(null, this.blockPosition(), ModSounds.MEGUMIN_EXPLOSION.get(),
+                SoundSource.PLAYERS, 5.0F, 1.0F);
+        this.level().playSound(null, this.blockPosition(), ModSounds.MEGUMIN_EXPLOSION_CHARGE.get(),
+                SoundSource.PLAYERS, 2.5F, 1.0F);
         this.playSound(SoundEvents.BEACON_ACTIVATE, 1.2F, 0.5F);
         this.playSound(SoundEvents.FIREWORK_ROCKET_LAUNCH, 1.6F, 0.6F);
         if (this.getOwner() instanceof Player player) {
@@ -236,6 +263,15 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
 
     private void tickCast() {
         this.castTicks++;
+        // El ataque sigue al enemigo y lo inmoviliza para que no escape del área del círculo mágico
+        LivingEntity target = (this.castTarget != null && this.castTarget.isAlive())
+                ? this.castTarget : this.getTarget();
+        if (target != null && target.isAlive()) {
+            this.setCastPoint(target.position().add(0.0D, 0.6D, 0.0D));
+            target.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 30, 6, false, false));
+            Vec3 delta = target.getDeltaMovement();
+            target.setDeltaMovement(0.0D, delta.y, 0.0D);
+        }
         if (this.castTicks == 30) {
             this.playSound(SoundEvents.WARDEN_SONIC_CHARGE, 1.1F, 0.55F);
         }
@@ -250,6 +286,8 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
     /** El golpe: daño, cráter y sonidos. Los VFX ya están lanzados por el cliente desde el casteo. */
     private void detonate() {
         this.castTicks = -1;
+        this.castTarget = null;
+        this.setInvulnerable(false);
         if (!(this.level() instanceof ServerLevel server)) {
             return;
         }
@@ -260,10 +298,16 @@ public class MeguminEntity extends AbstractWaifuEntity implements VfxCasting, Vf
         this.craters.add(ExplosionMagic.crater(server, center.add(0.0D, 0.8D, 0.0D), radius));
 
         // Agotada, como en el anime: no puede moverse ni volver a castear en un buen rato.
+        // Caída de pluma (Slow Falling) para no sufrir daño de caída al desplomarse.
+        this.addEffect(new MobEffectInstance(MobEffects.SLOW_FALLING, 400, 0));
         this.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SLOWDOWN, 400, 4));
         this.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 300, 2));
         this.afterglow = 100;
 
+        server.playSound(null, center.x, center.y, center.z, ModSounds.MEGUMIN_EXPLOSION_RAY.get(),
+                SoundSource.PLAYERS, 6.0F, 1.0F);
+        this.level().playSound(null, this.blockPosition(), ModSounds.MEGUMIN_EXPLOSION_RAY.get(),
+                SoundSource.PLAYERS, 4.0F, 1.0F);
         this.playSound(SoundEvents.DRAGON_FIREBALL_EXPLODE, 4.0F, 1.0F);
         this.playSound(SoundEvents.GENERIC_EXPLODE.value(), 4.0F, 0.6F);
         this.playSound(SoundEvents.LIGHTNING_BOLT_THUNDER, 3.0F, 0.5F);

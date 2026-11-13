@@ -1,0 +1,311 @@
+{
+  "schema": 1,
+  "id": "akita_neru/special",
+  "doc": "Onda de voz: carga en el pecho (0.3-0.5 s) y proyecta anillos de sonido y notas al frente (0.5-1.0 s), con destellos curativos a sus pies. Tier M. Daño y buffs en Java a los 10 ticks.",
+  "stages": {
+    "wave": {
+      "tier": "M",
+      "duration": 1.4,
+      "trigger": {
+        "clip": "animation.akita_neru.special",
+        "at": 0.0
+      },
+      "layers": [
+        {
+          "type": "glow",
+          "at": 0.25,
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.4,
+            0.4
+          ],
+          "size": [
+            0.4,
+            2.4
+          ],
+          "duration": 0.75,
+          "texture": "soft_glow",
+          "color": [
+            [
+              0,
+              "#fff59d",
+              0.0
+            ],
+            [
+              0.3,
+              "#ffffff",
+              0.75
+            ],
+            [
+              1,
+              "#ffd700",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.4,
+            0.7
+          ],
+          "shape": "point",
+          "texture": "ring_thin",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              0
+            ],
+            [
+              0.347,
+              0
+            ],
+            [
+              0.357,
+              14
+            ],
+            [
+              0.714,
+              14
+            ],
+            [
+              0.724,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "lifetime": [
+            0.45,
+            0.55
+          ],
+          "size": [
+            0.4,
+            2.2
+          ],
+          "speed": [
+            6,
+            7
+          ],
+          "direction": "forward",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#fff59d",
+              0.9
+            ],
+            [
+              0.7,
+              "#ffd700",
+              0.6
+            ],
+            [
+              1,
+              "#e65100",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.4,
+            0.7
+          ],
+          "shape": "cone",
+          "radius": 0.35,
+          "texture": "note",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              0
+            ],
+            [
+              0.347,
+              0
+            ],
+            [
+              0.357,
+              30
+            ],
+            [
+              0.714,
+              30
+            ],
+            [
+              0.724,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "lifetime": [
+            0.5,
+            0.9
+          ],
+          "size": [
+            0.34,
+            0.16
+          ],
+          "speed": [
+            5,
+            8
+          ],
+          "direction": "forward",
+          "swirl": 3,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.0
+            ],
+            [
+              0.12,
+              "#fff8e1",
+              1.0
+            ],
+            [
+              0.6,
+              "#ffb300",
+              0.85
+            ],
+            [
+              1,
+              "#f57c00",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.5,
+          "anchor": "ground",
+          "radius": [
+            0.5,
+            3.5
+          ],
+          "thickness": [
+            0.5,
+            0.08
+          ],
+          "duration": 0.4,
+          "ease": "out",
+          "y": 0.08,
+          "texture": "ring_soft",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#fff59d",
+              0.9
+            ],
+            [
+              0.7,
+              "#ffd700",
+              0.6
+            ],
+            [
+              1,
+              "#e65100",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            0.15,
+            0
+          ],
+          "shape": "disc",
+          "radius": 0.9,
+          "texture": "star4",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              0
+            ],
+            [
+              0.311,
+              0
+            ],
+            [
+              0.321,
+              25
+            ],
+            [
+              0.857,
+              25
+            ],
+            [
+              0.867,
+              0
+            ],
+            [
+              1,
+              0
+            ]
+          ],
+          "lifetime": [
+            0.6,
+            1.0
+          ],
+          "size": [
+            0.22,
+            0.04
+          ],
+          "speed": [
+            1,
+            2
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.0
+            ],
+            [
+              0.15,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.6,
+              "#fff59d",
+              0.8
+            ],
+            [
+              1,
+              "#ffd700",
+              0.0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

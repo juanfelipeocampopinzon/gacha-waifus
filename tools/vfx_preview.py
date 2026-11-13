@@ -20,6 +20,7 @@ Salida por defecto: ../agents-bus/captures/<waifu>_<efecto>[_<stage>].png (y .gi
 Requiere Pillow y numpy. Determinista con --seed.
 """
 import argparse
+import colorsys
 import json
 import math
 import random
@@ -172,7 +173,7 @@ UP = v(0, 1, 0)
 # --------------------------------------------------------------------------- simulación
 class Particle:
     __slots__ = ("pos", "vel", "age", "life", "s0", "s1", "grad", "tex", "add", "phase", "grav",
-                 "stretch", "core", "swirl", "wobble")
+                 "stretch", "core", "swirl", "wobble", "rainbow")
 
 
 class Instance:
@@ -262,6 +263,7 @@ class Instance:
             p.s0, p.s1, p.grad, p.tex, p.add = L["size"][0], L["size"][1], L["grad"], L["texture"], L["additive"]
             p.phase, p.grav, p.stretch, p.core, p.swirl, p.wobble = (
                 rng.random(), L["gravity"], L["stretch"], L["core"], L["swirl"], wob)
+            p.rainbow = L.get("rainbow", 0.0)
             self.particles.append(p)
 
     def shape(self, L, base):
@@ -498,6 +500,10 @@ def draw_particle(canvas, cam, p):
         u0, u1 = frame / 8, (frame + 1) / 8
     c = sample_gradient(p.grad, prog)
     r, g, b = c[0], c[1], c[2]
+    if getattr(p, "rainbow", 0.0) > 0.0:
+        h, s, val = colorsys.rgb_to_hsv(r, g, b)
+        h = (h + p.phase * p.rainbow) % 1.0
+        r, g, b = colorsys.hsv_to_rgb(h, s, val)
     if p.add:
         r, g, b = min(1, r * 1.25), min(1, g * 1.25), min(1, b * 1.25)
     corners = billboard(p.pos, axis, across, ha, hc)

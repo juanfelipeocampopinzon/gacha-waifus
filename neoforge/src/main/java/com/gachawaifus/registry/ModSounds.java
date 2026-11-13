@@ -58,6 +58,27 @@ public class ModSounds {
             SOUND_EVENTS.register("entity/tokisaki_kurumi/musket_shot",
                     () -> SoundEvent.createVariableRangeEvent(MUSKET_SHOT_ID));
 
+    public static final ResourceLocation MEGUMIN_EXPLOSION_CHARGE_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion_charge");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> MEGUMIN_EXPLOSION_CHARGE =
+            SOUND_EVENTS.register("entity/megumin/explosion_charge",
+                    () -> SoundEvent.createVariableRangeEvent(MEGUMIN_EXPLOSION_CHARGE_ID));
+
+    public static final ResourceLocation MEGUMIN_EXPLOSION_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> MEGUMIN_EXPLOSION =
+            SOUND_EVENTS.register("entity/megumin/explosion",
+                    () -> SoundEvent.createVariableRangeEvent(MEGUMIN_EXPLOSION_ID));
+
+    public static final ResourceLocation MEGUMIN_EXPLOSION_RAY_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion_ray");
+
+    public static final DeferredHolder<SoundEvent, SoundEvent> MEGUMIN_EXPLOSION_RAY =
+            SOUND_EVENTS.register("entity/megumin/explosion_ray",
+                    () -> SoundEvent.createVariableRangeEvent(MEGUMIN_EXPLOSION_RAY_ID));
+
     static {
         // Voces de las 13 waifus con audio confirmado: se registran desde la lista común, siempre
         // con el mismo id que declare {@code sounds.json} (si no coinciden, el juego no encuentra

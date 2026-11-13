@@ -1,1697 +1,2061 @@
 {
- "schema": 1,
- "id": "megumin/ultimate",
- "doc": "La Explosión de Megumin, calcada de la escena del anime (0:17 a 1:55): 3 s de carga con aura cian eléctrica, orbe magenta en la mano y torre de anillos rúnicos naranjas apilándose en el cielo; luego el estallido (destello a pantalla, bola de fuego de 20 bloques, triple onda de choque, columna de fuego, rayos, escombros y hongo de humo); y 6 s de poso con humo, ascuas, anillo de fuego y hollín. El daño y el cráter los hace MeguminEntity/ExplosionMagic; aquí solo está la luz. Se dispara por casteo (VfxCasting): los stages llevan trigger.at y ningún clip.",
- "stages": {
-  "charge": {
-   "tier": "XL",
-   "duration": 3.0,
-   "trigger": {
-    "at": 0.0
-   },
-   "doc": "Carga: telegraph de 22 bloques sobre el punto de impacto, chispas que convergen, aura cian con rayos, orbe magenta en la mano, fuego a sus pies y una torre de 6 anillos runicos que se encienden de abajo arriba, cada uno mas grande que el de abajo (radio 3,0 a 8,1) y con una columna de luz que los atraviesa.",
-   "layers": [
-    {
-     "type": "telegraph",
-     "anchor": "target",
-     "radius": 22,
-     "spin": 2.4,
-     "fill_alpha": 0.06,
-     "fade_in": 0.7,
-     "thickness": 0.4,
-     "duration": 3.0,
-     "texture": "ring_thin",
-     "color": [
-      [
-       0,
-       "#bff6ff",
-       0.95
-      ],
-      [
-       0.5,
-       "#5ad4ff",
-       0.7
-      ],
-      [
-       1,
-       "#2b6bff",
-       0
+  "schema": 1,
+  "id": "megumin/ultimate",
+  "doc": "La Explosi\u00f3n de Megumin, calcada de la escena del anime (0:17 a 1:55): 3 s de carga con aura cian el\u00e9ctrica, orbe magenta en la mano y torre de anillos r\u00fanicos naranjas apil\u00e1ndose en el cielo; luego el estallido (destello a pantalla, bola de fuego de 20 bloques, triple onda de choque, columna de fuego, rayos, escombros y hongo de humo); y 6 s de poso con humo, ascuas, anillo de fuego y holl\u00edn. El da\u00f1o y el cr\u00e1ter los hace MeguminEntity/ExplosionMagic; aqu\u00ed solo est\u00e1 la luz. Se dispara por casteo (VfxCasting): los stages llevan trigger.at y ning\u00fan clip.",
+  "stages": {
+    "charge": {
+      "tier": "XL",
+      "duration": 34.6,
+      "trigger": {
+        "at": 0.0
+      },
+      "doc": "Carga: telegraph de 22 bloques sobre el punto de impacto, chispas y estelas que convergen desde 14 bloques, aura cian con rayos, orbe magenta en la mano, fuego a sus pies y una torre de 5 anillos runicos que se encienden de abajo arriba con el patron grande / mediano / pequeno / mediano / grande (radios 8,1 / 6,2 / 3,6 / 6,2 / 8,1) y una columna de luz que los atraviesa.",
+      "layers": [
+        {
+          "type": "telegraph",
+          "anchor": "target",
+          "radius": 22,
+          "spin": 2.4,
+          "fill_alpha": 0.06,
+          "fade_in": 0.7,
+          "thickness": 0.4,
+          "duration": 34.6,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#bff6ff",
+              0.95
+            ],
+            [
+              0.5,
+              "#5ad4ff",
+              0.7
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            0.25,
+            0
+          ],
+          "shape": "ring",
+          "radius": 1.2,
+          "texture": "spark",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              8
+            ],
+            [
+              0.6,
+              30
+            ],
+            [
+              1,
+              50
+            ]
+          ],
+          "duration": 34.6,
+          "lifetime": [
+            0.3,
+            0.7
+          ],
+          "size": [
+            0.3,
+            0.06
+          ],
+          "speed": [
+            3,
+            7
+          ],
+          "direction": "inward",
+          "color": [
+            [
+              0,
+              "#e8ffff",
+              1
+            ],
+            [
+              0.4,
+              "#7fe8ff",
+              0.9
+            ],
+            [
+              1,
+              "#1b4bd8",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            0.1,
+            0
+          ],
+          "shape": "disc",
+          "radius": 1.3,
+          "texture": "flame_puff_8f",
+          "blend": "additive",
+          "rate": 14,
+          "duration": 34.6,
+          "lifetime": [
+            0.35,
+            0.8
+          ],
+          "size": [
+            1.0,
+            0.25
+          ],
+          "speed": [
+            0.6,
+            1.8
+          ],
+          "direction": "up",
+          "gravity": -0.02,
+          "color": [
+            [
+              0,
+              "#fff1c0",
+              0.9
+            ],
+            [
+              0.4,
+              "#ff9a2a",
+              0.8
+            ],
+            [
+              1,
+              "#7a1a00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "glow",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.25,
+            -0.35
+          ],
+          "size": [
+            0.2,
+            1.4
+          ],
+          "duration": 34.6,
+          "color": [
+            [
+              0,
+              "#ff8ae8",
+              0.9
+            ],
+            [
+              0.6,
+              "#ff3ec9",
+              0.7
+            ],
+            [
+              1,
+              "#ff3ec9",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.25,
+            -0.35
+          ],
+          "shape": "sphere",
+          "radius": 1.5,
+          "texture": "star4",
+          "blend": "additive",
+          "rate": [
+            [
+              0.0,
+              40
+            ],
+            [
+              0.3,
+              60
+            ],
+            [
+              0.7,
+              85
+            ],
+            [
+              1.0,
+              110
+            ]
+          ],
+          "duration": 34.6,
+          "lifetime": [
+            0.7,
+            1.5
+          ],
+          "size": [
+            0.28,
+            0.06
+          ],
+          "speed": [
+            0.8,
+            3.2
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1
+            ],
+            [
+              0.5,
+              "#ff8ae8",
+              0.8
+            ],
+            [
+              1,
+              "#ff3ec9",
+              0
+            ]
+          ],
+          "rainbow": 1.0,
+          "gravity": -0.06
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "shape": "sphere",
+          "radius": 1.7,
+          "texture": "streak",
+          "blend": "additive",
+          "stretch": 2.5,
+          "core": 0.5,
+          "rate": [
+            [
+              0,
+              25
+            ],
+            [
+              1,
+              70
+            ]
+          ],
+          "duration": 34.6,
+          "lifetime": [
+            0.1,
+            0.3
+          ],
+          "size": [
+            0.8,
+            0.2
+          ],
+          "speed": [
+            10,
+            20
+          ],
+          "direction": "random",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1
+            ],
+            [
+              0.5,
+              "#7fe8ff",
+              0.85
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            1.25,
+            0
+          ],
+          "shape": "sphere",
+          "radius": 14.0,
+          "texture": "streak",
+          "blend": "additive",
+          "stretch": 3.2,
+          "core": 0.55,
+          "rate": [
+            [
+              0,
+              4
+            ],
+            [
+              0.5,
+              14
+            ],
+            [
+              1,
+              22
+            ]
+          ],
+          "duration": 34.6,
+          "lifetime": [
+            0.35,
+            0.75
+          ],
+          "size": [
+            0.9,
+            0.14
+          ],
+          "speed": [
+            18,
+            28
+          ],
+          "direction": "inward",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.9
+            ],
+            [
+              0.45,
+              "#9ff0ff",
+              0.8
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 4.0,
+          "radius": 18.0,
+          "texture": "rune_disc",
+          "blend": "additive",
+          "at": 2.0,
+          "duration": 32.6,
+          "fade_in": 0.45,
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              -280
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ffe8b8",
+              0.85
+            ],
+            [
+              0.55,
+              "#ffa030",
+              0.7
+            ],
+            [
+              0.9,
+              "#ff5a00",
+              0.35
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 11.0,
+          "radius": 11.5,
+          "texture": "rune_disc",
+          "blend": "additive",
+          "at": 6.5,
+          "duration": 28.1,
+          "fade_in": 0.45,
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              240
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ffe8b8",
+              0.85
+            ],
+            [
+              0.55,
+              "#ffa030",
+              0.7
+            ],
+            [
+              0.9,
+              "#ff5a00",
+              0.35
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 17.5,
+          "radius": 4.5,
+          "texture": "rune_disc",
+          "blend": "additive",
+          "at": 11.5,
+          "duration": 23.1,
+          "fade_in": 0.45,
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              -300
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ffe8b8",
+              0.85
+            ],
+            [
+              0.55,
+              "#ffa030",
+              0.7
+            ],
+            [
+              0.9,
+              "#ff5a00",
+              0.35
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 24.0,
+          "radius": 11.5,
+          "texture": "rune_disc",
+          "blend": "additive",
+          "at": 17.0,
+          "duration": 17.6,
+          "fade_in": 0.45,
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              240
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ffe8b8",
+              0.85
+            ],
+            [
+              0.55,
+              "#ffa030",
+              0.7
+            ],
+            [
+              0.9,
+              "#ff5a00",
+              0.35
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 30.5,
+          "radius": 18.0,
+          "texture": "rune_disc",
+          "blend": "additive",
+          "at": 22.5,
+          "duration": 12.1,
+          "fade_in": 0.45,
+          "angle": [
+            [
+              0,
+              0
+            ],
+            [
+              1,
+              -280
+            ]
+          ],
+          "color": [
+            [
+              0,
+              "#ffe8b8",
+              0.85
+            ],
+            [
+              0.55,
+              "#ffa030",
+              0.7
+            ],
+            [
+              0.9,
+              "#ff5a00",
+              0.35
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "ring",
+          "radius": 12,
+          "texture": "smoke",
+          "blend": "alpha",
+          "rate": 10,
+          "duration": 34.6,
+          "lifetime": [
+            1.2,
+            2.2
+          ],
+          "size": [
+            1.6,
+            0.5
+          ],
+          "speed": [
+            2,
+            4
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#6a5a50",
+              0.5
+            ],
+            [
+              1,
+              "#3a302a",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "amplitude": 0.22,
+          "duration": 8.6,
+          "radius": 24,
+          "falloff": "linear",
+          "at": 26.0
+        },
+        {
+          "type": "sphere",
+          "anchor": "entity",
+          "offset": [
+            0,
+            0.9,
+            0
+          ],
+          "radius": [
+            0.6,
+            2.6
+          ],
+          "grow": 2.4,
+          "texture": "solid",
+          "blend": "additive",
+          "rim": 1.0,
+          "rim_color": "#9ff2ff",
+          "rim_color2": "#2b6bff",
+          "duration": 34.6,
+          "fade_in": 0.4,
+          "color": [
+            [
+              0,
+              "#7fe8ff",
+              0.13
+            ],
+            [
+              1,
+              "#2b6bff",
+              0.04
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "entity",
+          "y": 0.04,
+          "radius": 3.4,
+          "texture": "ring_thin",
+          "blend": "additive",
+          "spin": 1.6,
+          "duration": 34.6,
+          "fade_in": 0.3,
+          "color": [
+            [
+              0,
+              "#bff6ff",
+              0.7
+            ],
+            [
+              0.6,
+              "#5ad4ff",
+              0.5
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "entity",
+          "shape": "sphere",
+          "radius": 2.0,
+          "texture": "spark",
+          "blend": "additive",
+          "rate": 45,
+          "duration": 34.6,
+          "lifetime": [
+            0.4,
+            1.0
+          ],
+          "size": [
+            0.22,
+            0.05
+          ],
+          "speed": [
+            0.3,
+            1.2
+          ],
+          "direction": "random",
+          "gravity": -0.01,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.9
+            ],
+            [
+              0.5,
+              "#7fe8ff",
+              0.7
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            9.0,
+            0
+          ],
+          "shape": "point",
+          "texture": "light_beam",
+          "blend": "additive",
+          "count": 1,
+          "at": 0.9,
+          "duration": 0.1,
+          "lifetime": [
+            2.1,
+            2.1
+          ],
+          "size": [
+            5.0,
+            20.0
+          ],
+          "speed": [
+            0,
+            0
+          ],
+          "direction": "up",
+          "gravity": 0.0,
+          "color": [
+            [
+              0,
+              "#fff6dc",
+              0.0
+            ],
+            [
+              0.15,
+              "#ffe8b8",
+              0.28
+            ],
+            [
+              0.75,
+              "#ffc257",
+              0.36
+            ],
+            [
+              1,
+              "#ffffff",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            12.0,
+            0
+          ],
+          "shape": "ring",
+          "radius": 12.0,
+          "texture": "smoke",
+          "blend": "alpha",
+          "at": 0.5,
+          "duration": 34.6,
+          "rate": [
+            [
+              0,
+              8
+            ],
+            [
+              1,
+              16
+            ]
+          ],
+          "lifetime": [
+            1.5,
+            2.5
+          ],
+          "size": [
+            1.8,
+            3.2
+          ],
+          "speed": [
+            0.3,
+            0.9
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#ff4060",
+              0.32
+            ],
+            [
+              0.6,
+              "#c02040",
+              0.22
+            ],
+            [
+              1,
+              "#2a0515",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            24.0,
+            0
+          ],
+          "shape": "ring",
+          "radius": 15.0,
+          "texture": "smoke",
+          "blend": "alpha",
+          "at": 1.0,
+          "duration": 34.6,
+          "rate": [
+            [
+              0,
+              8
+            ],
+            [
+              1,
+              16
+            ]
+          ],
+          "lifetime": [
+            1.5,
+            2.5
+          ],
+          "size": [
+            2.0,
+            3.8
+          ],
+          "speed": [
+            0.3,
+            0.9
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#ff4060",
+              0.32
+            ],
+            [
+              0.6,
+              "#c02040",
+              0.22
+            ],
+            [
+              1,
+              "#2a0515",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            16.0,
+            0
+          ],
+          "shape": "sphere",
+          "radius": 12.0,
+          "texture": "spark",
+          "blend": "additive",
+          "at": 2.0,
+          "duration": 32.6,
+          "rate": [
+            [
+              0,
+              12
+            ],
+            [
+              1,
+              28
+            ]
+          ],
+          "lifetime": [
+            0.6,
+            1.2
+          ],
+          "size": [
+            0.22,
+            0.05
+          ],
+          "speed": [
+            0.5,
+            2.2
+          ],
+          "direction": "random",
+          "rainbow": 1.0,
+          "color": [
+            [
+              0,
+              "#ff3366",
+              1
+            ],
+            [
+              0.5,
+              "#ffcc00",
+              0.85
+            ],
+            [
+              1,
+              "#33ccff",
+              0
+            ]
+          ]
+        }
       ]
-     ]
     },
-    {
-     "type": "emitter",
-     "anchor": "entity",
-     "offset": [
-      0,
-      0.25,
-      0
-     ],
-     "shape": "ring",
-     "radius": 1.2,
-     "texture": "spark",
-     "blend": "additive",
-     "rate": [
-      [
-       0,
-       8
-      ],
-      [
-       0.6,
-       30
-      ],
-      [
-       1,
-       50
+    "blast": {
+      "tier": "XL",
+      "duration": 2.6,
+      "trigger": {
+        "at": 34.6
+      },
+      "doc": "Estallido: dos destellos (mundo y pantalla) y una estrella de 58 bloques, el nucleo de la antigua explosion mediana (bola blanca incandescente, estallido de llamas, anillo raso de 9 y esquirlas); encima la cupula de fuego de 18 bloques con borde fresnel, las ondas de 26 y 42, la columna de fuego, los rayos cian, los escombros, las ascuas, el hongo de humo, el hollin y el temblor de 32.",
+      "layers": [
+        {
+          "type": "flash",
+          "intensity": 0.85,
+          "duration": 0.65,
+          "scope": "world",
+          "color": "#fff6dc"
+        },
+        {
+          "type": "flash",
+          "intensity": 0.45,
+          "duration": 0.9,
+          "scope": "screen",
+          "color": "#ffd9a0"
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            1.2,
+            0
+          ],
+          "shape": "point",
+          "texture": "spike_burst",
+          "blend": "additive",
+          "at": 0.0,
+          "count": 1,
+          "lifetime": [
+            0.22,
+            0.22
+          ],
+          "size": [
+            10.0,
+            58.0
+          ],
+          "speed": [
+            0,
+            0
+          ],
+          "direction": "random",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.95
+            ],
+            [
+              0.35,
+              "#fff0c0",
+              0.8
+            ],
+            [
+              0.7,
+              "#ff9a2e",
+              0.45
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "sphere",
+          "anchor": "target",
+          "offset": [
+            0,
+            0.9,
+            0
+          ],
+          "radius": [
+            0.6,
+            6.5
+          ],
+          "grow": 0.22,
+          "texture": "solid",
+          "blend": "additive",
+          "rim": 1.6,
+          "rim_color": "#fff3c4",
+          "rim_color2": "#ff8a1f",
+          "at": 0.06,
+          "duration": 0.75,
+          "fade_in": 0.02,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.92
+            ],
+            [
+              0.3,
+              "#fff6dc",
+              0.82
+            ],
+            [
+              0.65,
+              "#ffb347",
+              0.5
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            0.8,
+            0
+          ],
+          "shape": "sphere",
+          "radius": 4.5,
+          "texture": "flame_puff_8f",
+          "blend": "additive",
+          "at": 0.02,
+          "count": 36,
+          "lifetime": [
+            0.4,
+            0.9
+          ],
+          "size": [
+            2.0,
+            0.4
+          ],
+          "speed": [
+            3,
+            10
+          ],
+          "direction": "outward",
+          "gravity": -0.02,
+          "color": [
+            [
+              0,
+              "#fffbe8",
+              1
+            ],
+            [
+              0.3,
+              "#ffd257",
+              0.95
+            ],
+            [
+              0.7,
+              "#ff6a00",
+              0.7
+            ],
+            [
+              1,
+              "#7a1200",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "anchor": "target",
+          "radius": [
+            0.5,
+            9
+          ],
+          "thickness": [
+            0.5,
+            0.12
+          ],
+          "duration": 0.45,
+          "ease": "out",
+          "y": 0.14,
+          "texture": "ring_soft",
+          "blend": "additive",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.9
+            ],
+            [
+              0.6,
+              "#ffb347",
+              0.7
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            0.6,
+            0
+          ],
+          "shape": "point",
+          "texture": "shard",
+          "blend": "alpha",
+          "at": 0.05,
+          "count": 24,
+          "lifetime": [
+            0.7,
+            1.4
+          ],
+          "size": [
+            0.26,
+            0.06
+          ],
+          "speed": [
+            5,
+            12
+          ],
+          "direction": "outward",
+          "gravity": 1.2,
+          "color": [
+            [
+              0,
+              "#8a7a68",
+              1
+            ],
+            [
+              1,
+              "#2a2420",
+              0.7
+            ]
+          ]
+        },
+        {
+          "type": "sphere",
+          "anchor": "target",
+          "radius": [
+            1,
+            18
+          ],
+          "grow": 0.4,
+          "hemisphere": true,
+          "texture": "solid",
+          "blend": "additive",
+          "ease": "out",
+          "rim": 2.2,
+          "rim_color": "#ffe9b0",
+          "rim_color2": "#ff5a00",
+          "duration": 1.1,
+          "fade_in": 0.05,
+          "color": [
+            [
+              0,
+              "#fff6d8",
+              0.55
+            ],
+            [
+              0.35,
+              "#ffd257",
+              0.45
+            ],
+            [
+              0.7,
+              "#ff6a00",
+              0.32
+            ],
+            [
+              1,
+              "#8a1c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "anchor": "target",
+          "radius": [
+            1,
+            26
+          ],
+          "thickness": [
+            1.4,
+            0.2
+          ],
+          "duration": 0.55,
+          "ease": "out",
+          "y": 0.12,
+          "texture": "ring_soft",
+          "blend": "additive",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.9
+            ],
+            [
+              0.6,
+              "#ffb347",
+              0.7
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "anchor": "target",
+          "radius": [
+            1,
+            42
+          ],
+          "thickness": [
+            0.7,
+            0.1
+          ],
+          "duration": 0.95,
+          "ease": "out",
+          "y": 0.2,
+          "texture": "ring_thin",
+          "blend": "additive",
+          "color": [
+            [
+              0,
+              "#fff6dc",
+              0.8
+            ],
+            [
+              1,
+              "#ff6a00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            0.4,
+            0
+          ],
+          "shape": "disc",
+          "radius": 10,
+          "texture": "flame_puff_8f",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              60
+            ],
+            [
+              0.4,
+              110
+            ],
+            [
+              1,
+              25
+            ]
+          ],
+          "duration": 2.4,
+          "lifetime": [
+            0.5,
+            1.2
+          ],
+          "size": [
+            2.6,
+            0.5
+          ],
+          "speed": [
+            2,
+            9
+          ],
+          "direction": "outward",
+          "gravity": -0.02,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1
+            ],
+            [
+              0.25,
+              "#fff0a0",
+              0.95
+            ],
+            [
+              0.6,
+              "#ff8a1f",
+              0.85
+            ],
+            [
+              1,
+              "#7a1200",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "ring",
+          "radius": 2.4,
+          "texture": "flame_8f",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              45
+            ],
+            [
+              0.5,
+              30
+            ],
+            [
+              1,
+              8
+            ]
+          ],
+          "duration": 2.0,
+          "lifetime": [
+            1.0,
+            2.0
+          ],
+          "size": [
+            3.2,
+            0.6
+          ],
+          "speed": [
+            3,
+            8
+          ],
+          "direction": "up",
+          "gravity": -0.01,
+          "color": [
+            [
+              0,
+              "#fffbe8",
+              1
+            ],
+            [
+              0.35,
+              "#ffd257",
+              0.95
+            ],
+            [
+              0.7,
+              "#ff6a00",
+              0.7
+            ],
+            [
+              1,
+              "#8a1c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "sphere",
+          "radius": 15,
+          "texture": "streak",
+          "blend": "additive",
+          "stretch": 3,
+          "core": 0.6,
+          "rate": [
+            [
+              0,
+              90
+            ],
+            [
+              0.35,
+              55
+            ],
+            [
+              1,
+              10
+            ]
+          ],
+          "duration": 1.4,
+          "lifetime": [
+            0.1,
+            0.28
+          ],
+          "size": [
+            0.8,
+            0.2
+          ],
+          "speed": [
+            12,
+            26
+          ],
+          "direction": "random",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1
+            ],
+            [
+              0.4,
+              "#a8f0ff",
+              0.9
+            ],
+            [
+              1,
+              "#2b6bff",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "sphere",
+          "radius": 6,
+          "texture": "shard",
+          "blend": "alpha",
+          "count": 80,
+          "lifetime": [
+            1.0,
+            2.2
+          ],
+          "size": [
+            0.34,
+            0.08
+          ],
+          "speed": [
+            8,
+            20
+          ],
+          "direction": "outward",
+          "gravity": 1.1,
+          "color": [
+            [
+              0,
+              "#8a7a68",
+              1
+            ],
+            [
+              1,
+              "#2a2420",
+              0.7
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "sphere",
+          "radius": 12,
+          "texture": "mote",
+          "blend": "additive",
+          "rate": 70,
+          "duration": 2.6,
+          "lifetime": [
+            1.6,
+            3.2
+          ],
+          "size": [
+            0.16,
+            0.04
+          ],
+          "speed": [
+            1,
+            4
+          ],
+          "direction": "up",
+          "gravity": -0.03,
+          "color": [
+            [
+              0,
+              "#fff2b0",
+              1
+            ],
+            [
+              0.5,
+              "#ff8a1f",
+              0.8
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            15,
+            0
+          ],
+          "shape": "disc",
+          "radius": 6,
+          "texture": "smoke",
+          "blend": "alpha",
+          "at": 0.9,
+          "rate": 24,
+          "duration": 1.5,
+          "lifetime": [
+            2.0,
+            3.8
+          ],
+          "size": [
+            3.6,
+            1.6
+          ],
+          "speed": [
+            1,
+            3.5
+          ],
+          "direction": "outward",
+          "color": [
+            [
+              0,
+              "#6a5a50",
+              0.62
+            ],
+            [
+              0.6,
+              "#3a302a",
+              0.4
+            ],
+            [
+              1,
+              "#1a1410",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 0.06,
+          "radius": 19,
+          "texture": "scorch",
+          "blend": "alpha",
+          "duration": 2.6,
+          "fade_in": 0.1,
+          "color": [
+            [
+              0,
+              "#1a120e",
+              0.72
+            ],
+            [
+              0.6,
+              "#2a1c14",
+              0.5
+            ],
+            [
+              1,
+              "#2a1c14",
+              0.22
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 0.08,
+          "radius": 17,
+          "texture": "soft_glow",
+          "blend": "additive",
+          "duration": 2.4,
+          "fade_in": 0.15,
+          "color": [
+            [
+              0,
+              "#ffd9a0",
+              0.85
+            ],
+            [
+              0.5,
+              "#ff6a00",
+              0.5
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "glow",
+          "anchor": "target",
+          "offset": [
+            0,
+            2,
+            0
+          ],
+          "size": [
+            6,
+            30
+          ],
+          "duration": 0.5,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.95
+            ],
+            [
+              1,
+              "#ffd9a0",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "amplitude": 1.0,
+          "duration": 1.4,
+          "radius": 32,
+          "falloff": "linear"
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 0.06,
+          "radius": 18.0,
+          "texture": "crack_glow",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 2.6,
+          "fade_in": 0.1,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1
+            ],
+            [
+              0.25,
+              "#ff9933",
+              0.9
+            ],
+            [
+              0.7,
+              "#ff3300",
+              0.6
+            ],
+            [
+              1,
+              "#881100",
+              0.2
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            2.0,
+            0
+          ],
+          "shape": "sphere",
+          "radius": 8.0,
+          "texture": "spark",
+          "blend": "additive",
+          "at": 0.0,
+          "count": 75,
+          "lifetime": [
+            0.7,
+            1.6
+          ],
+          "size": [
+            0.28,
+            0.06
+          ],
+          "speed": [
+            10.0,
+            24.0
+          ],
+          "direction": "outward",
+          "gravity": 0.3,
+          "rainbow": 1.0,
+          "color": [
+            [
+              0,
+              "#ff3366",
+              1
+            ],
+            [
+              0.5,
+              "#ffcc00",
+              0.9
+            ],
+            [
+              1,
+              "#33ccff",
+              0
+            ]
+          ]
+        }
       ]
-     ],
-     "duration": 3.0,
-     "lifetime": [
-      0.3,
-      0.7
-     ],
-     "size": [
-      0.3,
-      0.06
-     ],
-     "speed": [
-      3,
-      7
-     ],
-     "direction": "inward",
-     "color": [
-      [
-       0,
-       "#e8ffff",
-       1
-      ],
-      [
-       0.4,
-       "#7fe8ff",
-       0.9
-      ],
-      [
-       1,
-       "#1b4bd8",
-       0
-      ]
-     ]
     },
-    {
-     "type": "emitter",
-     "anchor": "entity",
-     "offset": [
-      0,
-      0.1,
-      0
-     ],
-     "shape": "disc",
-     "radius": 1.3,
-     "texture": "flame_puff_8f",
-     "blend": "additive",
-     "rate": 14,
-     "duration": 3.0,
-     "lifetime": [
-      0.35,
-      0.8
-     ],
-     "size": [
-      1.0,
-      0.25
-     ],
-     "speed": [
-      0.6,
-      1.8
-     ],
-     "direction": "up",
-     "gravity": -0.02,
-     "color": [
-      [
-       0,
-       "#fff1c0",
-       0.9
-      ],
-      [
-       0.4,
-       "#ff9a2a",
-       0.8
-      ],
-      [
-       1,
-       "#7a1a00",
-       0
+    "aftermath": {
+      "tier": "XL",
+      "duration": 10.0,
+      "trigger": {
+        "at": 37.2
+      },
+      "doc": "Poso del cr\u00e1ter: columna de humo que sube, humo raso por el borde, anillo de fuego bajo, ascuas, ceniza cayendo, holl\u00edn persistente, rescoldo y temblor de cola.",
+      "layers": [
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "offset": [
+            0,
+            3,
+            0
+          ],
+          "shape": "disc",
+          "radius": 6.5,
+          "texture": "smoke",
+          "blend": "alpha",
+          "rate": [
+            [
+              0,
+              16
+            ],
+            [
+              0.3,
+              22
+            ],
+            [
+              1,
+              5
+            ]
+          ],
+          "duration": 10.0,
+          "lifetime": [
+            3,
+            6
+          ],
+          "size": [
+            2.8,
+            1.2
+          ],
+          "speed": [
+            0.8,
+            3
+          ],
+          "direction": "up",
+          "gravity": -0.02,
+          "color": [
+            [
+              0,
+              "#6a5a50",
+              0.6
+            ],
+            [
+              0.5,
+              "#3a302a",
+              0.4
+            ],
+            [
+              1,
+              "#14100c",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "ring",
+          "radius": 17,
+          "texture": "smoke",
+          "blend": "alpha",
+          "rate": 10,
+          "duration": 8.0,
+          "lifetime": [
+            3,
+            6
+          ],
+          "size": [
+            2.6,
+            0.9
+          ],
+          "speed": [
+            0.3,
+            1.2
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#4a3e36",
+              0.45
+            ],
+            [
+              1,
+              "#1a1410",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "sphere",
+          "radius": 16,
+          "texture": "spark",
+          "blend": "additive",
+          "rate": 28,
+          "duration": 9.0,
+          "lifetime": [
+            2,
+            4
+          ],
+          "size": [
+            0.13,
+            0.03
+          ],
+          "speed": [
+            0.5,
+            2.2
+          ],
+          "direction": "up",
+          "gravity": -0.02,
+          "color": [
+            [
+              0,
+              "#ffd257",
+              0.95
+            ],
+            [
+              0.5,
+              "#ff6a00",
+              0.7
+            ],
+            [
+              1,
+              "#8a1c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "ring",
+          "radius": 10,
+          "texture": "flame_8f",
+          "blend": "additive",
+          "rate": [
+            [
+              0,
+              30
+            ],
+            [
+              1,
+              5
+            ]
+          ],
+          "duration": 4.5,
+          "lifetime": [
+            0.5,
+            1.0
+          ],
+          "size": [
+            1.8,
+            0.35
+          ],
+          "speed": [
+            0.5,
+            2
+          ],
+          "direction": "up",
+          "color": [
+            [
+              0,
+              "#fff0a0",
+              0.9
+            ],
+            [
+              0.5,
+              "#ff8a1f",
+              0.7
+            ],
+            [
+              1,
+              "#7a1200",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "anchor": "target",
+          "shape": "sphere",
+          "radius": 18,
+          "texture": "mote",
+          "blend": "alpha",
+          "rate": 20,
+          "duration": 10.0,
+          "lifetime": [
+            3,
+            5
+          ],
+          "size": [
+            0.12,
+            0.03
+          ],
+          "speed": [
+            0.2,
+            0.7
+          ],
+          "direction": "down",
+          "gravity": 0.02,
+          "color": [
+            [
+              0,
+              "#8a7a68",
+              0.6
+            ],
+            [
+              1,
+              "#3a302a",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 0.05,
+          "radius": 19,
+          "texture": "scorch",
+          "blend": "alpha",
+          "duration": 10.0,
+          "fade_in": 0.2,
+          "color": [
+            [
+              0,
+              "#1a120e",
+              0.7
+            ],
+            [
+              1,
+              "#1a120e",
+              0.3
+            ]
+          ]
+        },
+        {
+          "type": "glow",
+          "anchor": "target",
+          "offset": [
+            0,
+            1.5,
+            0
+          ],
+          "size": [
+            5,
+            1.5
+          ],
+          "duration": 9.0,
+          "color": [
+            [
+              0,
+              "#ff6a00",
+              0.5
+            ],
+            [
+              1,
+              "#ff3c00",
+              0
+            ]
+          ]
+        },
+        {
+          "type": "shake",
+          "amplitude": 0.18,
+          "duration": 3.0,
+          "radius": 26,
+          "falloff": "linear"
+        },
+        {
+          "type": "decal",
+          "anchor": "target",
+          "y": 0.06,
+          "radius": 18.0,
+          "texture": "crack_glow",
+          "blend": "additive",
+          "at": 0.0,
+          "duration": 10.0,
+          "color": [
+            [
+              0,
+              "#ff6600",
+              0.75
+            ],
+            [
+              0.4,
+              "#cc2800",
+              0.45
+            ],
+            [
+              0.8,
+              "#661000",
+              0.2
+            ],
+            [
+              1,
+              "#220400",
+              0
+            ]
+          ]
+        }
       ]
-     ]
-    },
-    {
-     "type": "glow",
-     "anchor": "entity",
-     "offset": [
-      0,
-      1.25,
-      -0.35
-     ],
-     "size": [
-      0.2,
-      1.4
-     ],
-     "duration": 3.0,
-     "color": [
-      [
-       0,
-       "#ff8ae8",
-       0.9
-      ],
-      [
-       0.6,
-       "#ff3ec9",
-       0.7
-      ],
-      [
-       1,
-       "#ff3ec9",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "entity",
-     "offset": [
-      0,
-      1.25,
-      -0.35
-     ],
-     "shape": "sphere",
-     "radius": 0.25,
-     "texture": "star4",
-     "blend": "additive",
-     "rate": 20,
-     "duration": 3.0,
-     "lifetime": [
-      0.3,
-      0.8
-     ],
-     "size": [
-      0.25,
-      0.05
-     ],
-     "speed": [
-      0.4,
-      1.6
-     ],
-     "direction": "random",
-     "color": [
-      [
-       0,
-       "#ffffff",
-       1
-      ],
-      [
-       0.5,
-       "#ff8ae8",
-       0.8
-      ],
-      [
-       1,
-       "#ff3ec9",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "entity",
-     "shape": "sphere",
-     "radius": 1.7,
-     "texture": "streak",
-     "blend": "additive",
-     "stretch": 2.5,
-     "core": 0.5,
-     "rate": [
-      [
-       0,
-       25
-      ],
-      [
-       1,
-       70
-      ]
-     ],
-     "duration": 3.0,
-     "lifetime": [
-      0.1,
-      0.3
-     ],
-     "size": [
-      0.8,
-      0.2
-     ],
-     "speed": [
-      10,
-      20
-     ],
-     "direction": "random",
-     "color": [
-      [
-       0,
-       "#ffffff",
-       1
-      ],
-      [
-       0.5,
-       "#7fe8ff",
-       0.85
-      ],
-      [
-       1,
-       "#2b6bff",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 4.0,
-     "radius": 3.0,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 0.35,
-     "duration": 2.65,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       300
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 8.5,
-     "radius": 3.9,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 0.65,
-     "duration": 2.35,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       -240
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 13.5,
-     "radius": 4.9,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 0.95,
-     "duration": 2.05,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       260
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 19.0,
-     "radius": 5.9,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 1.25,
-     "duration": 1.75,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       -200
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 25.0,
-     "radius": 7.0,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 1.55,
-     "duration": 1.45,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       240
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 31.0,
-     "radius": 8.1,
-     "texture": "rune_ring",
-     "blend": "additive",
-     "at": 1.85,
-     "duration": 1.15,
-     "fade_in": 0.45,
-     "angle": [
-      [
-       0,
-       0
-      ],
-      [
-       1,
-       -280
-      ]
-     ],
-     "color": [
-      [
-       0,
-       "#ffe8b8",
-       0.85
-      ],
-      [
-       0.55,
-       "#ffa030",
-       0.7
-      ],
-      [
-       0.9,
-       "#ff5a00",
-       0.35
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "ring",
-     "radius": 12,
-     "texture": "smoke",
-     "blend": "alpha",
-     "rate": 10,
-     "duration": 3.0,
-     "lifetime": [
-      1.2,
-      2.2
-     ],
-     "size": [
-      1.6,
-      0.5
-     ],
-     "speed": [
-      2,
-      4
-     ],
-     "direction": "outward",
-     "color": [
-      [
-       0,
-       "#6a5a50",
-       0.5
-      ],
-      [
-       1,
-       "#3a302a",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "shake",
-     "amplitude": 0.05,
-     "duration": 3.0,
-     "radius": 24,
-     "falloff": "linear"
-    },
-    {
-     "type": "sphere",
-     "anchor": "entity",
-     "offset": [
-      0,
-      0.9,
-      0
-     ],
-     "radius": [
-      0.6,
-      2.6
-     ],
-     "grow": 2.4,
-     "texture": "solid",
-     "blend": "additive",
-     "rim": 1.0,
-     "rim_color": "#9ff2ff",
-     "rim_color2": "#2b6bff",
-     "duration": 3.0,
-     "fade_in": 0.4,
-     "color": [
-      [
-       0,
-       "#7fe8ff",
-       0.13
-      ],
-      [
-       1,
-       "#2b6bff",
-       0.04
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "entity",
-     "y": 0.04,
-     "radius": 3.4,
-     "texture": "ring_thin",
-     "blend": "additive",
-     "spin": 1.6,
-     "duration": 3.0,
-     "fade_in": 0.3,
-     "color": [
-      [
-       0,
-       "#bff6ff",
-       0.7
-      ],
-      [
-       0.6,
-       "#5ad4ff",
-       0.5
-      ],
-      [
-       1,
-       "#2b6bff",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "entity",
-     "shape": "sphere",
-     "radius": 2.0,
-     "texture": "spark",
-     "blend": "additive",
-     "rate": 45,
-     "duration": 3.0,
-     "lifetime": [
-      0.4,
-      1.0
-     ],
-     "size": [
-      0.22,
-      0.05
-     ],
-     "speed": [
-      0.3,
-      1.2
-     ],
-     "direction": "random",
-     "gravity": -0.01,
-     "color": [
-      [
-       0,
-       "#ffffff",
-       0.9
-      ],
-      [
-       0.5,
-       "#7fe8ff",
-       0.7
-      ],
-      [
-       1,
-       "#2b6bff",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      9.0,
-      0
-     ],
-     "shape": "point",
-     "texture": "light_beam",
-     "blend": "additive",
-     "count": 1,
-     "at": 0.9,
-     "duration": 0.1,
-     "lifetime": [
-      2.1,
-      2.1
-     ],
-     "size": [
-      5.0,
-      20.0
-     ],
-     "speed": [
-      0,
-      0
-     ],
-     "direction": "up",
-     "gravity": 0.0,
-     "color": [
-      [
-       0,
-       "#fff6dc",
-       0.0
-      ],
-      [
-       0.15,
-       "#ffe8b8",
-       0.28
-      ],
-      [
-       0.75,
-       "#ffc257",
-       0.36
-      ],
-      [
-       1,
-       "#ffffff",
-       0.0
-      ]
-     ]
     }
-   ]
-  },
-  "blast": {
-   "tier": "XL",
-   "duration": 2.6,
-   "trigger": {
-    "at": 3.0
-   },
-   "doc": "Estallido: dos destellos (mundo y pantalla) y, en el centro, el nucleo de la antigua explosion mediana (bola blanca incandescente, estallido de llamas, anillo raso de 9 y esquirlas); encima la cupula de fuego de 18 bloques con borde fresnel, las ondas de 26 y 42, la columna de fuego, los rayos cian, los escombros, las ascuas, el hongo de humo, el hollin y el temblor de 32.",
-   "layers": [
-    {
-     "type": "flash",
-     "intensity": 0.85,
-     "duration": 0.28,
-     "scope": "world",
-     "color": "#fff6dc"
-    },
-    {
-     "type": "flash",
-     "intensity": 0.45,
-     "duration": 0.18,
-     "scope": "screen",
-     "color": "#ffd9a0"
-    },
-    {
-     "type": "sphere",
-     "anchor": "target",
-     "offset": [
-      0,
-      0.9,
-      0
-     ],
-     "radius": [
-      0.6,
-      6.5
-     ],
-     "grow": 0.22,
-     "texture": "solid",
-     "blend": "additive",
-     "rim": 1.6,
-     "rim_color": "#fff3c4",
-     "rim_color2": "#ff8a1f",
-     "at": 0.06,
-     "duration": 0.75,
-     "fade_in": 0.02,
-     "color": [
-      [
-       0,
-       "#ffffff",
-       0.92
-      ],
-      [
-       0.3,
-       "#fff6dc",
-       0.82
-      ],
-      [
-       0.65,
-       "#ffb347",
-       0.5
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      0.8,
-      0
-     ],
-     "shape": "sphere",
-     "radius": 4.5,
-     "texture": "flame_puff_8f",
-     "blend": "additive",
-     "at": 0.02,
-     "count": 36,
-     "lifetime": [
-      0.4,
-      0.9
-     ],
-     "size": [
-      2.0,
-      0.4
-     ],
-     "speed": [
-      3,
-      10
-     ],
-     "direction": "outward",
-     "gravity": -0.02,
-     "color": [
-      [
-       0,
-       "#fffbe8",
-       1
-      ],
-      [
-       0.3,
-       "#ffd257",
-       0.95
-      ],
-      [
-       0.7,
-       "#ff6a00",
-       0.7
-      ],
-      [
-       1,
-       "#7a1200",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "ring_wave",
-     "anchor": "target",
-     "radius": [
-      0.5,
-      9
-     ],
-     "thickness": [
-      0.5,
-      0.12
-     ],
-     "duration": 0.45,
-     "ease": "out",
-     "y": 0.14,
-     "texture": "ring_soft",
-     "blend": "additive",
-     "color": [
-      [
-       0,
-       "#ffffff",
-       0.9
-      ],
-      [
-       0.6,
-       "#ffb347",
-       0.7
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      0.6,
-      0
-     ],
-     "shape": "point",
-     "texture": "shard",
-     "blend": "alpha",
-     "at": 0.05,
-     "count": 24,
-     "lifetime": [
-      0.7,
-      1.4
-     ],
-     "size": [
-      0.26,
-      0.06
-     ],
-     "speed": [
-      5,
-      12
-     ],
-     "direction": "outward",
-     "gravity": 1.2,
-     "color": [
-      [
-       0,
-       "#8a7a68",
-       1
-      ],
-      [
-       1,
-       "#2a2420",
-       0.7
-      ]
-     ]
-    },
-    {
-     "type": "sphere",
-     "anchor": "target",
-     "radius": [
-      1,
-      18
-     ],
-     "grow": 0.4,
-     "hemisphere": true,
-     "texture": "solid",
-     "blend": "additive",
-     "ease": "out",
-     "rim": 2.2,
-     "rim_color": "#ffe9b0",
-     "rim_color2": "#ff5a00",
-     "duration": 1.1,
-     "fade_in": 0.05,
-     "color": [
-      [
-       0,
-       "#fff6d8",
-       0.55
-      ],
-      [
-       0.35,
-       "#ffd257",
-       0.45
-      ],
-      [
-       0.7,
-       "#ff6a00",
-       0.32
-      ],
-      [
-       1,
-       "#8a1c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "ring_wave",
-     "anchor": "target",
-     "radius": [
-      1,
-      26
-     ],
-     "thickness": [
-      1.4,
-      0.2
-     ],
-     "duration": 0.55,
-     "ease": "out",
-     "y": 0.12,
-     "texture": "ring_soft",
-     "blend": "additive",
-     "color": [
-      [
-       0,
-       "#ffffff",
-       0.9
-      ],
-      [
-       0.6,
-       "#ffb347",
-       0.7
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "ring_wave",
-     "anchor": "target",
-     "radius": [
-      1,
-      42
-     ],
-     "thickness": [
-      0.7,
-      0.1
-     ],
-     "duration": 0.95,
-     "ease": "out",
-     "y": 0.2,
-     "texture": "ring_thin",
-     "blend": "additive",
-     "color": [
-      [
-       0,
-       "#fff6dc",
-       0.8
-      ],
-      [
-       1,
-       "#ff6a00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      0.4,
-      0
-     ],
-     "shape": "disc",
-     "radius": 10,
-     "texture": "flame_puff_8f",
-     "blend": "additive",
-     "rate": [
-      [
-       0,
-       60
-      ],
-      [
-       0.4,
-       110
-      ],
-      [
-       1,
-       25
-      ]
-     ],
-     "duration": 2.4,
-     "lifetime": [
-      0.5,
-      1.2
-     ],
-     "size": [
-      2.6,
-      0.5
-     ],
-     "speed": [
-      2,
-      9
-     ],
-     "direction": "outward",
-     "gravity": -0.02,
-     "color": [
-      [
-       0,
-       "#ffffff",
-       1
-      ],
-      [
-       0.25,
-       "#fff0a0",
-       0.95
-      ],
-      [
-       0.6,
-       "#ff8a1f",
-       0.85
-      ],
-      [
-       1,
-       "#7a1200",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "ring",
-     "radius": 2.4,
-     "texture": "flame_8f",
-     "blend": "additive",
-     "rate": [
-      [
-       0,
-       45
-      ],
-      [
-       0.5,
-       30
-      ],
-      [
-       1,
-       8
-      ]
-     ],
-     "duration": 2.0,
-     "lifetime": [
-      1.0,
-      2.0
-     ],
-     "size": [
-      3.2,
-      0.6
-     ],
-     "speed": [
-      3,
-      8
-     ],
-     "direction": "up",
-     "gravity": -0.01,
-     "color": [
-      [
-       0,
-       "#fffbe8",
-       1
-      ],
-      [
-       0.35,
-       "#ffd257",
-       0.95
-      ],
-      [
-       0.7,
-       "#ff6a00",
-       0.7
-      ],
-      [
-       1,
-       "#8a1c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "sphere",
-     "radius": 15,
-     "texture": "streak",
-     "blend": "additive",
-     "stretch": 3,
-     "core": 0.6,
-     "rate": [
-      [
-       0,
-       90
-      ],
-      [
-       0.35,
-       55
-      ],
-      [
-       1,
-       10
-      ]
-     ],
-     "duration": 1.4,
-     "lifetime": [
-      0.1,
-      0.28
-     ],
-     "size": [
-      0.8,
-      0.2
-     ],
-     "speed": [
-      12,
-      26
-     ],
-     "direction": "random",
-     "color": [
-      [
-       0,
-       "#ffffff",
-       1
-      ],
-      [
-       0.4,
-       "#a8f0ff",
-       0.9
-      ],
-      [
-       1,
-       "#2b6bff",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "sphere",
-     "radius": 6,
-     "texture": "shard",
-     "blend": "alpha",
-     "count": 80,
-     "lifetime": [
-      1.0,
-      2.2
-     ],
-     "size": [
-      0.34,
-      0.08
-     ],
-     "speed": [
-      8,
-      20
-     ],
-     "direction": "outward",
-     "gravity": 1.1,
-     "color": [
-      [
-       0,
-       "#8a7a68",
-       1
-      ],
-      [
-       1,
-       "#2a2420",
-       0.7
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "sphere",
-     "radius": 12,
-     "texture": "mote",
-     "blend": "additive",
-     "rate": 70,
-     "duration": 2.6,
-     "lifetime": [
-      1.6,
-      3.2
-     ],
-     "size": [
-      0.16,
-      0.04
-     ],
-     "speed": [
-      1,
-      4
-     ],
-     "direction": "up",
-     "gravity": -0.03,
-     "color": [
-      [
-       0,
-       "#fff2b0",
-       1
-      ],
-      [
-       0.5,
-       "#ff8a1f",
-       0.8
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      15,
-      0
-     ],
-     "shape": "disc",
-     "radius": 6,
-     "texture": "smoke",
-     "blend": "alpha",
-     "at": 0.9,
-     "rate": 24,
-     "duration": 1.5,
-     "lifetime": [
-      2.0,
-      3.8
-     ],
-     "size": [
-      3.6,
-      1.6
-     ],
-     "speed": [
-      1,
-      3.5
-     ],
-     "direction": "outward",
-     "color": [
-      [
-       0,
-       "#6a5a50",
-       0.62
-      ],
-      [
-       0.6,
-       "#3a302a",
-       0.4
-      ],
-      [
-       1,
-       "#1a1410",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 0.06,
-     "radius": 19,
-     "texture": "scorch",
-     "blend": "alpha",
-     "duration": 2.6,
-     "fade_in": 0.1,
-     "color": [
-      [
-       0,
-       "#1a120e",
-       0.72
-      ],
-      [
-       0.6,
-       "#2a1c14",
-       0.5
-      ],
-      [
-       1,
-       "#2a1c14",
-       0.22
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 0.08,
-     "radius": 17,
-     "texture": "soft_glow",
-     "blend": "additive",
-     "duration": 2.4,
-     "fade_in": 0.15,
-     "color": [
-      [
-       0,
-       "#ffd9a0",
-       0.85
-      ],
-      [
-       0.5,
-       "#ff6a00",
-       0.5
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "glow",
-     "anchor": "target",
-     "offset": [
-      0,
-      2,
-      0
-     ],
-     "size": [
-      6,
-      30
-     ],
-     "duration": 0.5,
-     "color": [
-      [
-       0,
-       "#ffffff",
-       0.95
-      ],
-      [
-       1,
-       "#ffd9a0",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "shake",
-     "amplitude": 1.0,
-     "duration": 1.4,
-     "radius": 32,
-     "falloff": "linear"
-    }
-   ]
-  },
-  "aftermath": {
-   "tier": "XL",
-   "duration": 6.0,
-   "trigger": {
-    "at": 3.8
-   },
-   "doc": "Poso del cráter: columna de humo que sube, humo raso por el borde, anillo de fuego bajo, ascuas, ceniza cayendo, hollín persistente, rescoldo y temblor de cola.",
-   "layers": [
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "offset": [
-      0,
-      3,
-      0
-     ],
-     "shape": "disc",
-     "radius": 6.5,
-     "texture": "smoke",
-     "blend": "alpha",
-     "rate": [
-      [
-       0,
-       16
-      ],
-      [
-       0.3,
-       22
-      ],
-      [
-       1,
-       5
-      ]
-     ],
-     "duration": 6.0,
-     "lifetime": [
-      3,
-      6
-     ],
-     "size": [
-      2.8,
-      1.2
-     ],
-     "speed": [
-      0.8,
-      3
-     ],
-     "direction": "up",
-     "gravity": -0.02,
-     "color": [
-      [
-       0,
-       "#6a5a50",
-       0.6
-      ],
-      [
-       0.5,
-       "#3a302a",
-       0.4
-      ],
-      [
-       1,
-       "#14100c",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "ring",
-     "radius": 17,
-     "texture": "smoke",
-     "blend": "alpha",
-     "rate": 10,
-     "duration": 4.5,
-     "lifetime": [
-      3,
-      6
-     ],
-     "size": [
-      2.6,
-      0.9
-     ],
-     "speed": [
-      0.3,
-      1.2
-     ],
-     "direction": "up",
-     "color": [
-      [
-       0,
-       "#4a3e36",
-       0.45
-      ],
-      [
-       1,
-       "#1a1410",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "sphere",
-     "radius": 16,
-     "texture": "spark",
-     "blend": "additive",
-     "rate": 28,
-     "duration": 5.5,
-     "lifetime": [
-      2,
-      4
-     ],
-     "size": [
-      0.13,
-      0.03
-     ],
-     "speed": [
-      0.5,
-      2.2
-     ],
-     "direction": "up",
-     "gravity": -0.02,
-     "color": [
-      [
-       0,
-       "#ffd257",
-       0.95
-      ],
-      [
-       0.5,
-       "#ff6a00",
-       0.7
-      ],
-      [
-       1,
-       "#8a1c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "ring",
-     "radius": 10,
-     "texture": "flame_8f",
-     "blend": "additive",
-     "rate": [
-      [
-       0,
-       30
-      ],
-      [
-       1,
-       5
-      ]
-     ],
-     "duration": 2.6,
-     "lifetime": [
-      0.5,
-      1.0
-     ],
-     "size": [
-      1.8,
-      0.35
-     ],
-     "speed": [
-      0.5,
-      2
-     ],
-     "direction": "up",
-     "color": [
-      [
-       0,
-       "#fff0a0",
-       0.9
-      ],
-      [
-       0.5,
-       "#ff8a1f",
-       0.7
-      ],
-      [
-       1,
-       "#7a1200",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "emitter",
-     "anchor": "target",
-     "shape": "sphere",
-     "radius": 18,
-     "texture": "mote",
-     "blend": "alpha",
-     "rate": 20,
-     "duration": 6.0,
-     "lifetime": [
-      3,
-      5
-     ],
-     "size": [
-      0.12,
-      0.03
-     ],
-     "speed": [
-      0.2,
-      0.7
-     ],
-     "direction": "down",
-     "gravity": 0.02,
-     "color": [
-      [
-       0,
-       "#8a7a68",
-       0.6
-      ],
-      [
-       1,
-       "#3a302a",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "decal",
-     "anchor": "target",
-     "y": 0.05,
-     "radius": 19,
-     "texture": "scorch",
-     "blend": "alpha",
-     "duration": 6.0,
-     "fade_in": 0.2,
-     "color": [
-      [
-       0,
-       "#1a120e",
-       0.7
-      ],
-      [
-       1,
-       "#1a120e",
-       0.3
-      ]
-     ]
-    },
-    {
-     "type": "glow",
-     "anchor": "target",
-     "offset": [
-      0,
-      1.5,
-      0
-     ],
-     "size": [
-      5,
-      1.5
-     ],
-     "duration": 5.5,
-     "color": [
-      [
-       0,
-       "#ff6a00",
-       0.5
-      ],
-      [
-       1,
-       "#ff3c00",
-       0
-      ]
-     ]
-    },
-    {
-     "type": "shake",
-     "amplitude": 0.18,
-     "duration": 3.0,
-     "radius": 26,
-     "falloff": "linear"
-    }
-   ]
   }
- }
 }

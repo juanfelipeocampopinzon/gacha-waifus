@@ -25,7 +25,7 @@ TEXTURES = {"soft_glow", "spark", "streak", "petal", "shard", "mote", "smoke",
             "ring_thin", "ring_soft", "arc_streak", "ribbon_soft", "star4", "flame_8f",
             "flame_puff_8f", "orb", "cube", "note", "note_double", "light_beam",
             "clock_face", "clock_hand", "clock_hand_short", "solid", "sigil", "spike_burst", "ice_cracks", "cut_lines",
-            "rune_ring", "scorch"}
+            "rune_ring", "rune_disc", "scorch", "crack_glow"}
 
 BLENDS = {"additive", "alpha"}
 SHAPES = {"point", "disc", "ring", "cone", "line", "sphere"}
@@ -36,31 +36,31 @@ HEX_RE = re.compile(r"^#[0-9a-fA-F]{6}$")
 ID_RE = re.compile(r"^[a-z0-9_]+(/[a-z0-9_]+)+$")
 CLIP_RE = re.compile(r"^animation\.[a-z0-9_]+\.[a-z0-9_]+$")
 
-MAX_LAYERS = 20
+MAX_LAYERS = 24
 MAX_LAYER_PARTICLES = 600
 # Estándar de calidad por slot: S = golpe, M = habilidad, L = ultimate, XL = ultimate insignia
 # (una sola por roster: la Explosión de Megumin, con carga, estallido y poso de 6 s).
 TIERS = {"S": {"particles": 40, "layers": 3, "duration": 0.6},
          "M": {"particles": 150, "layers": 5, "duration": 4.0},
          "L": {"particles": 400, "layers": 8, "duration": 3.5},
-         "XL": {"particles": 1200, "layers": 20, "duration": 10.0}}
+         "XL": {"particles": 1200, "layers": 24, "duration": 40.0}}
 
 COMMON = {"type": str, "at": "t", "anchor": "anchor", "offset": "vec3"}
 # tipo -> {clave: regla}. Las claves de COMMON se aceptan en todos los tipos.
 SPEC = {
     "emitter": {"shape": SHAPES, "radius": (0, 64), "texture": TEXTURES, "blend": BLENDS,
-                "count": ("int", 0, 600), "rate": "curve", "duration": (0.05, 10),
-                "lifetime": ("pair", 0.05, 10), "size": ("pair", 0.01, 32),
+                "count": ("int", 0, 600), "rate": "curve", "duration": (0.05, 40),
+                "lifetime": ("pair", 0.05, 10), "size": ("pair", 0.01, 64),
                 "color": "gradient", "speed": ("pair", 0, 40), "direction": DIRECTIONS,
                 "gravity": (-2, 2), "swirl": (0, 20), "fade_in": (0, 5),
-                "stretch": (0, 4), "core": (0, 1)},
+                "stretch": (0, 4), "core": (0, 1), "rainbow": (0, 10)},
     "ring_wave": {"radius": ("pair", 0, 64), "thickness": ("pair", 0.05, 8),
                   "duration": (0.05, 5), "ease": EASES, "y": (-4, 8),
                   "color": "gradient", "texture": {"ring_thin", "ring_soft"}, "blend": BLENDS},
     "telegraph": {"radius": (0.5, 64), "spin": (-20, 20), "fill_alpha": (0, 1),
-                  "color": "gradient", "fade_in": (0, 5), "duration": (0.05, 10), "thickness": (0.02, 4),
+                  "color": "gradient", "fade_in": (0, 5), "duration": (0.05, 40), "thickness": (0.02, 4),
                   "texture": {"ring_thin"}},
-    "glow": {"size": ("pair", 0.1, 64), "color": "gradient", "duration": (0.05, 10),
+    "glow": {"size": ("pair", 0.1, 64), "color": "gradient", "duration": (0.05, 40),
              "texture": {"soft_glow"}},
     "slash_arc": {"radius": (0.3, 16), "arc_degrees": (30, 360), "width": (0.1, 6),
                   "duration": (0.05, 2), "tilt": (-90, 90), "texture": {"arc_streak", "streak"},
@@ -69,14 +69,14 @@ SPEC = {
     "ribbon": {"bone": "bone", "width": ("pair", 0.02, 3), "lifetime": (0.05, 2),
                "duration": (0.05, 10), "color": "gradient",
                "texture": {"streak", "ribbon_soft"}},
-    "shake": {"amplitude": (0, 1), "duration": (0.05, 5), "radius": (1, 64),
+    "shake": {"amplitude": (0, 1), "duration": (0.05, 40), "radius": (1, 64),
               "falloff": {"linear", "none"}},
     "flash": {"intensity": (0, 1), "duration": (0.02, 1), "color": "hex",
               "scope": {"world", "screen"}},
     # textura plana en el suelo o de pie tras la waifu (relojes, sellos, sombras). "angle" = curva de
     # grados sobre la vida de la capa ([[0,0],[1,720]] = dos vueltas); sin angle gira a "spin" rad/s.
     "decal": {"radius": (0.1, 64), "texture": TEXTURES, "blend": BLENDS, "color": "gradient",
-              "duration": (0.05, 10), "fade_in": (0, 5), "spin": (-20, 20), "angle": "angle",
+              "duration": (0.05, 40), "fade_in": (0, 5), "spin": (-20, 20), "angle": "angle",
               "plane": {"ground", "vertical"}, "y": (-4, 64)},
     # la waifu redibujada en otro sitio, translúcida y teñida (su renderer debe soportar VfxClones)
     "clone": {"color": "gradient", "duration": (0.05, 10), "rise": (0, 4)},
@@ -84,7 +84,7 @@ SPEC = {
     # recorrido en "grow" segundos; el cuerpo usa "color" con alfa normal (puede ser oscuro).
     "sphere": {"radius": ("pair", 0, 64), "grow": (0.02, 10), "ease": EASES, "hemisphere": {True, False},
                "color": "gradient", "rim": (0, 4), "rim_color": "hex", "rim_color2": "hex",
-               "duration": (0.05, 10), "fade_in": (0, 5), "y": (-4, 64), "texture": {"solid"},
+               "duration": (0.05, 40), "fade_in": (0, 5), "y": (-4, 64), "texture": {"solid"},
                "blend": BLENDS},
     # proyectil del ancla (o hueso) al objetivo: "to" target = punto de VfxTargeted
     "projectile": {"to": {"target", "forward"}, "duration": (0.05, 3), "ease": EASES, "arc": (-8, 8),
@@ -115,8 +115,8 @@ def check_value(path, key, rule, v, err):
         if v not in rule:
             err(f"{where}: '{v}' no está en {sorted(rule)}")
     elif rule == "t":
-        if not (num(v) and 0 <= v <= 10):
-            err(f"{where}: debe ser número 0..10")
+        if not (num(v) and 0 <= v <= 40):
+            err(f"{where}: debe ser número 0..40")
     elif rule == "anchor":
         if not (isinstance(v, str) and ANCHOR_RE.match(v)):
             err(f"{where}: ancla inválida '{v}' (entity|ground|target|bone:<nombre>)")
@@ -212,8 +212,8 @@ def validate_file(path, rel, errors):
             err(f"{sp}: solo admite tier, duration, layers, trigger y doc")
             continue
         dur = stage.get("duration")
-        if not (num(dur) and 0.05 <= dur <= 10):
-            err(f"{sp}.duration: número 0.05..10")
+        if not (num(dur) and 0.05 <= dur <= 40):
+            err(f"{sp}.duration: número 0.05..40")
             dur = 1.0
         tier = stage.get("tier")
         if tier not in TIERS:
@@ -227,7 +227,7 @@ def validate_file(path, rel, errors):
             # Dos formas: con clip de GeckoLib ({"clip": "animation.x.y", "at": s}) o solo "at"
             # para los efectos que arranca el servidor/casteo (VfxCasters), sin animación.
             if not (isinstance(trig, dict) and set(trig) <= {"clip", "at"}
-                    and (trig.get("at") is None or (num(trig["at"]) and 0 <= trig["at"] <= 10))
+                    and (trig.get("at") is None or (num(trig["at"]) and 0 <= trig["at"] <= 40))
                     and ("clip" not in trig or (isinstance(trig["clip"], str) and CLIP_RE.match(trig["clip"])))):
                 err(f"{sp}.trigger: debe ser {{\"clip\": \"animation.<waifu>.<clip>\", \"at\": segundos}}"
                     f" o {{\"at\": segundos}} para efectos por casteo")

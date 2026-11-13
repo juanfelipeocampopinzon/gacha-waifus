@@ -206,7 +206,7 @@ public final class VfxInstance {
                     Math.max(1.0F, lifeSeconds * TICKS_PER_SECOND),
                     layer.size[0], layer.size[1], layer.color == null ? Gradient.WHITE : layer.color,
                     layer.texture, layer.additive, random.nextFloat(), layer.gravity,
-                    layer.stretch, layer.core, layer.swirl, wobble);
+                    layer.stretch, layer.core, layer.swirl, wobble, layer.rainbow);
             particle.age = offset;
             particles.add(particle);
         }

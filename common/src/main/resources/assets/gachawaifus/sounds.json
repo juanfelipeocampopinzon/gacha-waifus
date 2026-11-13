@@ -307,6 +307,21 @@
       "gachawaifus:entity/megumin/idle6"
     ]
   },
+  "entity/megumin/explosion_charge": {
+    "sounds": [
+      "gachawaifus:entity/megumin/explosion_charge"
+    ]
+  },
+  "entity/megumin/explosion": {
+    "sounds": [
+      "gachawaifus:entity/megumin/explosion"
+    ]
+  },
+  "entity/megumin/explosion_ray": {
+    "sounds": [
+      "gachawaifus:entity/megumin/explosion_ray"
+    ]
+  },
   "entity/miyabi/attack": {
     "sounds": [
       "gachawaifus:entity/miyabi/attack1",

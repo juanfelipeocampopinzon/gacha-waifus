@@ -1,0 +1,150 @@
+{
+  "schema": 1,
+  "id": "akita_neru/normal",
+  "doc": "Beat: barrido de batuta de derecha a izquierda (0.12-0.4 s), notas que saltan en el golpe (0.22 s) y pulso en el suelo. Tier S. Daño en Java a los 4 ticks.",
+  "stages": {
+    "beat": {
+      "tier": "S",
+      "duration": 0.6,
+      "trigger": {
+        "clip": "animation.akita_neru.attack",
+        "at": 0.0
+      },
+      "layers": [
+        {
+          "type": "slash_arc",
+          "at": 0.12,
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.25,
+            0.2
+          ],
+          "radius": 1.7,
+          "arc_degrees": 150,
+          "width": 0.75,
+          "duration": 0.3,
+          "tilt": -15,
+          "texture": "arc_streak",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#fff59d",
+              0.9
+            ],
+            [
+              0.7,
+              "#ffd700",
+              0.6
+            ],
+            [
+              1,
+              "#e65100",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "emitter",
+          "at": 0.22,
+          "anchor": "entity",
+          "offset": [
+            0,
+            1.2,
+            1.4
+          ],
+          "shape": "sphere",
+          "radius": 0.3,
+          "texture": "note",
+          "blend": "additive",
+          "count": 10,
+          "lifetime": [
+            0.5,
+            0.8
+          ],
+          "size": [
+            0.38,
+            0.22
+          ],
+          "speed": [
+            1.5,
+            3.5
+          ],
+          "direction": "outward",
+          "gravity": -0.15,
+          "color": [
+            [
+              0,
+              "#ffffff",
+              0.0
+            ],
+            [
+              0.12,
+              "#fffde7",
+              1.0
+            ],
+            [
+              0.6,
+              "#ffd700",
+              0.85
+            ],
+            [
+              1,
+              "#e65100",
+              0.0
+            ]
+          ]
+        },
+        {
+          "type": "ring_wave",
+          "at": 0.22,
+          "anchor": "ground",
+          "offset": [
+            0,
+            0,
+            0.8
+          ],
+          "radius": [
+            0.4,
+            2.4
+          ],
+          "thickness": [
+            0.5,
+            0.1
+          ],
+          "duration": 0.3,
+          "ease": "out",
+          "y": 0.08,
+          "texture": "ring_thin",
+          "color": [
+            [
+              0,
+              "#ffffff",
+              1.0
+            ],
+            [
+              0.3,
+              "#fff59d",
+              0.9
+            ],
+            [
+              0.7,
+              "#ffd700",
+              0.6
+            ],
+            [
+              1,
+              "#e65100",
+              0.0
+            ]
+          ]
+        }
+      ]
+    }
+  }
+}

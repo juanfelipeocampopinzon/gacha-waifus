@@ -35,6 +35,11 @@ public final class VfxLayer {
     /** Ondulación lateral en bloques por tick. */
     public float swirl = 0.0F;
     /**
+     * Giro de tono por partícula (0 = ninguna, 1 = vuelta completa). Con un degradado corto y
+     * {@code rainbow} alto cada partícula sale de un color distinto: las chispas arcoíris.
+     */
+    public float rainbow = 0.0F;
+    /**
      * Eje local del hueso que apunta hacia la boquilla; por defecto [0,-1,0] (-Y).
      */
     public float[] boneAxis = {0.0F, -1.0F, 0.0F};
@@ -76,6 +81,7 @@ public final class VfxLayer {
         layer.stretch = number(json, "stretch", 0.0F);
         layer.core = number(json, "core", 0.0F);
         layer.swirl = number(json, "swirl", 0.0F);
+        layer.rainbow = number(json, "rainbow", 0.0F);
         layer.boneAxis = triple(json, "bone_axis", layer.boneAxis);
 
         layer.thickness = pair(json, "thickness", layer.thickness);

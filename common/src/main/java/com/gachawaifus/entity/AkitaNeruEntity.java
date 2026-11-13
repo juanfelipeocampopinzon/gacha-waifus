@@ -50,6 +50,19 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
     private int normalAttackCooldown = 0;
     private int specialSkillCooldown = 90;
     private int ultimateCooldown = 320;
+
+    // --- Golpes retrasados sincronizados con los fotogramas de animación y VFX ---
+    private static final int ATTACK_HIT_DELAY = 4;
+    private static final int SPECIAL_HIT_DELAY = 10;
+    private static final int ULTIMATE_HIT_DELAY = 32;
+    private static final int ULTIMATE_LENGTH = 60;
+
+    private int attackHitTicks = 0;
+    private int specialHitTicks = 0;
+    private int ultimateTicks = 0;
+    @org.jetbrains.annotations.Nullable
+    private LivingEntity pendingTarget = null;
+
     /** Golpe pendiente de la segunda pasada del doble ataque. */
     private LivingEntity pendingFollowUp;
     private int followUpTicks;
@@ -107,6 +120,9 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (!this.level().isClientSide && this.tickPendingHits()) {
+            return; // en mitad de una habilidad sincronizada con el clip
+        }
         if (this.isSinging()) {
             return; // en el concierto no ataca: se queda plantada cantando
         }
@@ -147,17 +163,59 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
         }
     }
 
-    /** Doble golpe: el segundo llega seis ticks después, si Neru sigue lo bastante cerca. */
+    private boolean tickPendingHits() {
+        if (this.attackHitTicks > 0 && --this.attackHitTicks == 0) {
+            this.hitNormalAttack();
+        }
+        if (this.specialHitTicks > 0 && --this.specialHitTicks == 0) {
+            this.hitSpecialSkill();
+        }
+        if (this.ultimateTicks > 0) {
+            this.ultimateTicks++;
+            this.getNavigation().stop();
+            if (this.pendingTarget != null && this.pendingTarget.isAlive()) {
+                this.getLookControl().setLookAt(this.pendingTarget, 30.0F, 30.0F);
+            }
+            if (this.ultimateTicks == ULTIMATE_HIT_DELAY + 1) {
+                this.hitUltimate();
+            }
+            if (this.ultimateTicks > ULTIMATE_LENGTH) {
+                this.ultimateTicks = 0;
+                this.pendingTarget = null;
+            }
+        }
+        return this.attackHitTicks > 0 || this.specialHitTicks > 0 || this.ultimateTicks > 0;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    private LivingEntity livePendingTarget(double range) {
+        LivingEntity target = this.pendingTarget;
+        if (target == null || !target.isAlive() || target.level() != this.level()
+                || this.distanceToSqr(target) > range * range) {
+            return null;
+        }
+        return target;
+    }
+
+    /** Doble golpe: el primer golpe se aplica en el fotograma 4 y el segundo seis ticks después. */
     private void performNormalAttack(LivingEntity target) {
         this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
         this.normalAttackCooldown = 26;
-        this.doHurtTarget(target);
-        this.pendingFollowUp = target;
-        this.followUpTicks = 6;
-        if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + 1.0, target.getZ(),
-                    8, 0.3, 0.4, 0.3, 0.3);
+        this.pendingTarget = target;
+        this.attackHitTicks = ATTACK_HIT_DELAY;
+    }
+
+    private void hitNormalAttack() {
+        LivingEntity target = this.livePendingTarget(5.0D);
+        if (target != null) {
+            this.doHurtTarget(target);
+            this.pendingFollowUp = target;
+            this.followUpTicks = 6;
+            if (this.level() instanceof ServerLevel sl) {
+                sl.sendParticles(ParticleTypes.ENCHANTED_HIT, target.getX(), target.getY() + 1.0, target.getZ(),
+                        8, 0.3, 0.4, 0.3, 0.3);
+            }
         }
         this.level().playSound(null, this.blockPosition(), SoundEvents.PLAYER_ATTACK_KNOCKBACK,
                 SoundSource.PLAYERS, 0.8F, 1.6F);
@@ -167,8 +225,20 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
         this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 180;
-        target.hurt(this.damageSources().mobAttack(this), 14.0F);
-        target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 120, 0));
+        this.pendingTarget = target;
+        this.specialHitTicks = SPECIAL_HIT_DELAY;
+    }
+
+    private void hitSpecialSkill() {
+        LivingEntity target = this.livePendingTarget(8.0D);
+        if (target != null) {
+            target.hurt(this.damageSources().mobAttack(this), 14.0F);
+            target.addEffect(new MobEffectInstance(MobEffects.WEAKNESS, 120, 0));
+            if (this.level() instanceof ServerLevel sl) {
+                sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY() + 1.0, target.getZ(),
+                        14, 0.4, 0.5, 0.4, 0.1);
+            }
+        }
 
         LivingEntity owner = this.getOwner();
         if (owner != null && owner.isAlive()) {
@@ -178,8 +248,6 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
         this.addEffect(new MobEffectInstance(MobEffects.MOVEMENT_SPEED, 200, 1));
 
         if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.SOUL_FIRE_FLAME, target.getX(), target.getY() + 1.0, target.getZ(),
-                    14, 0.4, 0.5, 0.4, 0.1);
             sl.sendParticles(ParticleTypes.SWEEP_ATTACK, this.getX(), this.getY() + 1.0, this.getZ(),
                     6, 0.4, 0.3, 0.4, 0.0);
         }
@@ -191,6 +259,11 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
         this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 620;
+        this.pendingTarget = target;
+        this.ultimateTicks = 1;
+    }
+
+    private void hitUltimate() {
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
             p.sendSystemMessage(Component.translatable("message.gachawaifus.akita_neru.1"));
@@ -209,8 +282,11 @@ public class AkitaNeruEntity extends AbstractWaifuEntity implements GeoEntity {
             e.hurt(this.damageSources().mobAttack(this), 18.0F);
             e.addEffect(new MobEffectInstance(MobEffects.DIG_SLOWDOWN, 120, 1));
         }
-        this.pendingFollowUp = target;
-        this.followUpTicks = 6;
+        LivingEntity target = this.livePendingTarget(7.0D);
+        if (target != null) {
+            this.pendingFollowUp = target;
+            this.followUpTicks = 6;
+        }
 
         if (this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.ENCHANTED_HIT, this.getX(), this.getY() + 1.1, this.getZ(),

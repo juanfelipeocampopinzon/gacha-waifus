@@ -52,6 +52,18 @@ public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
     private int specialSkillCooldown = 100;
     private int ultimateCooldown = 360;
 
+    // --- Golpes retrasados sincronizados con los fotogramas de animación y VFX ---
+    private static final int ATTACK_HIT_DELAY = 4;
+    private static final int SPECIAL_HIT_DELAY = 10;
+    private static final int ULTIMATE_HIT_DELAY = 32;
+    private static final int ULTIMATE_LENGTH = 60;
+
+    private int attackHitTicks = 0;
+    private int specialHitTicks = 0;
+    private int ultimateTicks = 0;
+    @org.jetbrains.annotations.Nullable
+    private LivingEntity pendingTarget = null;
+
     public KasaneTetoEntity(EntityType<? extends TamableAnimal> entityType, Level level) {
         super(entityType, level);
         this.setTame(true, false);
@@ -106,6 +118,9 @@ public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
     @Override
     public void aiStep() {
         super.aiStep();
+        if (!this.level().isClientSide && this.tickPendingHits()) {
+            return; // en mitad de una habilidad sincronizada con el clip
+        }
         if (this.isSinging()) {
             return; // en el concierto no ataca: se queda plantada cantando
         }
@@ -119,7 +134,7 @@ public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
             this.getLookControl().setLookAt(target, 30.0F, 30.0F);
 
             if (this.ultimateCooldown <= 0 && distSq <= 81.0D) {
-                performUltimate();
+                performUltimate(target);
             } else if (this.specialSkillCooldown <= 0 && distSq <= 36.0D) {
                 performSpecialSkill(target);
             } else if (this.normalAttackCooldown <= 0 && distSq <= 16.0D) {
@@ -128,14 +143,56 @@ public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
         }
     }
 
+    private boolean tickPendingHits() {
+        if (this.attackHitTicks > 0 && --this.attackHitTicks == 0) {
+            this.hitNormalAttack();
+        }
+        if (this.specialHitTicks > 0 && --this.specialHitTicks == 0) {
+            this.hitSpecialSkill();
+        }
+        if (this.ultimateTicks > 0) {
+            this.ultimateTicks++;
+            this.getNavigation().stop();
+            if (this.pendingTarget != null && this.pendingTarget.isAlive()) {
+                this.getLookControl().setLookAt(this.pendingTarget, 30.0F, 30.0F);
+            }
+            if (this.ultimateTicks == ULTIMATE_HIT_DELAY + 1) {
+                this.hitUltimate();
+            }
+            if (this.ultimateTicks > ULTIMATE_LENGTH) {
+                this.ultimateTicks = 0;
+                this.pendingTarget = null;
+            }
+        }
+        return this.attackHitTicks > 0 || this.specialHitTicks > 0 || this.ultimateTicks > 0;
+    }
+
+    @org.jetbrains.annotations.Nullable
+    private LivingEntity livePendingTarget(double range) {
+        LivingEntity target = this.pendingTarget;
+        if (target == null || !target.isAlive() || target.level() != this.level()
+                || this.distanceToSqr(target) > range * range) {
+            return null;
+        }
+        return target;
+    }
+
     private void performNormalAttack(LivingEntity target) {
         this.triggerAnim("attack_controller", "attack");
         this.playVoice("attack");
-        this.normalAttackCooldown = 18;
-        this.doHurtTarget(target);
-        if (this.level() instanceof ServerLevel sl) {
-            sl.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 8, 0.3, 0.4, 0.3, 0.3);
-            sl.sendParticles(ParticleTypes.NOTE, target.getX(), target.getY() + 0.9, target.getZ(), 4, 0.3, 0.3, 0.3, 0.2);
+        this.normalAttackCooldown = 20;
+        this.pendingTarget = target;
+        this.attackHitTicks = ATTACK_HIT_DELAY;
+    }
+
+    private void hitNormalAttack() {
+        LivingEntity target = this.livePendingTarget(5.0D);
+        if (target != null) {
+            this.doHurtTarget(target);
+            if (this.level() instanceof ServerLevel sl) {
+                sl.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 8, 0.3, 0.4, 0.3, 0.3);
+                sl.sendParticles(ParticleTypes.NOTE, target.getX(), target.getY() + 0.9, target.getZ(), 4, 0.3, 0.3, 0.3, 0.2);
+            }
         }
         this.level().playSound(null, this.blockPosition(), SoundEvents.NOTE_BLOCK_BASS.value(), SoundSource.PLAYERS, 1.1F, 0.8F);
     }
@@ -145,27 +202,42 @@ public class KasaneTetoEntity extends AbstractWaifuEntity implements GeoEntity {
         this.triggerAnim("attack_controller", "special");
         this.playVoice("attack");
         this.specialSkillCooldown = 200;
+        this.pendingTarget = target;
+        this.specialHitTicks = SPECIAL_HIT_DELAY;
+    }
+
+    private void hitSpecialSkill() {
+        LivingEntity target = this.livePendingTarget(8.0D);
         List<LivingEntity> hit = this.level().getEntitiesOfClass(LivingEntity.class,
                 this.getBoundingBox().inflate(SPECIAL_RADIUS),
                 e -> e != this && e != this.getOwner() && !(e instanceof AbstractWaifuEntity));
         for (LivingEntity e : hit) {
             e.hurt(this.damageSources().magic(), 10.0F);
         }
-        target.hurt(this.damageSources().magic(), 16.0F);
+        if (target != null) {
+            target.hurt(this.damageSources().magic(), 16.0F);
+            if (this.level() instanceof ServerLevel sl) {
+                sl.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 12, 0.4, 0.5, 0.4, 0.4);
+            }
+        }
         this.addEffect(new MobEffectInstance(MobEffects.DAMAGE_BOOST, 140, 1));
 
         if (this.level() instanceof ServerLevel sl) {
             sl.sendParticles(ParticleTypes.NOTE, this.getX(), this.getY() + 1.1, this.getZ(), 28, 1.0, 0.6, 1.0, 0.6);
-            sl.sendParticles(ParticleTypes.CRIT, target.getX(), target.getY() + 1.0, target.getZ(), 12, 0.4, 0.5, 0.4, 0.4);
         }
         this.level().playSound(null, this.blockPosition(), SoundEvents.NOTE_BLOCK_GUITAR.value(),
                 SoundSource.PLAYERS, 1.3F, 0.7F);
     }
 
-    private void performUltimate() {
+    private void performUltimate(@org.jetbrains.annotations.Nullable LivingEntity target) {
         this.triggerAnim("attack_controller", "ultimate");
         this.playVoice("attack", true);
         this.ultimateCooldown = 680;
+        this.pendingTarget = target;
+        this.ultimateTicks = 1;
+    }
+
+    private void hitUltimate() {
         LivingEntity owner = this.getOwner();
         if (owner instanceof Player p) {
             p.sendSystemMessage(Component.translatable("message.gachawaifus.kasane_teto.1"));

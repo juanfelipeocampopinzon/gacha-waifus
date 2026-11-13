@@ -34,6 +34,24 @@ public class ModSounds {
     public static final Supplier<SoundEvent> MUSKET_SHOT =
             register("entity/tokisaki_kurumi/musket_shot", MUSKET_SHOT_ID);
 
+    public static final ResourceLocation MEGUMIN_EXPLOSION_CHARGE_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion_charge");
+
+    public static final Supplier<SoundEvent> MEGUMIN_EXPLOSION_CHARGE =
+            register("entity/megumin/explosion_charge", MEGUMIN_EXPLOSION_CHARGE_ID);
+
+    public static final ResourceLocation MEGUMIN_EXPLOSION_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion");
+
+    public static final Supplier<SoundEvent> MEGUMIN_EXPLOSION =
+            register("entity/megumin/explosion", MEGUMIN_EXPLOSION_ID);
+
+    public static final ResourceLocation MEGUMIN_EXPLOSION_RAY_ID =
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "entity/megumin/explosion_ray");
+
+    public static final Supplier<SoundEvent> MEGUMIN_EXPLOSION_RAY =
+            register("entity/megumin/explosion_ray", MEGUMIN_EXPLOSION_RAY_ID);
+
     static {
         // Voces de las 13 waifus con audio confirmado: se registran desde la lista común, siempre
         // con el mismo id que declare {@code sounds.json} (si no coinciden, no suena nada).

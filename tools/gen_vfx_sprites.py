@@ -510,6 +510,84 @@ def scorch(size=128, seed=21):
     return make(size, size, fn)
 
 
+def rune_disc(size=128):
+    """Disco mágico RELLENO: el mismo patrón de `rune_ring` encima de un disco tenue.
+
+    El relleno va en la banda EDGE (gris 90) y el patrón en MID/CORE, así que al teñirlo de naranja
+    se lee como un disco semi-transparente con el dibujo brillante encima. El borde exterior (el aro
+    grueso) sigue siendo CORE, que es lo que cierra la silueta del círculo.
+    """
+    c = (size - 1) / 2
+    tau24 = math.tau / 24
+    tau8 = math.tau / 8
+
+    def fn(x, y):
+        dx, dy = (x - c) / (size / 2), (y - c) / (size / 2)
+        r = math.hypot(dx, dy)
+        if r > 1.0:
+            return 0.0
+        ang = math.atan2(dy, dx) % math.tau
+        a = 0.0
+        if 0.895 <= r <= 0.975:
+            a = 1.0
+        elif 0.735 <= r <= 0.760:
+            a = 0.66
+        elif 0.560 <= r <= 0.578:
+            a = 0.52
+        elif 0.760 < r < 0.895:
+            off = abs((ang % tau24) - tau24 / 2)
+            if off * r < 0.010:
+                a = 0.60
+        elif 0.578 < r < 0.735:
+            off = abs((ang % tau8) - tau8 / 2)
+            if off * r < 0.012:
+                a = 0.44
+        else:
+            ax, ay = abs(dx), abs(dy)
+            if (ax ** 0.5 + ay ** 0.5) - 0.40 < 0.0 and r < 0.46:
+                a = 0.50
+            elif 0.300 <= r <= 0.318:
+                a = 0.40
+        # Relleno tenue hasta el aro exterior; el patrón siempre manda si es más brillante.
+        fill = 0.30 if r < 0.975 else 0.0
+        return max(a, fill)
+
+    return make(size, size, fn)
+
+
+def crack_glow(size=128, seed=33):
+    """Grietas incandescentes del suelo: vetas radiales ramificadas, transparentes fuera.
+
+    Se dibuja como decal aditivo encima del hollín (`scorch`), así el suelo del cráter se ve negro
+    con vetas naranjas, como en el short de referencia.
+    """
+    rnd = random.Random(seed)
+    branches = []
+    for i in range(9):
+        base = rnd.uniform(0, math.tau)
+        branches.append((base, rnd.uniform(0.45, 1.0), rnd.uniform(0.020, 0.055)))
+
+    def fn(x, y):
+        dx, dy = (x - (size - 1) / 2) / (size / 2), (y - (size - 1) / 2) / (size / 2)
+        r = math.hypot(dx, dy)
+        if r > 0.96:
+            return 0.0
+        ang = math.atan2(dy, dx) % math.tau
+        best = 0.0
+        for base, length, width in branches:
+            off = abs((ang - base + math.pi) % math.tau - math.pi)
+            # la veta se afina y se apaga hacia el borde
+            if off * max(r, 0.001) < width * (1.0 - r / 1.1):
+                fade = 1.0 - (r / length) if r < length else 0.0
+                if fade > 0.0:
+                    best = max(best, 0.35 + 0.65 * fade)
+        if r < 0.10:
+            return max(best, 1.0)
+        return best
+
+    return make(size, size, fn)
+
+
 def build(seed):
     return {
         "flame_8f": flame_strip(seed),
@@ -540,7 +618,9 @@ def build(seed):
         "ice_cracks": ice_cracks(),
         "cut_lines": cut_lines(),
         "rune_ring": rune_ring(),
+        "rune_disc": rune_disc(),
         "scorch": scorch(),
+        "crack_glow": crack_glow(),
     }
 
 

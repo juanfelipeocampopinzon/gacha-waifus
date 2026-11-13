@@ -71,6 +71,12 @@ public final class WaifuBustLayers {
      */
     public static final ModelLayerLocation PROMEIA = new ModelLayerLocation(
             ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "promeia"), "main");
+    /**
+     * Malla de Megumin: modelo slim 64x128 sin pieza de pecho, con sombrero en la cabeza
+     * y báculo en el brazo derecho.
+     */
+    public static final ModelLayerLocation MEGUMIN = new ModelLayerLocation(
+            ResourceLocation.fromNamespaceAndPath(GachaWaifusMod.MODID, "megumin"), "main");
 
     /** Cola de caballo del {@code promeia.geo.json}: caja 2x18x2 colgando de la nuca. */
     private static final int TAIL_UV_U = 0;
@@ -95,6 +101,38 @@ public final class WaifuBustLayers {
      */
     public static LayerDefinition createSlim128() {
         return LayerDefinition.create(PlayerModel.createMesh(CubeDeformation.NONE, true), 64, 128);
+    }
+
+    /** Megumin: sombrero sobre la cabeza y báculo en el brazo derecho sobre malla slim 64x128. */
+    public static LayerDefinition createMegumin() {
+        MeshDefinition mesh = PlayerModel.createMesh(CubeDeformation.NONE, true);
+        PartDefinition root = mesh.getRoot();
+
+        CubeListBuilder hat = CubeListBuilder.create()
+                .texOffs(36, 116).addBox(6.0F, -8.0F, -6.0F, 2.0F, 1.0F, 11.0F)
+                .texOffs(30, 124).addBox(-8.0F, -8.0F, -9.0F, 16.0F, 1.0F, 3.0F)
+                .texOffs(22, 108).addBox(-8.0F, -8.0F, 5.0F, 16.0F, 1.0F, 3.0F)
+                .texOffs(37, 116).addBox(-8.0F, -8.0F, -6.0F, 2.0F, 1.0F, 11.0F)
+                .texOffs(0, 94).addBox(-6.0F, -9.0F, -6.0F, 12.0F, 1.0F, 11.0F)
+                .texOffs(0, 108).addBox(-4.0F, -12.0F, -4.0F, 8.0F, 3.0F, 7.0F)
+                .texOffs(0, 122).addBox(-3.0F, -15.0F, -2.0F, 11.0F, 3.0F, 3.0F)
+                .texOffs(1, 1).addBox(6.0F, -12.0F, -1.0F, 2.0F, 2.0F, 1.0F)
+                .texOffs(2, 68).addBox(-3.0F, -14.0F, -3.0F, 2.0F, 2.0F, 1.0F)
+                .texOffs(2, 68).addBox(1.0F, -14.0F, -3.0F, 2.0F, 2.0F, 1.0F);
+        root.getChild("head").addOrReplaceChild("sombrero", hat, PartPose.ZERO);
+
+        CubeListBuilder staff = CubeListBuilder.create()
+                .texOffs(37, 70).addBox(-1.0F, 9.5F, -17.0F, 1.0F, 2.0F, 2.0F)
+                .texOffs(56, 66).addBox(-1.0F, 8.5F, -20.0F, 1.0F, 1.0F, 3.0F)
+                .texOffs(38, 67).addBox(-1.0F, 9.5F, 8.0F, 1.0F, 1.0F, 3.0F)
+                .texOffs(49, 76).addBox(-1.0F, 9.5F, -21.0F, 1.0F, 1.0F, 1.0F)
+                .texOffs(58, 79).addBox(-1.0F, 10.5F, -21.0F, 1.0F, 1.0F, 1.0F)
+                .texOffs(54, 83).addBox(-1.0F, 11.5F, -20.0F, 1.0F, 1.0F, 1.0F)
+                .texOffs(38, 88).addBox(-1.0F, 10.0F, -19.0F, 1.0F, 1.0F, 1.0F)
+                .texOffs(6, 64).addBox(-1.0F, 10.0F, -16.0F, 1.0F, 1.0F, 28.0F);
+        root.getChild("right_arm").addOrReplaceChild("baculo", staff, PartPose.ZERO);
+
+        return LayerDefinition.create(mesh, 64, 128);
     }
 
     /** Promeia: pieza normal sobre malla slim más la cola de caballo colgada de la cabeza. */
